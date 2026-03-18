@@ -1,11 +1,12 @@
-import { PencilRuler, RefreshCw, Save, SquarePen } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, RefreshCw, Save, SquarePen, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { generateLevelDraft, getColorForId } from '../../game/levels'
 import {
   createEmptyLevelDraft,
+  deleteLevel,
   getLevelByDifficultyAndNumber,
   getNextLevelNumber,
   saveLevel,
@@ -19,6 +20,16 @@ import './CreateLevelPage.css'
 
 const cowTool = 'cow' as const
 type ActiveTool = number | typeof cowTool
+type ToastState = {
+  variant: 'success' | 'warning'
+  title: string
+  details?: string[]
+}
+
+type DeleteDialogState = {
+  difficulty: Difficulty
+  levelNumber: number
+} | null
 
 function CowMarker() {
   return (
@@ -64,11 +75,14 @@ function CreateLevelPageView({
   levelNumber: routeLevelNumber,
 }: CreateLevelPageViewProps) {
   const { isAdmin } = useRole()
+  const navigate = useNavigate()
   const [draft, setDraft] = useState<LevelDraft | null>(null)
-  const [statusMessage, setStatusMessage] = useState('')
-  const [validationIssues, setValidationIssues] = useState<string[]>([])
+  const [loadError, setLoadError] = useState('')
+  const [toast, setToast] = useState<ToastState | null>(null)
   const [activeTool, setActiveTool] = useState<ActiveTool>(1)
   const [isLoading, setIsLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>(null)
   const dragStateRef = useRef<{
     isPointerDown: boolean
     visited: Set<number>
@@ -76,8 +90,6 @@ function CreateLevelPageView({
     isPointerDown: false,
     visited: new Set<number>(),
   })
-
-  const bullsPerGroup = getBullsPerGroupForDifficulty(difficulty)
 
   useEffect(() => {
     let isActive = true
@@ -104,15 +116,15 @@ function CreateLevelPageView({
           setDraft(createEmptyLevelDraft(difficulty, nextLevelNumber))
         }
 
-        setValidationIssues([])
-        setStatusMessage('')
+        setLoadError('')
+        setToast(null)
         setActiveTool(1)
       } catch (error) {
         if (!isActive) {
           return
         }
 
-        setStatusMessage(
+        setLoadError(
           error instanceof Error ? error.message : 'Failed to load level data.',
         )
       } finally {
@@ -147,11 +159,25 @@ function CreateLevelPageView({
     }
   }, [])
 
+  useEffect(() => {
+    if (!toast) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setToast(null)
+    }, 4500)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [toast])
+
   if (!draft) {
     return (
       <div className="create-level-page">
         <p className="status-message">
-          {isLoading ? 'Loading level data...' : statusMessage}
+          {isLoading ? 'Loading level data...' : loadError}
         </p>
       </div>
     )
@@ -172,7 +198,8 @@ function CreateLevelPageView({
 
   const currentDraft = draft
   const colorOptions = Array.from({ length: currentDraft.gridSize }, (_, index) => index + 1)
-  const unassignedCells = currentDraft.pensByCell.filter((colorId) => colorId === 0).length
+  const requiredCowCount =
+    currentDraft.gridSize * getBullsPerGroupForDifficulty(currentDraft.difficulty)
 
   function handleCellPaint(cellIndex: number) {
     setDraft((currentDraft) => {
@@ -233,23 +260,49 @@ function CreateLevelPageView({
   async function handleSave() {
     const nextDraft = currentDraft satisfies LevelDraft
     const validationResult = validateLevelDraft(nextDraft)
-    setValidationIssues(validationResult.issues)
 
     if (!validationResult.isValid) {
-      setStatusMessage('Level validation failed. Fix the issues before saving.')
+      setToast({
+        variant: 'warning',
+        title: 'Fix those problems and try again.',
+        details: validationResult.issues,
+      })
       return
     }
 
     try {
       await saveLevel(nextDraft)
       setDraft(nextDraft)
-      setStatusMessage(
-        `Saved ${difficulty} level ${currentDraft.levelNumber}. The validator found at least one valid solution.`,
-      )
+      setToast({
+        variant: 'success',
+        title: 'Level saved',
+      })
     } catch (error) {
-      setStatusMessage(
-        error instanceof Error ? error.message : 'Failed to save level.',
-      )
+      setToast({
+        variant: 'warning',
+        title: error instanceof Error ? error.message : 'Failed to save level.',
+      })
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteDialog || isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+    setToast(null)
+
+    try {
+      await deleteLevel(deleteDialog.difficulty, deleteDialog.levelNumber)
+      setDeleteDialog(null)
+      void navigate(`/levels/${deleteDialog.difficulty}`)
+    } catch (error) {
+      setToast({
+        variant: 'warning',
+        title: error instanceof Error ? error.message : 'Failed to delete level.',
+      })
+      setIsDeleting(false)
     }
   }
 
@@ -265,27 +318,32 @@ function CreateLevelPageView({
         cowsByCell: Array.from({ length: currentDraft.gridSize * currentDraft.gridSize }, () => false),
       }
     })
-    setValidationIssues([])
-    setStatusMessage('Cleared colors and cows for the current draft.')
+    setToast({
+      variant: 'success',
+      title: 'Board cleared',
+    })
   }
 
   function handleValidate() {
     const validationResult = validateLevelDraft(currentDraft)
-    setValidationIssues(validationResult.issues)
 
     if (validationResult.isValid) {
-      setStatusMessage(
-        'Validation passed. The level currently has at least one valid solution.',
-      )
+      setToast({
+        variant: 'success',
+        title: 'Validation passed',
+      })
       return
     }
 
-    setStatusMessage('Validation found issues. Review them before saving.')
+    setToast({
+      variant: 'warning',
+      title: 'Fix those problems and try again.',
+      details: validationResult.issues,
+    })
   }
 
   function handleGenerate() {
-    setValidationIssues([])
-    setStatusMessage('')
+    setToast(null)
 
     const generatedDraft = generateLevelDraft(
       currentDraft.levelNumber,
@@ -294,98 +352,145 @@ function CreateLevelPageView({
     )
 
     if (!generatedDraft) {
-      setValidationIssues([
-        'Automatic generation is currently implemented for light, easy, and medium only.',
-        'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.',
-        'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.',
-      ])
-      setStatusMessage('Switch to light, easy, or medium to use automatic generation.')
+      setToast({
+        variant: 'warning',
+        title: 'Switch to light, easy, or medium to use automatic generation.',
+        details: [
+          'Automatic generation is currently implemented for light, easy, and medium only.',
+          'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.',
+          'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.',
+        ],
+      })
       return
     }
 
     setDraft(generatedDraft)
-    setStatusMessage(
-      `Generated a complete ${generatedDraft.gridSize} x ${generatedDraft.gridSize} level draft with connected pens and a validator-approved bull layout.`,
-    )
+    setToast({
+      variant: 'success',
+      title: 'Level generated',
+    })
   }
 
   return (
     <div className="create-level-page">
+      {toast ? (
+        <div
+          className={
+            toast.variant === 'success'
+              ? 'editor-toast editor-toast-success'
+              : 'editor-toast editor-toast-warning'
+          }
+          role="status"
+          aria-live="polite"
+        >
+          <p className="editor-toast-title">{toast.title}</p>
+          {toast.details?.length ? (
+            <ul className="editor-toast-list">
+              {toast.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      {deleteDialog ? (
+        <div className="editor-dialog-backdrop" role="presentation">
+          <div
+            className="editor-dialog panel-surface"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-level-title"
+            aria-describedby="delete-level-description"
+          >
+            <h3 id="delete-level-title">Delete level?</h3>
+            <p id="delete-level-description">
+              Delete {deleteDialog.difficulty} level {deleteDialog.levelNumber}? This removes the
+              project level file.
+            </p>
+            <div className="editor-dialog-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setDeleteDialog(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="secondary-button danger-button"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting}
+              >
+                <Trash2 size={18} />
+                {isDeleting ? 'Deleting...' : 'Delete level'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <Link
+        className="round-icon-link"
+        to={`/levels/${difficulty}`}
+        aria-label="Back to level list"
+      >
+        <ArrowLeft size={16} />
+      </Link>
+
       <section className="create-level-layout create-level-layout-single">
         <div className="editor-panel panel-surface">
-          <div className="editor-section">
-            <div className="editor-heading">
-              <SquarePen size={18} />
-              <h2>Create Level</h2>
-            </div>
-
-            <div className="field-grid">
-              <label className="field">
-                <span>Name</span>
-                <input
-                  className="form-control"
-                  type="text"
-                  value={currentDraft.title}
-                  onChange={(event) =>
-                    setDraft((current) =>
-                      current
-                        ? {
-                            ...current,
-                            title: event.target.value,
-                          }
-                        : current,
-                    )
-                  }
-                  placeholder={`Level ${draft.levelNumber}`}
-                />
-              </label>
-
-              <label className="field">
-                <span>Difficulty</span>
-                <input
-                  className="form-control"
-                  type="text"
-                  value={difficulty}
-                  disabled
-                  readOnly
-                />
-              </label>
-
-              <label className="field">
-                <span>Level</span>
-                <input
-                  className="form-control"
-                  type="text"
-                  value={`Level ${draft.levelNumber}`}
-                  disabled
-                  readOnly
-                />
-              </label>
-            </div>
-
-            <div className="slot-status">
-              <p className="rule-summary">
-                {difficulty === 'light'
-                  ? 'Light: 1 cow per row, column, and color on a 6 x 6 board.'
-                  : difficulty === 'easy'
-                  ? 'Easy: 1 cow per row, column, and color on an 8 x 8 board.'
-                    : difficulty === 'medium'
-                      ? 'Medium: 1 cow per row, column, and color on a 10 x 10 board.'
-                      : 'Hard: 2 cows per row, column, and color on a 10 x 10 board.'}
-              </p>
-            </div>
+          <div className="editor-heading">
+            <SquarePen size={18} />
+            <h2>Create/Edit Level</h2>
           </div>
 
           <div className="editor-section">
-            <div className="editor-heading">
-              <PencilRuler size={18} />
-              <h2>Color Painter</h2>
+            <div className="editor-actions">
+              <div className="editor-actions-group">
+                <button type="button" className="secondary-button" onClick={handleGenerate}>
+                  <RefreshCw size={18} />
+                  Generate
+                </button>
+                <button type="button" className="secondary-button" onClick={handleValidate}>
+                  <BadgeCheck size={18} />
+                  Validate level
+                </button>
+                <button type="button" className="primary-button" onClick={handleSave}>
+                  <Save size={18} />
+                  Save level
+                </button>
+              </div>
+
+              <div className="editor-actions-group editor-actions-group-right">
+                <button type="button" className="secondary-button" onClick={handleClearBoard}>
+                  Clear board
+                </button>
+                {routeLevelNumber ? (
+                  <button
+                    type="button"
+                    className="secondary-button danger-button"
+                    onClick={() =>
+                      setDeleteDialog({
+                        difficulty,
+                        levelNumber: routeLevelNumber,
+                      })
+                    }
+                    disabled={isDeleting}
+                  >
+                    <Trash2 size={18} />
+                    Delete level
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <p className="section-copy">
               Pick a color, then click cells to assign them to that region. Every
-              cell must belong to some color before the level can be saved. This
-              board needs exactly {currentDraft.gridSize} connected colors.
+              cell must belong to some color before the level can be saved, and
+              cows should be placed inside each color. This board needs exactly {currentDraft.gridSize}{' '}
+              connected colors and {requiredCowCount} cows to be on the board.
             </p>
 
             <div className="pen-palette" aria-label="Color palette">
@@ -444,59 +549,7 @@ function CreateLevelPageView({
                 ))}
               </div>
             </div>
-
-            <div className="editor-footer">
-              <p>
-                Grid size: {currentDraft.gridSize} x {currentDraft.gridSize}. Unassigned cells:{' '}
-                {unassignedCells}. Rule target: {bullsPerGroup} cow
-                {bullsPerGroup > 1 ? 's' : ''} per row, column, and color.
-              </p>
-            </div>
-
-            <div className="editor-actions">
-              <button type="button" className="secondary-button" onClick={handleGenerate}>
-                <RefreshCw size={18} />
-                Generate
-              </button>
-              <button type="button" className="secondary-button" onClick={handleValidate}>
-                Validate level
-              </button>
-              <button type="button" className="primary-button" onClick={handleSave}>
-                <Save size={18} />
-                Save level
-              </button>
-              <button type="button" className="secondary-button" onClick={handleClearBoard}>
-                Clear board
-              </button>
-              <Link className="secondary-button" to={`/levels/${difficulty}`}>
-                Back to levels
-              </Link>
-            </div>
           </div>
-
-          <div className="editor-section">
-            <div className="editor-heading">
-              <Save size={18} />
-              <h2>Validator</h2>
-            </div>
-            <p className="section-copy">
-              Save is blocked unless the board structure is valid and the solver
-              finds at least one solution for the selected difficulty.
-            </p>
-            {validationIssues.length > 0 ? (
-              <ul className="validation-list">
-                {validationIssues.map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="validation-ok">
-                Run validation after editing the board to confirm the level is legal.
-              </p>
-            )}
-          </div>
-
-          {statusMessage ? <p className="status-message">{statusMessage}</p> : null}
         </div>
       </section>
     </div>

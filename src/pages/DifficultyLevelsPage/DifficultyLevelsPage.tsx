@@ -65,14 +65,16 @@ export function DifficultyLevelsPage() {
 
   return (
     <div className="difficulty-page">
-      <Link className="round-icon-link" to="/levels" aria-label="Back to all difficulties">
-        <ArrowLeft size={16} />
-      </Link>
+      <div className="difficulty-page-intro-row">
+        <Link className="round-icon-link" to="/levels" aria-label="Back to all difficulties">
+          <ArrowLeft size={16} />
+        </Link>
 
-      <PageIntro
-        eyebrow="Levels"
-        title={`${difficultyLabels[difficulty]} Levels`}
-      />
+        <PageIntro
+          eyebrow="Levels"
+          title={`${difficultyLabels[difficulty]} Levels`}
+        />
+      </div>
 
       <section className="difficulty-levels-grid">
         {isLoading ? <p className="difficulty-level-loading">Loading levels...</p> : null}

@@ -1,5 +1,6 @@
 export {
   createEmptyLevelDraft,
+  deleteLevel,
   DIFFICULTIES,
   getLevelByDifficultyAndNumber,
   getLevelsByDifficulty,

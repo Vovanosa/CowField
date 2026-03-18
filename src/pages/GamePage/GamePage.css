@@ -4,35 +4,103 @@
   gap: var(--space-5);
 }
 
+.game-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.game-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.game-topbar-title {
+  margin: 0;
+  color: var(--color-accent-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.game-topbar-reset {
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.game-fallback-message {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.game-empty-state {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .game-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
-  gap: var(--space-5);
+  display: block;
 }
 
 .board-panel-header {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), max-content));
+  align-items: stretch;
+  justify-content: flex-start;
   gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
 
 .board-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
   padding: var(--space-4);
+  min-height: 48px;
+  width: 100%;
   border-radius: var(--radius-lg);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(247, 235, 216, 0.42));
   border: 1px solid rgba(148, 112, 38, 0.08);
 }
 
+.board-stat-compact,
+.board-stat-status {
+  min-width: 0;
+}
+
+.board-stat-compact {
+  max-width: 28rem;
+}
+
+.board-stat-status {
+  max-width: 54rem;
+}
+
+.board-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .board-panel-label {
-  margin-bottom: 6px;
+  margin: 0;
   color: var(--color-muted);
+  white-space: nowrap;
 }
 
 .board-panel-value {
   font-family: var(--font-heading);
-  font-size: 1.7rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--color-heading);
 }
@@ -42,8 +110,15 @@
   text-transform: capitalize;
 }
 
+.board-reset-button {
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
 .board-preview {
-  width: min(100%, 720px);
+  width: min(100%, 640px);
+  margin: 0 auto;
   padding: 10px;
   border-radius: var(--radius-xl);
   background:
@@ -111,89 +186,56 @@
     inset 0 0 0 999px rgba(255, 255, 255, 0.03);
 }
 
-.control-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.control-meta {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.control-meta-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(148, 112, 38, 0.08);
-}
-
-.control-meta-label {
-  color: var(--color-muted);
-}
-
-.control-meta-value {
-  font-weight: 700;
-  color: var(--color-heading);
-}
-
-.control-status-card {
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(247, 235, 216, 0.34));
-  border: 1px solid rgba(148, 112, 38, 0.08);
-}
-
-.control-group p {
-  color: var(--color-muted);
-}
-
 .game-status {
+  margin: 0;
   font-weight: 600;
+  color: var(--color-heading);
+  line-height: 1.4;
+  text-align: right;
 }
 
 .game-status-solved {
   color: var(--color-success);
 }
 
-.control-actions {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.control-actions > * {
-  width: 100%;
-  justify-content: center;
-}
-
-.control-actions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 @media (max-width: 960px) {
-  .game-layout {
-    grid-template-columns: 1fr;
+  .board-preview {
+    width: min(100%, 640px);
   }
 
-  .board-preview {
-    width: 100%;
+  .game-empty-state {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 640px) {
+  .game-topbar {
+    flex-wrap: wrap;
+  }
+
   .board-panel-header {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-stat-compact {
+    min-width: 0;
+  }
+
+  .board-stat-status {
+    min-width: 0;
+  }
+
+  .board-toolbar {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .board-stat {
+    flex-wrap: wrap;
+    min-height: auto;
+  }
+
+  .game-status {
+    text-align: left;
   }
 }

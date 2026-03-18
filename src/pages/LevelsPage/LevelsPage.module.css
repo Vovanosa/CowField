@@ -4,6 +4,17 @@
   gap: var(--space-6);
 }
 
+.levelsIntroRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.levelsIntroRow :global(.page-intro) {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .levelsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -71,5 +82,12 @@
 
   .difficultyLinkChip {
     min-height: 76px;
+  }
+}
+
+@media (max-width: 768px) {
+  .levelsIntroRow {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

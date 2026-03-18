@@ -137,3 +137,9 @@ export async function saveLevel(draft: LevelDraft) {
 
   return fromApiRecord(record)
 }
+
+export async function deleteLevel(difficulty: Difficulty, levelNumber: number) {
+  return requestJson<{ deleted: boolean }>(`/${difficulty}/${levelNumber}`, {
+    method: 'DELETE',
+  })
+}

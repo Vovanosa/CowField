@@ -1,9 +1,8 @@
-import { ArrowLeft, RotateCcw, SquarePen, TimerReset, Trash2 } from 'lucide-react'
+import { ArrowLeft, SquarePen, TimerReset } from 'lucide-react'
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
-import { PageIntro } from '../../components/PageIntro'
 import { getColorForId } from '../../game/levels'
 import { getLevelByDifficultyAndNumber } from '../../game/storage'
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
@@ -69,16 +68,6 @@ function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGro
 
   const requiredBullCount = bullsPerGroup * level.gridSize
   const invalidBullIndexes = new Set<number>()
-
-  if (bullIndexes.length !== requiredBullCount) {
-    return {
-      requiredBullCount,
-      bullIndexes,
-      invalidBullIndexes,
-      isSolved: false,
-    }
-  }
-
   const rowCounts = Array.from({ length: level.gridSize }, () => 0)
   const columnCounts = Array.from({ length: level.gridSize }, () => 0)
   const colorCounts = new Map<number, number>()
@@ -100,9 +89,9 @@ function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGro
     const colorId = level.pensByCell[bullIndex]
 
     if (
-      rowCounts[row] !== bullsPerGroup ||
-      columnCounts[column] !== bullsPerGroup ||
-      (colorCounts.get(colorId) ?? 0) !== bullsPerGroup
+      rowCounts[row] > bullsPerGroup ||
+      columnCounts[column] > bullsPerGroup ||
+      (colorCounts.get(colorId) ?? 0) > bullsPerGroup
     ) {
       invalidBullIndexes.add(bullIndex)
     }
@@ -139,7 +128,7 @@ function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGro
     requiredBullCount,
     bullIndexes,
     invalidBullIndexes,
-    isSolved: invalidBullIndexes.size === 0,
+    isSolved: bullIndexes.length === requiredBullCount && invalidBullIndexes.size === 0,
   }
 }
 
@@ -166,6 +155,21 @@ function getCellBorderStyle(level: LevelDefinition, cellIndex: number) {
         : bottomNeighbor !== null
           ? `0 2px 0 ${sameColorGapColor}`
         : null,
+    ]
+      .filter(Boolean)
+      .join(', '),
+  }
+}
+
+function getCellStyle(level: LevelDefinition, cellIndex: number, isInvalid: boolean) {
+  const borderStyle = getCellBorderStyle(level, cellIndex)
+
+  return {
+    backgroundColor: getColorForId(level.pensByCell[cellIndex]),
+    boxShadow: [
+      isInvalid ? 'inset 0 0 0 3px rgba(176, 75, 56, 0.42)' : null,
+      isInvalid ? 'inset 0 0 0 999px rgba(255, 255, 255, 0.03)' : null,
+      borderStyle.boxShadow || null,
     ]
       .filter(Boolean)
       .join(', '),
@@ -252,7 +256,7 @@ export function GamePage() {
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
       <div className="game-page">
-        <PageIntro title="Unknown level." description="The requested level route is invalid." />
+        <p className="game-fallback-message">The requested level route is invalid.</p>
       </div>
     )
   }
@@ -260,11 +264,7 @@ export function GamePage() {
   if (isLoading) {
     return (
       <div className="game-page">
-        <PageIntro
-          eyebrow={`${difficulty} / ${levelNumber}`}
-          title="Loading level..."
-          description="Fetching the level data from the project API."
-        />
+        <p className="game-fallback-message">Loading level...</p>
       </div>
     )
   }
@@ -272,17 +272,23 @@ export function GamePage() {
   if (!level) {
     return (
       <div className="game-page">
-        <PageIntro
-          eyebrow={`${difficulty} / ${levelNumber}`}
-          title="This level does not exist yet."
-          description="Create it first, then come back here to inspect the board data."
-          actions={isAdmin ? (
+        <div className="game-topbar">
+          <div className="game-topbar-left">
+            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+              <ArrowLeft size={16} />
+            </Link>
+            <p className="game-topbar-title">{`${difficulty} / ${levelNumber}`}</p>
+          </div>
+        </div>
+        <div className="game-empty-state panel-surface">
+          <p className="game-fallback-message">This level does not exist yet.</p>
+          {isAdmin ? (
             <Link className="primary-button" to={`/levels/${difficulty}/create`}>
               <SquarePen size={18} />
               Create level
             </Link>
-          ) : undefined}
-        />
+          ) : null}
+        </div>
       </div>
     )
   }
@@ -298,7 +304,7 @@ export function GamePage() {
 
   function handleCellClick(cellIndex: number) {
     setCellMarks((currentMarks) =>
-      currentMarks.map((mark, index) => {
+      currentMarks.map((mark, index, allMarks) => {
         if (index !== cellIndex) {
           return mark
         }
@@ -308,6 +314,12 @@ export function GamePage() {
         }
 
         if (mark === 'dot') {
+          const currentBullCount = allMarks.filter((entry) => entry === 'bull').length
+
+          if (currentBullCount >= requiredBullCount) {
+            return 'empty'
+          }
+
           return 'bull'
         }
 
@@ -394,37 +406,53 @@ export function GamePage() {
     )
   }
 
-  function handleClearNotes() {
-    setCellMarks((currentMarks) =>
-      currentMarks.map((mark) => (mark === 'dot' ? 'empty' : mark)),
-    )
-  }
-
   return (
-      <div className="game-page">
-      <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
-        <ArrowLeft size={16} />
-      </Link>
-
-      <PageIntro
-        eyebrow={`${difficulty} / ${level.levelNumber}`}
-        title={level.title}
-        description="Place bulls so each row, column, and color hits the target while no bulls touch, even diagonally."
-      />
+    <div className="game-page">
+      <div className="game-topbar">
+        <div className="game-topbar-left">
+          <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+            <ArrowLeft size={16} />
+          </Link>
+          <p className="game-topbar-title">{`${difficulty} / ${level.levelNumber}`}</p>
+        </div>
+        <button
+          type="button"
+          className="secondary-button game-topbar-reset"
+          onClick={handleResetBoard}
+        >
+          <TimerReset size={18} />
+          Reset
+        </button>
+      </div>
 
       <section className="game-layout">
         <div className="board-panel panel-surface">
           <div className="board-panel-header">
-            <div className="board-stat">
+            <div className="board-stat board-stat-compact">
               <p className="board-panel-label">Remaining bulls</p>
               <strong className="board-panel-value">{remainingBulls}</strong>
             </div>
-            <div className="board-stat">
-              <p className="board-panel-label">Difficulty</p>
-              <strong className="board-panel-value board-panel-value-small">
-                {level.difficulty}
-              </strong>
+            <div className="board-stat board-stat-status">
+              <p className="board-panel-label">Status</p>
+              <p className={isSolved ? 'game-status game-status-solved' : 'game-status'}>
+                {isSolved
+                  ? 'Level solved.'
+                  : invalidBullIndexes.size > 0
+                    ? 'Some bulls break the rules.'
+                    : 'Tap a cell to place notes and bulls.'}
+              </p>
             </div>
+            {isAdmin ? (
+              <div className="board-toolbar">
+                <Link
+                  className="secondary-button"
+                  to={`/levels/${difficulty}/${level.levelNumber}/edit`}
+                >
+                  <SquarePen size={18} />
+                  Edit level
+                </Link>
+              </div>
+            ) : null}
           </div>
 
           <div className="board-preview" aria-label="Puzzle board">
@@ -432,7 +460,7 @@ export function GamePage() {
               className="board-preview-grid"
               style={{ gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))` }}
             >
-              {level.pensByCell.map((colorId, index) => (
+              {level.pensByCell.map((_, index) => (
                 <button
                   key={index}
                   type="button"
@@ -441,10 +469,7 @@ export function GamePage() {
                       ? 'board-cell board-cell-invalid'
                       : 'board-cell'
                   }
-                  style={{
-                    backgroundColor: getColorForId(colorId),
-                    ...getCellBorderStyle(level, index),
-                  }}
+                  style={getCellStyle(level, index, invalidBullIndexes.has(index))}
                   onPointerDown={(event) => handleCellPointerDown(event, index)}
                   onPointerEnter={() => handleCellPointerEnter(index)}
                   onPointerUp={() => handleCellPointerUp(index)}
@@ -457,79 +482,6 @@ export function GamePage() {
             </div>
           </div>
         </div>
-
-        <aside className="control-panel panel-surface">
-          <div className="control-group">
-            <h2>{isAdmin ? 'Level data' : 'Puzzle status'}</h2>
-            <div className="control-meta">
-              {isAdmin ? (
-                <>
-                  <div className="control-meta-item">
-                    <span className="control-meta-label">Grid size</span>
-                    <strong className="control-meta-value">
-                      {level.gridSize} x {level.gridSize}
-                    </strong>
-                  </div>
-                  <div className="control-meta-item">
-                    <span className="control-meta-label">Rule target</span>
-                    <strong className="control-meta-value">
-                      {bullsPerGroup} bull{bullsPerGroup > 1 ? 's' : ''}
-                    </strong>
-                  </div>
-                </>
-              ) : null}
-              <div className="control-meta-item">
-                <span className="control-meta-label">Placed bulls</span>
-                <strong className="control-meta-value">
-                  {bullIndexes.length} / {requiredBullCount}
-                </strong>
-              </div>
-            </div>
-            <div className="control-status-card">
-              <p className={isSolved ? 'game-status game-status-solved' : 'game-status'}>
-                {isSolved
-                  ? 'Level solved.'
-                  : bullIndexes.length === requiredBullCount && invalidBullIndexes.size > 0
-                    ? 'Some bulls break the rules.'
-                    : 'Tap a cell to place notes and bulls.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="control-actions">
-            {isAdmin ? (
-              <button type="button" className="secondary-button" disabled>
-                <RotateCcw size={18} />
-                Undo later
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleResetBoard}
-            >
-              <TimerReset size={18} />
-              Reset board
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleClearNotes}
-            >
-              <Trash2 size={18} />
-              Clear notes
-            </button>
-            {isAdmin ? (
-              <Link
-                className="secondary-button"
-                to={`/levels/${difficulty}/${level.levelNumber}/edit`}
-              >
-                <SquarePen size={18} />
-                Edit level
-              </Link>
-            ) : null}
-          </div>
-        </aside>
       </section>
     </div>
   )

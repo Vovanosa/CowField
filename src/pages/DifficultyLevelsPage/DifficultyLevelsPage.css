@@ -4,6 +4,17 @@
   gap: var(--space-5);
 }
 
+.difficulty-page-intro-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.difficulty-page-intro-row .page-intro {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .difficulty-levels-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -90,6 +101,11 @@
 }
 
 @media (max-width: 960px) {
+  .difficulty-page-intro-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .difficulty-levels-grid {
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   }

@@ -1,3 +1,4 @@
+import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
@@ -25,15 +26,20 @@ export function LevelsPage() {
 
   return (
     <div className={styles.levelsPage}>
-      <PageIntro
-        eyebrow="Level Select"
-        title={isAdmin ? 'Choose a difficulty.' : 'Choose a difficulty to play.'}
-        description={
-          isAdmin
-            ? 'Each difficulty has its own sequence of levels and its own create flow.'
-            : 'Each difficulty has its own level list.'
-        }
-      />
+      <div className={styles.levelsIntroRow}>
+        <Link className="round-icon-link" to="/" aria-label="Back to home">
+          <ArrowLeft size={16} />
+        </Link>
+        <PageIntro
+          eyebrow="Level Select"
+          title={isAdmin ? 'Choose a difficulty.' : 'Choose a difficulty to play.'}
+          description={
+            isAdmin
+              ? 'Each difficulty has its own sequence of levels and its own create flow.'
+              : 'Each difficulty has its own level list.'
+          }
+        />
+      </div>
 
       <section className={styles.levelsGrid} aria-label="Available levels">
         {DIFFICULTIES.map((difficulty) => (
