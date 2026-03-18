@@ -1,6 +1,7 @@
 import { Grid3X3, Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
+import { useRole } from '../../app/role'
 import './AppHeader.css'
 
 const navigationLinks = [
@@ -10,17 +11,21 @@ const navigationLinks = [
 ]
 
 export function AppHeader() {
+  const { isAdmin } = useRole()
+
   return (
     <header className="app-header">
-      <NavLink className="brand-link" to="/">
-        <span className="brand-mark" aria-hidden="true">
-          <Grid3X3 size={18} />
-        </span>
-        <span className="brand-copy">
-          <strong>Bullpen</strong>
-          <span>logic puzzle prototype</span>
-        </span>
-      </NavLink>
+      <div className="header-left">
+        <NavLink className="brand-link" to="/">
+          <span className="brand-mark" aria-hidden="true">
+            <Grid3X3 size={18} />
+          </span>
+          <span className="brand-copy">
+            <strong>Bullpen</strong>
+            <span>{isAdmin ? 'Admin view' : ''}</span>
+          </span>
+        </NavLink>
+      </div>
 
       <nav className="top-nav" aria-label="Primary">
         {navigationLinks.map((link) => (

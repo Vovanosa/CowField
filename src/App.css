@@ -1,11 +1,14 @@
 .app-shell {
+  position: relative;
   min-height: 100svh;
+  width: min(100%, 1160px);
+  margin: 0 auto;
   padding: 32px 20px 48px;
 }
 
 .app-frame {
   width: min(100%, 1080px);
-  margin: 0 auto;
+  margin: 0 0 0 auto;
   border: 1px solid var(--color-frame-border);
   border-radius: 32px;
   background:
@@ -21,10 +24,12 @@
 
 @media (max-width: 768px) {
   .app-shell {
+    width: 100%;
     padding: 16px 12px 24px;
   }
 
   .app-frame {
+    margin: 0;
     border-radius: 24px;
   }
 

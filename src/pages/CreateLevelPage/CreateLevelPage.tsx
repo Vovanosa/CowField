@@ -2,6 +2,7 @@ import { PencilRuler, RefreshCw, Save, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { useRole } from '../../app/role'
 import { generateLevelDraft, getColorForId } from '../../game/levels'
 import {
   createEmptyLevelDraft,
@@ -62,6 +63,7 @@ function CreateLevelPageView({
   difficulty,
   levelNumber: routeLevelNumber,
 }: CreateLevelPageViewProps) {
+  const { isAdmin } = useRole()
   const [draft, setDraft] = useState<LevelDraft | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [validationIssues, setValidationIssues] = useState<string[]>([])
@@ -131,6 +133,19 @@ function CreateLevelPageView({
     )
   }
 
+  if (!isAdmin) {
+    return (
+      <div className="create-level-page">
+        <p className="status-message">
+          Admin role is required to create or edit levels.
+        </p>
+        <Link className="secondary-button" to="/levels">
+          Back to levels
+        </Link>
+      </div>
+    )
+  }
+
   const currentDraft = draft
   const colorOptions = Array.from({ length: currentDraft.gridSize }, (_, index) => index + 1)
   const unassignedCells = currentDraft.pensByCell.filter((colorId) => colorId === 0).length
@@ -162,10 +177,7 @@ function CreateLevelPageView({
   }
 
   async function handleSave() {
-    const nextDraft = {
-      ...currentDraft,
-      title: `Level ${currentDraft.levelNumber}`,
-    } satisfies LevelDraft
+    const nextDraft = currentDraft satisfies LevelDraft
     const validationResult = validateLevelDraft(nextDraft)
     setValidationIssues(validationResult.issues)
 
@@ -254,6 +266,25 @@ function CreateLevelPageView({
             </div>
 
             <div className="field-grid">
+              <label className="field">
+                <span>Name</span>
+                <input
+                  type="text"
+                  value={currentDraft.title}
+                  onChange={(event) =>
+                    setDraft((current) =>
+                      current
+                        ? {
+                            ...current,
+                            title: event.target.value,
+                          }
+                        : current,
+                    )
+                  }
+                  placeholder={`Level ${draft.levelNumber}`}
+                />
+              </label>
+
               <label className="field">
                 <span>Difficulty</span>
                 <input

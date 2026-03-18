@@ -1,102 +1,130 @@
-import { ArrowRight, BookOpenText, Play, Settings, SquarePen } from 'lucide-react'
+import { BookOpenText, Pencil, Play, SquarePen } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { PageIntro } from '../../components/PageIntro'
-import { SurfaceCard } from '../../components/SurfaceCard'
+import { useRole } from '../../app/role'
+import { getContentByKey, saveContentByKey } from '../../game/storage'
 import './HomePage.css'
 
 export function HomePage() {
+  const { isAdmin } = useRole()
+  const [homeText, setHomeText] = useState('')
+  const [draftText, setDraftText] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isActive = true
+
+    async function loadContent() {
+      try {
+        const content = await getContentByKey('home')
+
+        if (!isActive) {
+          return
+        }
+
+        setHomeText(content.text)
+        setDraftText(content.text)
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadContent()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  async function handleSaveHomeText() {
+    const content = await saveContentByKey('home', draftText)
+    setHomeText(content.text)
+    setDraftText(content.text)
+    setIsEditing(false)
+  }
+
   return (
     <div className="home-page">
-      <PageIntro
-        actions={
-          <>
-            <Link className="primary-button" to="/levels">
-              <Play size={18} />
-              Play
-            </Link>
+      <section className="home-hero">
+        <p className="home-eyebrow">Logic puzzle prototype</p>
+        <h2>Place bulls without letting them touch.</h2>
+        <p className="home-description">
+          Each row, column, and color must hit the target count. Dot marks are
+          just notes.
+        </p>
+
+        <div className="home-menu" aria-label="Home menu">
+          <Link className="primary-button" to="/levels">
+            <Play size={18} />
+            Play
+          </Link>
+          {isAdmin ? (
             <Link className="secondary-button" to="/levels">
               <SquarePen size={18} />
               Create level
             </Link>
-            <Link className="secondary-button" to="/about">
-              Learn the rules
-            </Link>
-          </>
-        }
-      />
-
-      <section className="home-grid">
-        <SurfaceCard
-          icon={<Play size={20} />}
-          title="Level path"
-          description="The level select flow will unlock one puzzle at a time and remember your best times locally."
-          detail={
-            <ul className="feature-list">
-              <li>Handcrafted 10x10 boards</li>
-              <li>Single-player and offline</li>
-              <li>Replayable levels with time tracking</li>
-            </ul>
-          }
-          action={
-            <Link className="text-link" to="/levels">
-              Open level select
-              <ArrowRight size={16} />
-            </Link>
-          }
-        />
-
-        <SurfaceCard
-          icon={<BookOpenText size={20} />}
-          title="Rule set"
-          description="Rows, columns, and pens must all satisfy the target bull count while keeping every bull at least one cell apart in all 8 directions."
-          detail={
-            <p className="support-copy">
-              Dot markers are optional player notes. Validation only matters once the required number of bulls has been placed.
-            </p>
-          }
-          action={
-            <Link className="text-link" to="/about">
-              View project notes
-              <ArrowRight size={16} />
-            </Link>
-          }
-        />
-
-        <SurfaceCard
-          icon={<SquarePen size={20} />}
-          title="Level authoring"
-          description="Create a handcrafted board, paint color regions, and save it into the project under its chosen difficulty."
-          detail={
-            <p className="support-copy">
-              Levels are now organized by difficulty, so creation starts by choosing a difficulty first.
-            </p>
-          }
-          action={
-            <Link className="text-link" to="/levels">
-              Open level editor
-              <ArrowRight size={16} />
-            </Link>
-          }
-        />
-
-        <SurfaceCard
-          icon={<Settings size={20} />}
-          title="Project base"
-          description="The repo is now structured for the next stage: types, levels, rules, validation, and storage modules."
-          detail={
-            <p className="support-copy">
-              We will add the board model and rule engine before touching generators, hints, or leaderboard work.
-            </p>
-          }
-          action={
-            <Link className="text-link" to="/settings">
-              Open settings
-              <ArrowRight size={16} />
-            </Link>
-          }
-        />
+          ) : null}
+          <Link className="secondary-button" to="/about">
+            <BookOpenText size={18} />
+            Learn the rules
+          </Link>
+        </div>
       </section>
+
+      <div className="home-note-wrap">
+        <div className="home-note-icon">
+          <BookOpenText size={18} />
+        </div>
+        <div className="home-note-panel">
+          {isLoading ? (
+            <p className="home-note-text">Loading...</p>
+          ) : isEditing ? (
+            <div className="home-note-editor">
+              <textarea
+                value={draftText}
+                onChange={(event) => setDraftText(event.target.value)}
+                rows={3}
+              />
+              <div className="home-note-actions">
+                <button type="button" className="primary-button" onClick={() => void handleSaveHomeText()}>
+                  Save text
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => {
+                    setDraftText(homeText)
+                    setIsEditing(false)
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="home-note-row">
+              <p className="home-note-text">{homeText}</p>
+              {isAdmin ? (
+                <button
+                  type="button"
+                  className="icon-link home-note-edit"
+                  aria-label="Edit home text"
+                  onClick={() => {
+                    setDraftText(homeText)
+                    setIsEditing(true)
+                  }}
+                >
+                  <Pencil size={16} />
+                </button>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

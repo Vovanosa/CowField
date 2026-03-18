@@ -1,7 +1,8 @@
-import { Eye, SquarePen } from 'lucide-react'
+import { ArrowLeft, Eye, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { useRole } from '../../app/role'
 import { PageIntro } from '../../components/PageIntro'
 import { getLevelsByDifficulty } from '../../game/storage'
 import type { Difficulty, LevelDefinition } from '../../game/types'
@@ -22,6 +23,7 @@ export function DifficultyLevelsPage() {
   const { difficulty } = useParams()
   const [levels, setLevels] = useState<LevelDefinition[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { isAdmin } = useRole()
 
   useEffect(() => {
     if (!isDifficulty(difficulty)) {
@@ -63,10 +65,18 @@ export function DifficultyLevelsPage() {
 
   return (
     <div>
+      <Link className="difficulty-back-link" to="/levels" aria-label="Back to all difficulties">
+        <ArrowLeft size={16} />
+      </Link>
+
       <PageIntro
         eyebrow="Levels"
         title={`${difficultyLabels[difficulty]} Levels`}
-        description="Browse the authored levels for this difficulty or create the next one in the sequence."
+        description={
+          isAdmin
+            ? 'Browse the authored levels for this difficulty or create the next one in the sequence.'
+            : 'Browse the available levels for this difficulty.'
+        }
       />
 
       <section className="difficulty-levels-grid">
@@ -83,21 +93,25 @@ export function DifficultyLevelsPage() {
                 <Eye size={16} />
                 Open board
               </Link>
-              <Link
-                className="text-link"
-                to={`/levels/${level.difficulty}/${level.levelNumber}/edit`}
-              >
-                <SquarePen size={16} />
-                Edit level
-              </Link>
+              {isAdmin ? (
+                <Link
+                  className="text-link"
+                  to={`/levels/${level.difficulty}/${level.levelNumber}/edit`}
+                >
+                  <SquarePen size={16} />
+                  Edit level
+                </Link>
+              ) : null}
             </div>
           </article>
         ))}
 
-        <Link className="difficulty-create-card" to={`/levels/${difficulty}/create`}>
-          <SquarePen size={20} />
-          Create a level
-        </Link>
+        {isAdmin ? (
+          <Link className="difficulty-create-card" to={`/levels/${difficulty}/create`}>
+            <SquarePen size={20} />
+            Create a level
+          </Link>
+        ) : null}
       </section>
     </div>
   )

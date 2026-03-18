@@ -1,7 +1,8 @@
-import { RotateCcw, SquarePen, TimerReset, Trash2 } from 'lucide-react'
+import { ArrowLeft, RotateCcw, SquarePen, TimerReset, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { useRole } from '../../app/role'
 import { PageIntro } from '../../components/PageIntro'
 import { getColorForId } from '../../game/levels'
 import { getLevelByDifficultyAndNumber } from '../../game/storage'
@@ -132,6 +133,7 @@ export function GamePage() {
   const [level, setLevel] = useState<LevelDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [cellMarks, setCellMarks] = useState<CellMark[]>([])
+  const { isAdmin } = useRole()
 
   useEffect(() => {
     if (!isDifficulty(difficulty) || !levelNumber) {
@@ -194,12 +196,12 @@ export function GamePage() {
           eyebrow={`${difficulty} / ${levelNumber}`}
           title="This level does not exist yet."
           description="Create it first, then come back here to inspect the board data."
-          actions={
+          actions={isAdmin ? (
             <Link className="primary-button" to={`/levels/${difficulty}/create`}>
               <SquarePen size={18} />
               Create level
             </Link>
-          }
+          ) : undefined}
         />
       </div>
     )
@@ -248,19 +250,14 @@ export function GamePage() {
 
   return (
     <div className="game-page">
+      <Link className="game-back-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+        <ArrowLeft size={16} />
+      </Link>
+
       <PageIntro
         eyebrow={`${difficulty} / ${level.levelNumber}`}
         title={level.title}
         description="Place bulls so each row, column, and color hits the target while no bulls touch, even diagonally."
-        actions={
-          <Link
-            className="secondary-button"
-            to={`/levels/${difficulty}/${level.levelNumber}/edit`}
-          >
-            <SquarePen size={18} />
-            Edit level
-          </Link>
-        }
       />
 
       <section className="game-layout">
@@ -305,14 +302,18 @@ export function GamePage() {
 
         <aside className="control-panel">
           <div className="control-group">
-            <h2>Level data</h2>
-            <p>
-              Grid size: <strong>{level.gridSize} x {level.gridSize}</strong>
-            </p>
-            <p>
-              Rule target: <strong>{bullsPerGroup}</strong> bull
-              {bullsPerGroup > 1 ? 's' : ''} per color, row, and column.
-            </p>
+            <h2>{isAdmin ? 'Level data' : 'Puzzle status'}</h2>
+            {isAdmin ? (
+              <>
+                <p>
+                  Grid size: <strong>{level.gridSize} x {level.gridSize}</strong>
+                </p>
+                <p>
+                  Rule target: <strong>{bullsPerGroup}</strong> bull
+                  {bullsPerGroup > 1 ? 's' : ''} per color, row, and column.
+                </p>
+              </>
+            ) : null}
             <p>
               Placed bulls: <strong>{bullIndexes.length}</strong> / {requiredBullCount}
             </p>
@@ -326,10 +327,12 @@ export function GamePage() {
           </div>
 
           <div className="control-actions">
-            <button type="button" className="secondary-button" disabled>
-              <RotateCcw size={18} />
-              Undo later
-            </button>
+            {isAdmin ? (
+              <button type="button" className="secondary-button" disabled>
+                <RotateCcw size={18} />
+                Undo later
+              </button>
+            ) : null}
             <button
               type="button"
               className="secondary-button"
@@ -346,6 +349,15 @@ export function GamePage() {
               <Trash2 size={18} />
               Clear notes
             </button>
+            {isAdmin ? (
+              <Link
+                className="secondary-button"
+                to={`/levels/${difficulty}/${level.levelNumber}/edit`}
+              >
+                <SquarePen size={18} />
+                Edit level
+              </Link>
+            ) : null}
           </div>
         </aside>
       </section>

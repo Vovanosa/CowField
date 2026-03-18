@@ -11,6 +11,12 @@
   backdrop-filter: blur(16px);
 }
 
+.header-left {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .brand-link {
   display: inline-flex;
   align-items: center;
@@ -104,6 +110,10 @@
   background: rgba(255, 255, 255, 0.45);
 }
 
+.icon-link-static {
+  opacity: 0.45;
+}
+
 @media (max-width: 768px) {
   .app-header {
     flex-wrap: wrap;
@@ -112,8 +122,11 @@
   }
 
   .brand-link {
-    width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
+  }
+
+  .header-left {
+    width: auto;
   }
 
   .top-nav {

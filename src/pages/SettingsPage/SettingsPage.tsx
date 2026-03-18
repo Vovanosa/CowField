@@ -1,3 +1,4 @@
+import { EditableContentPanel } from '../../components/EditableContentPanel'
 import { PageIntro } from '../../components/PageIntro'
 import './SettingsPage.css'
 
@@ -9,9 +10,7 @@ export function SettingsPage() {
         title="Settings will stay minimal in version one."
         description="There is no sound, account, or cloud sync in scope yet, so this page is just a placeholder for future preferences."
       />
-      <section className="simple-panel">
-        <p>Future options can live here once the first playable build exists.</p>
-      </section>
+      <EditableContentPanel contentKey="settings" />
     </div>
   )
 }

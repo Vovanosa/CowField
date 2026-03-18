@@ -6,3 +6,4 @@ export {
   getNextLevelNumber,
   saveLevel,
 } from './levelStorage'
+export { getContentByKey, saveContentByKey, type AppContentKey } from './contentStorage'
