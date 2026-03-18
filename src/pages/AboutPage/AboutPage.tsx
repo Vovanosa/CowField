@@ -1,5 +1,5 @@
-import { PageIntro } from '../components/PageIntro'
-import './SimplePages.css'
+import { PageIntro } from '../../components/PageIntro'
+import './AboutPage.css'
 
 export function AboutPage() {
   return (

@@ -1,10 +1,11 @@
-.levels-grid {
+.difficulty-levels-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
-.level-card {
+.difficulty-level-card,
+.difficulty-create-card {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -18,35 +19,52 @@
   box-shadow: var(--shadow-soft);
 }
 
-.level-card-locked {
-  opacity: 0.72;
+.difficulty-create-card {
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  font-weight: 700;
 }
 
-.level-card-top {
+.difficulty-level-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: var(--color-heading);
 }
 
-.level-label {
+.difficulty-level-label {
   font-family: var(--font-heading);
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--color-heading);
 }
 
-.level-card-copy,
-.level-card-meta {
+.difficulty-level-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--color-heading);
+  background: rgba(155, 113, 49, 0.1);
+}
+
+.difficulty-level-copy,
+.difficulty-level-actions {
   color: var(--color-muted);
 }
 
-.level-card-meta {
+.difficulty-level-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: auto;
 }
 
 @media (max-width: 960px) {
-  .levels-grid {
+  .difficulty-levels-grid {
     grid-template-columns: 1fr;
   }
 }

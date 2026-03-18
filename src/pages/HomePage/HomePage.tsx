@@ -1,22 +1,23 @@
-import { ArrowRight, BookOpenText, Play, Settings } from 'lucide-react'
+import { ArrowRight, BookOpenText, Play, Settings, SquarePen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { PageIntro } from '../components/PageIntro'
-import { SurfaceCard } from '../components/SurfaceCard'
+import { PageIntro } from '../../components/PageIntro'
+import { SurfaceCard } from '../../components/SurfaceCard'
 import './HomePage.css'
 
 export function HomePage() {
   return (
     <div className="home-page">
       <PageIntro
-        eyebrow="Offline puzzle prototype"
-        title="Build the calm puzzle shell before the first level logic."
-        description="This first pass sets up the app structure for the Bullpen-inspired project: pages, navigation, visual tone, and a clean place to start building board logic next."
         actions={
           <>
             <Link className="primary-button" to="/levels">
               <Play size={18} />
               Play
+            </Link>
+            <Link className="secondary-button" to="/levels">
+              <SquarePen size={18} />
+              Create level
             </Link>
             <Link className="secondary-button" to="/about">
               Learn the rules
@@ -57,6 +58,23 @@ export function HomePage() {
           action={
             <Link className="text-link" to="/about">
               View project notes
+              <ArrowRight size={16} />
+            </Link>
+          }
+        />
+
+        <SurfaceCard
+          icon={<SquarePen size={20} />}
+          title="Level authoring"
+          description="Create a handcrafted board, paint color regions, and save it into the project under its chosen difficulty."
+          detail={
+            <p className="support-copy">
+              Levels are now organized by difficulty, so creation starts by choosing a difficulty first.
+            </p>
+          }
+          action={
+            <Link className="text-link" to="/levels">
+              Open level editor
               <ArrowRight size={16} />
             </Link>
           }

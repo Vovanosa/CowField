@@ -2,6 +2,8 @@ import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from './app/AppShell'
 import { AboutPage } from './pages/AboutPage'
+import { CreateLevelPage } from './pages/CreateLevelPage'
+import { DifficultyLevelsPage } from './pages/DifficultyLevelsPage'
 import { GamePage } from './pages/GamePage'
 import { HomePage } from './pages/HomePage'
 import { LevelsPage } from './pages/LevelsPage'
@@ -22,7 +24,19 @@ const router = createBrowserRouter([
         element: <LevelsPage />,
       },
       {
-        path: 'game/:levelId',
+        path: 'levels/:difficulty',
+        element: <DifficultyLevelsPage />,
+      },
+      {
+        path: 'levels/:difficulty/create',
+        element: <CreateLevelPage />,
+      },
+      {
+        path: 'levels/:difficulty/:levelNumber/edit',
+        element: <CreateLevelPage />,
+      },
+      {
+        path: 'game/:difficulty/:levelNumber',
         element: <GamePage />,
       },
       {
