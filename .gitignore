@@ -27,5 +27,5 @@ dist-ssr
 AGENTS.md
 
 # Local authored content
-levels_data/**/*.json
+/levels_data/**/*.json
 content_data/*.json

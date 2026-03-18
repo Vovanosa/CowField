@@ -1,5 +1,5 @@
 import { PencilRuler, RefreshCw, Save, SquarePen } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
@@ -69,6 +69,13 @@ function CreateLevelPageView({
   const [validationIssues, setValidationIssues] = useState<string[]>([])
   const [activeTool, setActiveTool] = useState<ActiveTool>(1)
   const [isLoading, setIsLoading] = useState(true)
+  const dragStateRef = useRef<{
+    isPointerDown: boolean
+    visited: Set<number>
+  }>({
+    isPointerDown: false,
+    visited: new Set<number>(),
+  })
 
   const bullsPerGroup = getBullsPerGroupForDifficulty(difficulty)
 
@@ -123,6 +130,23 @@ function CreateLevelPageView({
     }
   }, [difficulty, routeLevelNumber])
 
+  useEffect(() => {
+    function stopDragging() {
+      dragStateRef.current = {
+        isPointerDown: false,
+        visited: new Set<number>(),
+      }
+    }
+
+    window.addEventListener('pointerup', stopDragging)
+    window.addEventListener('pointercancel', stopDragging)
+
+    return () => {
+      window.removeEventListener('pointerup', stopDragging)
+      window.removeEventListener('pointercancel', stopDragging)
+    }
+  }, [])
+
   if (!draft) {
     return (
       <div className="create-level-page">
@@ -174,6 +198,36 @@ function CreateLevelPageView({
         cowsByCell: nextCows,
       }
     })
+  }
+
+  function handleCellPointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    cellIndex: number,
+  ) {
+    event.preventDefault()
+    dragStateRef.current = {
+      isPointerDown: true,
+      visited: new Set([cellIndex]),
+    }
+    handleCellPaint(cellIndex)
+  }
+
+  function handleCellPointerEnter(cellIndex: number) {
+    const dragState = dragStateRef.current
+
+    if (!dragState.isPointerDown || dragState.visited.has(cellIndex)) {
+      return
+    }
+
+    dragState.visited.add(cellIndex)
+    handleCellPaint(cellIndex)
+  }
+
+  function handleCellPointerUp() {
+    dragStateRef.current = {
+      isPointerDown: false,
+      visited: new Set<number>(),
+    }
   }
 
   async function handleSave() {
@@ -242,8 +296,8 @@ function CreateLevelPageView({
     if (!generatedDraft) {
       setValidationIssues([
         'Automatic generation is currently implemented for light, easy, and medium only.',
-        'Generation places one legal cow in each row and column, with no neighboring cows, then assigns one unique color to each generated cow cell.',
-        'After that, you can finish the rest of the color regions manually.',
+        'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.',
+        'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.',
       ])
       setStatusMessage('Switch to light, easy, or medium to use automatic generation.')
       return
@@ -251,7 +305,7 @@ function CreateLevelPageView({
 
     setDraft(generatedDraft)
     setStatusMessage(
-      `Generated ${generatedDraft.gridSize} legal cow seed cells with ${generatedDraft.gridSize} unique colors. Finish the remaining color regions manually.`,
+      `Generated a complete ${generatedDraft.gridSize} x ${generatedDraft.gridSize} level draft with connected pens and a validator-approved bull layout.`,
     )
   }
 
@@ -379,7 +433,10 @@ function CreateLevelPageView({
                     type="button"
                     className={colorId === 0 ? 'editor-cell editor-cell-empty' : 'editor-cell'}
                     style={{ backgroundColor: getColorForId(colorId) }}
-                    onClick={() => handleCellPaint(cellIndex)}
+                    onPointerDown={(event) => handleCellPointerDown(event, cellIndex)}
+                    onPointerEnter={() => handleCellPointerEnter(cellIndex)}
+                    onPointerUp={handleCellPointerUp}
+                    onDragStart={(event) => event.preventDefault()}
                   >
                     {colorId === 0 ? '' : <span className="editor-cell-label">{colorId}</span>}
                     {currentDraft.cowsByCell[cellIndex] ? <CowMarker /> : null}

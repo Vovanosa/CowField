@@ -1,4 +1,4 @@
-import { ArrowLeft, Eye, SquarePen } from 'lucide-react'
+import { ArrowLeft, Plus, SquarePen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
@@ -72,44 +72,35 @@ export function DifficultyLevelsPage() {
       <PageIntro
         eyebrow="Levels"
         title={`${difficultyLabels[difficulty]} Levels`}
-        description={
-          isAdmin
-            ? 'Browse the authored levels for this difficulty or create the next one in the sequence.'
-            : 'Browse the available levels for this difficulty.'
-        }
       />
 
       <section className="difficulty-levels-grid">
-        {isLoading ? <p className="difficulty-level-copy">Loading levels...</p> : null}
+        {isLoading ? <p className="difficulty-level-loading">Loading levels...</p> : null}
         {levels.map((level) => (
           <article key={level.id} className="difficulty-level-card panel-surface">
-            <div className="difficulty-level-top">
-              <span className="difficulty-level-label">Level {level.levelNumber}</span>
-              <span className="difficulty-level-pill">{difficultyLabels[level.difficulty]}</span>
-            </div>
-            <p className="difficulty-level-copy">{level.title}</p>
-            <div className="difficulty-level-actions">
-              <Link className="text-link" to={`/game/${level.difficulty}/${level.levelNumber}`}>
-                <Eye size={16} />
-                Open board
-              </Link>
-              {isAdmin ? (
+            <Link
+              className="difficulty-level-link"
+              to={`/game/${level.difficulty}/${level.levelNumber}`}
+              aria-label={`Open level ${level.levelNumber}`}
+            />
+            <span className="difficulty-level-number">{level.levelNumber}</span>
+            {isAdmin ? (
+              <div className="difficulty-level-actions">
                 <Link
-                  className="text-link"
+                  className="difficulty-level-edit"
                   to={`/levels/${level.difficulty}/${level.levelNumber}/edit`}
+                  aria-label={`Edit level ${level.levelNumber}`}
                 >
                   <SquarePen size={16} />
-                  Edit level
                 </Link>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </article>
         ))}
 
         {isAdmin ? (
           <Link className="difficulty-create-card panel-surface" to={`/levels/${difficulty}/create`}>
-            <SquarePen size={20} />
-            Create a level
+            <Plus size={42} strokeWidth={2.2} />
           </Link>
         ) : null}
       </section>

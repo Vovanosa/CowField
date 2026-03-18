@@ -1,4 +1,4 @@
-import { BookOpenText, Pencil, Play, SquarePen } from 'lucide-react'
+import { BookOpenText, Pencil, Play } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -62,12 +62,6 @@ export function HomePage() {
             <Play size={18} />
             Play
           </Link>
-          {isAdmin ? (
-            <Link className="secondary-button" to="/levels">
-              <SquarePen size={18} />
-              Create level
-            </Link>
-          ) : null}
           <Link className="secondary-button" to="/about">
             <BookOpenText size={18} />
             Learn the rules
