@@ -1,0 +1,52 @@
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.level-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 180px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(148, 112, 38, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 245, 234, 0.88)),
+    var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.level-card-locked {
+  opacity: 0.72;
+}
+
+.level-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-heading);
+}
+
+.level-label {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.level-card-copy,
+.level-card-meta {
+  color: var(--color-muted);
+}
+
+.level-card-meta {
+  margin-top: auto;
+}
+
+@media (max-width: 960px) {
+  .levels-grid {
+    grid-template-columns: 1fr;
+  }
+}

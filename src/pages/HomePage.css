@@ -1,0 +1,31 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.feature-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-muted);
+}
+
+.feature-list li + li {
+  margin-top: 8px;
+}
+
+.support-copy {
+  margin: 0;
+}
+
+@media (max-width: 960px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+}
