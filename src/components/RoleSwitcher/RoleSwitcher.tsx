@@ -8,7 +8,11 @@ export function RoleSwitcher() {
     <aside className="role-switcher-panel" aria-label="Role selector">
       <label className="role-switcher">
         <span>Role</span>
-        <select value={role} onChange={(event) => setRole(event.target.value as typeof role)}>
+        <select
+          className="form-control"
+          value={role}
+          onChange={(event) => setRole(event.target.value as typeof role)}
+        >
           <option value="player">Player</option>
           <option value="admin">Admin</option>
         </select>

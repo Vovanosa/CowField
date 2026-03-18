@@ -10,6 +10,7 @@
     linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(250, 245, 234, 0.92)),
     var(--color-surface);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
 }
 
 .role-switcher {
@@ -28,9 +29,6 @@
   min-height: 38px;
   padding: 0 12px;
   border-radius: 14px;
-  border: 1px solid rgba(148, 112, 38, 0.14);
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--color-heading);
   font-size: 0.96rem;
 }
 

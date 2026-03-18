@@ -53,7 +53,7 @@ export function DifficultyLevelsPage() {
 
   if (!isDifficulty(difficulty)) {
     return (
-      <div>
+      <div className="difficulty-page">
         <PageIntro
           eyebrow="Levels"
           title="Unknown difficulty."
@@ -64,8 +64,8 @@ export function DifficultyLevelsPage() {
   }
 
   return (
-    <div>
-      <Link className="difficulty-back-link" to="/levels" aria-label="Back to all difficulties">
+    <div className="difficulty-page">
+      <Link className="round-icon-link" to="/levels" aria-label="Back to all difficulties">
         <ArrowLeft size={16} />
       </Link>
 
@@ -82,7 +82,7 @@ export function DifficultyLevelsPage() {
       <section className="difficulty-levels-grid">
         {isLoading ? <p className="difficulty-level-copy">Loading levels...</p> : null}
         {levels.map((level) => (
-          <article key={level.id} className="difficulty-level-card">
+          <article key={level.id} className="difficulty-level-card panel-surface">
             <div className="difficulty-level-top">
               <span className="difficulty-level-label">Level {level.levelNumber}</span>
               <span className="difficulty-level-pill">{difficultyLabels[level.difficulty]}</span>
@@ -107,7 +107,7 @@ export function DifficultyLevelsPage() {
         ))}
 
         {isAdmin ? (
-          <Link className="difficulty-create-card" to={`/levels/${difficulty}/create`}>
+          <Link className="difficulty-create-card panel-surface" to={`/levels/${difficulty}/create`}>
             <SquarePen size={20} />
             Create a level
           </Link>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { getContentByKey, saveContentByKey } from '../../game/storage'
-import './HomePage.css'
+import styles from './HomePage.module.css'
 
 export function HomePage() {
   const { isAdmin } = useRole()
@@ -48,16 +48,16 @@ export function HomePage() {
   }
 
   return (
-    <div className="home-page">
-      <section className="home-hero">
-        <p className="home-eyebrow">Logic puzzle prototype</p>
+    <div className={styles.homePage}>
+      <section className={styles.homeHero}>
+        <p className={styles.homeEyebrow}>Logic puzzle prototype</p>
         <h2>Place bulls without letting them touch.</h2>
-        <p className="home-description">
+        <p className={styles.homeDescription}>
           Each row, column, and color must hit the target count. Dot marks are
           just notes.
         </p>
 
-        <div className="home-menu" aria-label="Home menu">
+        <div className={styles.homeMenu} aria-label="Home menu">
           <Link className="primary-button" to="/levels">
             <Play size={18} />
             Play
@@ -75,21 +75,21 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="home-note-wrap">
-        <div className="home-note-icon">
+      <div className={styles.homeNoteWrap}>
+        <div className={styles.homeNoteIcon}>
           <BookOpenText size={18} />
         </div>
-        <div className="home-note-panel">
+        <div className={`${styles.homeNotePanel} panel-surface`}>
           {isLoading ? (
-            <p className="home-note-text">Loading...</p>
+            <p className={styles.homeNoteText}>Loading...</p>
           ) : isEditing ? (
-            <div className="home-note-editor">
+            <div className={styles.homeNoteEditor}>
               <textarea
                 value={draftText}
                 onChange={(event) => setDraftText(event.target.value)}
                 rows={3}
               />
-              <div className="home-note-actions">
+              <div className={styles.homeNoteActions}>
                 <button type="button" className="primary-button" onClick={() => void handleSaveHomeText()}>
                   Save text
                 </button>
@@ -106,8 +106,8 @@ export function HomePage() {
               </div>
             </div>
           ) : (
-            <div className="home-note-row">
-              <p className="home-note-text">{homeText}</p>
+            <div className={styles.homeNoteRow}>
+              <p className={styles.homeNoteText}>{homeText}</p>
               {isAdmin ? (
                 <button
                   type="button"

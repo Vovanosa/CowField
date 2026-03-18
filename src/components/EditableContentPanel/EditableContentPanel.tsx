@@ -78,14 +78,26 @@ export function EditableContentPanel({
 
   if (isLoading) {
     return (
-      <section className={variant === 'inline' ? 'simple-panel simple-panel-inline' : 'simple-panel'}>
+      <section
+        className={
+          variant === 'inline'
+            ? 'simple-panel simple-panel-inline'
+            : 'simple-panel panel-surface'
+        }
+      >
         <p>Loading...</p>
       </section>
     )
   }
 
   return (
-    <section className={variant === 'inline' ? 'simple-panel simple-panel-inline' : 'simple-panel'}>
+    <section
+      className={
+        variant === 'inline'
+          ? 'simple-panel simple-panel-inline'
+          : 'simple-panel panel-surface'
+      }
+    >
       {isEditing ? (
         <div className="about-editor">
           <textarea

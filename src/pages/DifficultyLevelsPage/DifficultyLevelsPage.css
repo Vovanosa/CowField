@@ -1,37 +1,22 @@
-.difficulty-back-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  margin-bottom: 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 112, 38, 0.1);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--color-heading);
-  text-decoration: none;
-  box-shadow: var(--shadow-soft);
+.difficulty-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .difficulty-levels-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .difficulty-level-card,
 .difficulty-create-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
   min-height: 180px;
-  padding: 22px;
-  border-radius: 24px;
-  border: 1px solid rgba(148, 112, 38, 0.1);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 245, 234, 0.88)),
-    var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-lg);
 }
 
 .difficulty-create-card {
@@ -40,6 +25,16 @@
   color: var(--color-accent-strong);
   text-decoration: none;
   font-weight: 700;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.difficulty-level-card:hover,
+.difficulty-create-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
 }
 
 .difficulty-level-top {
@@ -61,7 +56,7 @@
   align-items: center;
   min-height: 30px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--color-heading);
   background: rgba(155, 113, 49, 0.1);
 }

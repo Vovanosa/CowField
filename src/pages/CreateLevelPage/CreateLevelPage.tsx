@@ -258,7 +258,7 @@ function CreateLevelPageView({
   return (
     <div className="create-level-page">
       <section className="create-level-layout create-level-layout-single">
-        <div className="editor-panel">
+        <div className="editor-panel panel-surface">
           <div className="editor-section">
             <div className="editor-heading">
               <SquarePen size={18} />
@@ -269,6 +269,7 @@ function CreateLevelPageView({
               <label className="field">
                 <span>Name</span>
                 <input
+                  className="form-control"
                   type="text"
                   value={currentDraft.title}
                   onChange={(event) =>
@@ -288,6 +289,7 @@ function CreateLevelPageView({
               <label className="field">
                 <span>Difficulty</span>
                 <input
+                  className="form-control"
                   type="text"
                   value={difficulty}
                   disabled
@@ -298,6 +300,7 @@ function CreateLevelPageView({
               <label className="field">
                 <span>Level</span>
                 <input
+                  className="form-control"
                   type="text"
                   value={`Level ${draft.levelNumber}`}
                   disabled

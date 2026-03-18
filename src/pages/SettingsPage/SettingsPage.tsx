@@ -1,10 +1,10 @@
 import { EditableContentPanel } from '../../components/EditableContentPanel'
 import { PageIntro } from '../../components/PageIntro'
-import './SettingsPage.css'
+import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
   return (
-    <div className="simple-page">
+    <div className={styles.simplePage}>
       <PageIntro
         eyebrow="Settings"
         title="Settings will stay minimal in version one."

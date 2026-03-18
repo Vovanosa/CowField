@@ -18,7 +18,7 @@ export function SurfaceCard({
   action,
 }: SurfaceCardProps) {
   return (
-    <article className="surface-card">
+    <article className="surface-card panel-surface">
       <div className="surface-card-header">
         {icon ? <div className="surface-card-icon">{icon}</div> : null}
         <div>

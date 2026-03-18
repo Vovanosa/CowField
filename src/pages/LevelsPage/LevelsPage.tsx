@@ -4,7 +4,7 @@ import { useRole } from '../../app/role'
 import { PageIntro } from '../../components/PageIntro'
 import { DIFFICULTIES } from '../../game/storage'
 import type { Difficulty } from '../../game/types'
-import './LevelsPage.css'
+import styles from './LevelsPage.module.css'
 
 const difficultyLabels: Record<Difficulty, string> = {
   light: 'Light',
@@ -14,17 +14,17 @@ const difficultyLabels: Record<Difficulty, string> = {
 }
 
 const difficultyChipClassNames: Record<Difficulty, string> = {
-  light: 'difficulty-link-chip difficulty-link-chip-light',
-  easy: 'difficulty-link-chip difficulty-link-chip-easy',
-  medium: 'difficulty-link-chip difficulty-link-chip-medium',
-  hard: 'difficulty-link-chip',
+  light: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipLight}`,
+  easy: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipEasy}`,
+  medium: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipMedium}`,
+  hard: styles.difficultyLinkChip,
 }
 
 export function LevelsPage() {
   const { isAdmin } = useRole()
 
   return (
-    <div className='levels-page'>
+    <div className={styles.levelsPage}>
       <PageIntro
         eyebrow="Level Select"
         title={isAdmin ? 'Choose a difficulty.' : 'Choose a difficulty to play.'}
@@ -35,14 +35,14 @@ export function LevelsPage() {
         }
       />
 
-      <section className="levels-grid" aria-label="Available levels">
+      <section className={styles.levelsGrid} aria-label="Available levels">
         {DIFFICULTIES.map((difficulty) => (
           <Link
             key={difficulty}
             className={difficultyChipClassNames[difficulty]}
             to={`/levels/${difficulty}`}
           >
-            <span className="difficulty-link-label">{difficultyLabels[difficulty]}</span>
+            <span className={styles.difficultyLinkLabel}>{difficultyLabels[difficulty]}</span>
           </Link>
         ))}
       </section>

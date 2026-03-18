@@ -1,18 +1,13 @@
 .create-level-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.create-level-header h1 {
-  font-size: clamp(1.8rem, 2.4vw, 2.8rem);
-  margin-bottom: 0;
+  gap: var(--space-5);
 }
 
 .create-level-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .create-level-layout-single {
@@ -22,55 +17,51 @@
 .editor-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px;
-  border-radius: 28px;
-  border: 1px solid rgba(148, 112, 38, 0.1);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 245, 234, 0.88)),
-    var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  gap: var(--space-6);
 }
 
 .editor-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid rgba(148, 112, 38, 0.08);
+}
+
+.editor-section:last-of-type {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .editor-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   color: var(--color-heading);
 }
 
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--color-muted);
 }
 
-.field input,
-.field select {
-  min-height: 46px;
-  padding: 0 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 112, 38, 0.14);
-  background: rgba(255, 255, 255, 0.76);
-  color: var(--color-heading);
+.field span {
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .section-copy,
 .editor-footer p {
   color: var(--color-muted);
+  line-height: 1.65;
 }
 
 .rule-summary {
@@ -82,29 +73,52 @@
 .pen-palette {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .pen-chip {
-  min-height: 38px;
+  min-height: 40px;
   padding: 0 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid rgba(148, 112, 38, 0.12);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--color-heading);
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.pen-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(148, 112, 38, 0.24);
 }
 
 .pen-chip-active {
   outline: 2px solid rgba(155, 113, 49, 0.42);
   outline-offset: 1px;
+  box-shadow: 0 10px 18px rgba(120, 88, 30, 0.08);
 }
 
 .editor-board {
-  width: min(100%, 520px);
+  width: min(100%, 560px);
+  padding: 10px;
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 247, 234, 0.58));
+  border: 1px solid rgba(148, 112, 38, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38),
+    0 10px 18px rgba(120, 88, 30, 0.05);
 }
 
 .editor-board-grid {
   display: grid;
-  gap: 6px;
+  gap: 4px;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(148, 112, 38, 0.08);
 }
 
 .editor-cell {
@@ -113,10 +127,23 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  border-radius: 12px;
-  border: 1px solid rgba(148, 112, 38, 0.12);
+  border-radius: 0;
+  border: 0;
   color: var(--color-heading);
   overflow: hidden;
+  transition:
+    filter var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.editor-cell:hover {
+  filter: saturate(1.03);
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.04);
+}
+
+.editor-cell:active {
+  transform: scale(0.98);
 }
 
 .editor-cell-empty {
@@ -140,13 +167,17 @@
 .editor-footer {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(148, 112, 38, 0.08);
 }
 
 .editor-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .status-message {
@@ -159,6 +190,7 @@
   margin: 0;
   padding-left: 20px;
   color: #9a4d3f;
+  line-height: 1.6;
 }
 
 .validation-list li + li {
