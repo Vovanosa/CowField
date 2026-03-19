@@ -1,8 +1,10 @@
+import { getPreferredLanguage, normalizeLanguage } from '../../i18n'
 import type { PlayerSettings } from '../types'
 
 const SETTINGS_API_BASE = '/api/settings'
 
 const defaultPlayerSettings: PlayerSettings = {
+  language: getPreferredLanguage(),
   soundEffectsEnabled: false,
   soundEffectsVolume: 50,
   musicEnabled: false,
@@ -30,6 +32,7 @@ function normalizePlayerSettings(value: unknown): PlayerSettings {
   }
 
   return {
+    language: normalizeLanguage(value.language),
     soundEffectsEnabled: value.soundEffectsEnabled === true,
     soundEffectsVolume: clampVolume(value.soundEffectsVolume),
     musicEnabled: value.musicEnabled === true,

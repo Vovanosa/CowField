@@ -7,6 +7,7 @@ import {
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
@@ -364,6 +365,7 @@ function GamePageScreen() {
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
   const isAutoPlaceDotsEnabled = settings?.autoPlaceDotsEnabled === true
+  const { t } = useTranslation()
   const completionHandledRef = useRef(false)
   const cellMarksRef = useRef<CellMark[]>([])
   const runStartedAtRef = useRef<number | null>(null)
@@ -504,15 +506,19 @@ function GamePageScreen() {
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
       <div className="game-page">
-        <p className="game-fallback-message">The requested level route is invalid.</p>
+        <p className="game-fallback-message">{t('game.invalidRoute')}</p>
       </div>
     )
   }
 
+  const routeLevelLabel = `${t(`difficulty.${difficulty}`)} / ${t('common.levelNumber', {
+    levelNumber,
+  })}`
+
   if (isLoading) {
     return (
       <div className="game-page">
-        <p className="game-fallback-message">Loading level...</p>
+        <p className="game-fallback-message">{t('game.loading')}</p>
       </div>
     )
   }
@@ -522,18 +528,18 @@ function GamePageScreen() {
       <div className="game-page">
         <div className="game-topbar">
           <div className="game-topbar-left">
-            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label={t('common.backToLevels')}>
               <ArrowLeft size={16} />
             </Link>
-            <p className="game-topbar-title">{`${difficulty} / ${levelNumber}`}</p>
+            <p className="game-topbar-title">{routeLevelLabel}</p>
           </div>
         </div>
         <div className="game-empty-state panel-surface">
-          <p className="game-fallback-message">This level does not exist yet.</p>
+          <p className="game-fallback-message">{t('game.levelMissing')}</p>
           {isAdmin ? (
             <Link className="primary-button" to={`/levels/${difficulty}/create`}>
               <SquarePen size={18} />
-              Create level
+              {t('game.createLevel')}
             </Link>
           ) : null}
         </div>
@@ -546,16 +552,14 @@ function GamePageScreen() {
       <div className="game-page">
         <div className="game-topbar">
           <div className="game-topbar-left">
-            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label={t('common.backToLevels')}>
               <ArrowLeft size={16} />
             </Link>
-            <p className="game-topbar-title">{`${difficulty} / ${levelNumber}`}</p>
+            <p className="game-topbar-title">{routeLevelLabel}</p>
           </div>
         </div>
         <div className="game-empty-state panel-surface">
-          <p className="game-fallback-message">
-            This level is locked. Complete the previous level first to open it.
-          </p>
+          <p className="game-fallback-message">{t('game.lockedLevel')}</p>
         </div>
       </div>
     )
@@ -845,10 +849,10 @@ function GamePageScreen() {
     <div className="game-page">
       <div className="game-topbar">
         <div className="game-topbar-left">
-          <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+          <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label={t('common.backToLevels')}>
             <ArrowLeft size={16} />
           </Link>
-          <p className="game-topbar-title">{`${difficulty} / ${level.levelNumber}`}</p>
+          <p className="game-topbar-title">{routeLevelLabel}</p>
         </div>
       </div>
 
@@ -861,20 +865,20 @@ function GamePageScreen() {
                 className="secondary-button board-undo-button"
                 onClick={handleUndoMove}
                 disabled={!canUndo || isBoardLocked}
-                aria-label="Undo"
-                data-tooltip="Undo"
+                aria-label={t('common.undo')}
+                data-tooltip={t('common.undo')}
               >
                 <Undo2 size={18} />
               </button>
             </div>
             <div className="board-panel-header-right">
               <div className="board-stat board-stat-compact">
-                <p className="board-panel-label">Remaining bulls</p>
+                  <p className="board-panel-label">{t('game.remainingBulls')}</p>
                 <strong className="board-panel-value">{remainingBulls}</strong>
               </div>
               {!isTakeYourTimeEnabled ? (
                 <div className="board-stat board-stat-compact">
-                  <p className="board-panel-label">Timer</p>
+                  <p className="board-panel-label">{t('game.timer')}</p>
                   <strong className="board-panel-value">{formatElapsedTime(elapsedSeconds)}</strong>
                 </div>
               ) : null}
@@ -887,7 +891,7 @@ function GamePageScreen() {
                     className="primary-button board-next-button"
                     onClick={handleNextLevel}
                   >
-                    Next Level
+                    {t('common.nextLevel')}
                   </button>
                 ) : null}
                 <button
@@ -896,14 +900,14 @@ function GamePageScreen() {
                   onClick={handleRestartBoard}
                 >
                   <TimerReset size={18} />
-                  Restart
+                  {t('common.restart')}
                 </button>
                 <Link
                   className="secondary-button"
                   to={`/levels/${difficulty}/${level.levelNumber}/edit`}
                 >
                   <SquarePen size={18} />
-                  Edit level
+                  {t('game.editLevel')}
                 </Link>
               </div>
             ) : (
@@ -914,7 +918,7 @@ function GamePageScreen() {
                     className="primary-button board-next-button"
                     onClick={handleNextLevel}
                   >
-                    Next Level
+                    {t('common.nextLevel')}
                   </button>
                 ) : null}
                 <button
@@ -923,7 +927,7 @@ function GamePageScreen() {
                   onClick={handleRestartBoard}
                 >
                   <TimerReset size={18} />
-                  Restart
+                  {t('common.restart')}
                 </button>
               </div>
             )}
@@ -981,16 +985,16 @@ function GamePageScreen() {
             aria-modal="true"
             aria-labelledby="game-completion-title"
           >
-            <h2 id="game-completion-title">Level completed!</h2>
+            <h2 id="game-completion-title">{t('game.completionTitle')}</h2>
             {!isTakeYourTimeEnabled ? (
               <p className="game-completion-time">{formatElapsedTime(completionModal.timeSeconds)}</p>
             ) : null}
             {!isTakeYourTimeEnabled && completionModal.isNewBest ? (
-              <p className="game-completion-best">New best time!</p>
+              <p className="game-completion-best">{t('game.newBest')}</p>
             ) : null}
             <div className="game-completion-actions">
               <button type="button" className="secondary-button" onClick={handleBackToLevels}>
-                Back
+                {t('game.back')}
               </button>
               <button
                 type="button"
@@ -998,7 +1002,7 @@ function GamePageScreen() {
                 onClick={handleNextLevel}
                 disabled={!hasNextLevel}
               >
-                Next Level
+                {t('common.nextLevel')}
               </button>
             </div>
           </section>

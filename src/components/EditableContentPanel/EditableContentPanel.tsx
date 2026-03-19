@@ -1,5 +1,6 @@
 import { Pencil } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useRole } from '../../app/role'
 import {
@@ -18,6 +19,7 @@ export function EditableContentPanel({
   contentKey,
   variant = 'panel',
 }: EditableContentPanelProps) {
+  const { t } = useTranslation()
   const { isAdmin } = useRole()
   const [text, setText] = useState('')
   const [draftText, setDraftText] = useState('')
@@ -45,7 +47,7 @@ export function EditableContentPanel({
         }
 
         setStatusMessage(
-          error instanceof Error ? error.message : 'Failed to load content.',
+          error instanceof Error ? error.message : t('editableContent.loadFailed'),
         )
       } finally {
         if (isActive) {
@@ -60,7 +62,7 @@ export function EditableContentPanel({
     return () => {
       isActive = false
     }
-  }, [contentKey])
+  }, [contentKey, t])
 
   async function handleSave() {
     try {
@@ -71,7 +73,7 @@ export function EditableContentPanel({
       setStatusMessage('')
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : 'Failed to save content.',
+        error instanceof Error ? error.message : t('editableContent.saveFailed'),
       )
     }
   }
@@ -84,8 +86,8 @@ export function EditableContentPanel({
             ? 'simple-panel simple-panel-inline'
             : 'simple-panel panel-surface'
         }
-      >
-        <p>Loading...</p>
+        >
+        <p>{t('common.loading')}</p>
       </section>
     )
   }
@@ -107,7 +109,7 @@ export function EditableContentPanel({
           />
           <div className="about-editor-actions">
             <button type="button" className="primary-button" onClick={handleSave}>
-              Save text
+              {t('editableContent.saveText')}
             </button>
             <button
               type="button"
@@ -118,7 +120,7 @@ export function EditableContentPanel({
                 setStatusMessage('')
               }}
             >
-              Cancel
+              {t('editableContent.cancel')}
             </button>
           </div>
         </div>
@@ -129,7 +131,7 @@ export function EditableContentPanel({
             <button
               type="button"
               className="icon-link about-edit-button"
-              aria-label="Edit text"
+              aria-label={t('editableContent.editText')}
               onClick={() => {
                 setDraftText(text)
                 setIsEditing(true)

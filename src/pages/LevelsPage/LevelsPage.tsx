@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
@@ -6,13 +7,6 @@ import { PageIntro } from '../../components/PageIntro'
 import { DIFFICULTIES } from '../../game/storage'
 import type { Difficulty } from '../../game/types'
 import styles from './LevelsPage.module.css'
-
-const difficultyLabels: Record<Difficulty, string> = {
-  light: 'Light',
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-}
 
 const difficultyChipClassNames: Record<Difficulty, string> = {
   light: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipLight}`,
@@ -23,32 +17,33 @@ const difficultyChipClassNames: Record<Difficulty, string> = {
 
 export function LevelsPage() {
   const { isAdmin } = useRole()
+  const { t } = useTranslation()
 
   return (
     <div className={`${styles.levelsPage} page-shell`}>
       <div className={styles.levelsIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label="Back to home">
+        <Link className="round-icon-link" to="/" aria-label={t('common.backToHome')}>
           <ArrowLeft size={16} />
         </Link>
         <PageIntro
-          eyebrow="Level Select"
-          title={isAdmin ? 'Choose a difficulty.' : 'Choose a difficulty to play.'}
+          eyebrow={t('levels.eyebrow')}
+          title={isAdmin ? t('levels.titleAdmin') : t('levels.titlePlayer')}
           description={
             isAdmin
-              ? 'Each difficulty has its own sequence of levels and its own create flow.'
-              : 'Each difficulty has its own level list.'
+              ? t('levels.descriptionAdmin')
+              : t('levels.descriptionPlayer')
           }
         />
       </div>
 
-      <section className={styles.levelsGrid} aria-label="Available levels">
+      <section className={styles.levelsGrid} aria-label={t('levels.availableLevels')}>
         {DIFFICULTIES.map((difficulty) => (
           <Link
             key={difficulty}
             className={difficultyChipClassNames[difficulty]}
             to={`/levels/${difficulty}`}
           >
-            <span className={styles.difficultyLinkLabel}>{difficultyLabels[difficulty]}</span>
+            <span className={styles.difficultyLinkLabel}>{t(`difficulty.${difficulty}`)}</span>
           </Link>
         ))}
       </section>

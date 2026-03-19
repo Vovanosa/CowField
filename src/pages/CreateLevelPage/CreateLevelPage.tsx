@@ -1,5 +1,6 @@
 import { ArrowLeft, BadgeCheck, RefreshCw, Save, SquarePen, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
@@ -74,6 +75,7 @@ function CreateLevelPageView({
   difficulty,
   levelNumber: routeLevelNumber,
 }: CreateLevelPageViewProps) {
+  const { t } = useTranslation()
   const { isAdmin } = useRole()
   const navigate = useNavigate()
   const [draft, setDraft] = useState<LevelDraft | null>(null)
@@ -125,7 +127,7 @@ function CreateLevelPageView({
         }
 
         setLoadError(
-          error instanceof Error ? error.message : 'Failed to load level data.',
+          error instanceof Error ? error.message : t('createLevel.loadFailed'),
         )
       } finally {
         if (isActive) {
@@ -140,7 +142,7 @@ function CreateLevelPageView({
     return () => {
       isActive = false
     }
-  }, [difficulty, routeLevelNumber])
+  }, [difficulty, routeLevelNumber, t])
 
   useEffect(() => {
     function stopDragging() {
@@ -177,7 +179,7 @@ function CreateLevelPageView({
     return (
       <div className="create-level-page">
         <p className="status-message">
-          {isLoading ? 'Loading level data...' : loadError}
+          {isLoading ? t('createLevel.loading') : loadError}
         </p>
       </div>
     )
@@ -187,10 +189,10 @@ function CreateLevelPageView({
     return (
       <div className="create-level-page">
         <p className="status-message">
-          Admin role is required to create or edit levels.
+          {t('createLevel.adminRequired')}
         </p>
         <Link className="secondary-button" to="/levels">
-          Back to levels
+          {t('createLevel.backToLevels')}
         </Link>
       </div>
     )
@@ -264,7 +266,7 @@ function CreateLevelPageView({
     if (!validationResult.isValid) {
       setToast({
         variant: 'warning',
-        title: 'Fix those problems and try again.',
+        title: t('createLevel.fixProblems'),
         details: validationResult.issues,
       })
       return
@@ -275,12 +277,12 @@ function CreateLevelPageView({
       setDraft(nextDraft)
       setToast({
         variant: 'success',
-        title: 'Level saved',
+        title: t('createLevel.saved'),
       })
     } catch (error) {
       setToast({
         variant: 'warning',
-        title: error instanceof Error ? error.message : 'Failed to save level.',
+        title: error instanceof Error ? error.message : t('createLevel.saveFailed'),
       })
     }
   }
@@ -300,7 +302,7 @@ function CreateLevelPageView({
     } catch (error) {
       setToast({
         variant: 'warning',
-        title: error instanceof Error ? error.message : 'Failed to delete level.',
+        title: error instanceof Error ? error.message : t('createLevel.deleteFailed'),
       })
       setIsDeleting(false)
     }
@@ -320,7 +322,7 @@ function CreateLevelPageView({
     })
     setToast({
       variant: 'success',
-      title: 'Board cleared',
+      title: t('createLevel.boardCleared'),
     })
   }
 
@@ -330,14 +332,14 @@ function CreateLevelPageView({
     if (validationResult.isValid) {
       setToast({
         variant: 'success',
-        title: 'Validation passed',
+        title: t('createLevel.validationPassed'),
       })
       return
     }
 
     setToast({
       variant: 'warning',
-      title: 'Fix those problems and try again.',
+      title: t('createLevel.fixProblems'),
       details: validationResult.issues,
     })
   }
@@ -347,18 +349,18 @@ function CreateLevelPageView({
 
     const generatedDraft = generateLevelDraft(
       currentDraft.levelNumber,
-      `Level ${currentDraft.levelNumber}`,
+      t('common.levelNumber', { levelNumber: currentDraft.levelNumber }),
       currentDraft.difficulty,
     )
 
     if (!generatedDraft) {
       setToast({
         variant: 'warning',
-        title: 'Switch to light, easy, or medium to use automatic generation.',
+        title: t('createLevel.generatorUnsupported'),
         details: [
-          'Automatic generation is currently implemented for light, easy, and medium only.',
-          'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.',
-          'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.',
+          t('createLevel.generatorDetails1'),
+          t('createLevel.generatorDetails2'),
+          t('createLevel.generatorDetails3'),
         ],
       })
       return
@@ -367,7 +369,7 @@ function CreateLevelPageView({
     setDraft(generatedDraft)
     setToast({
       variant: 'success',
-      title: 'Level generated',
+      title: t('createLevel.generated'),
     })
   }
 
@@ -403,10 +405,12 @@ function CreateLevelPageView({
             aria-labelledby="delete-level-title"
             aria-describedby="delete-level-description"
           >
-            <h3 id="delete-level-title">Delete level?</h3>
+            <h3 id="delete-level-title">{t('createLevel.deleteTitle')}</h3>
             <p id="delete-level-description">
-              Delete {deleteDialog.difficulty} level {deleteDialog.levelNumber}? This removes the
-              project level file.
+              {t('createLevel.deleteDescription', {
+                difficulty,
+                levelNumber: deleteDialog.levelNumber,
+              })}
             </p>
             <div className="editor-dialog-actions">
               <button
@@ -415,7 +419,7 @@ function CreateLevelPageView({
                 onClick={() => setDeleteDialog(null)}
                 disabled={isDeleting}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -424,7 +428,7 @@ function CreateLevelPageView({
                 disabled={isDeleting}
               >
                 <Trash2 size={18} />
-                {isDeleting ? 'Deleting...' : 'Delete level'}
+                {isDeleting ? t('createLevel.deleting') : t('createLevel.deleteLevel')}
               </button>
             </div>
           </div>
@@ -434,7 +438,7 @@ function CreateLevelPageView({
       <Link
         className="round-icon-link"
         to={`/levels/${difficulty}`}
-        aria-label="Back to level list"
+        aria-label={t('common.backToLevels')}
       >
         <ArrowLeft size={16} />
       </Link>
@@ -443,7 +447,7 @@ function CreateLevelPageView({
         <div className="editor-panel panel-surface">
           <div className="editor-heading">
             <SquarePen size={18} />
-            <h2>Create/Edit Level</h2>
+            <h2>{t('createLevel.title')}</h2>
           </div>
 
           <div className="editor-section">
@@ -451,21 +455,21 @@ function CreateLevelPageView({
               <div className="editor-actions-group">
                 <button type="button" className="secondary-button" onClick={handleGenerate}>
                   <RefreshCw size={18} />
-                  Generate
+                  {t('createLevel.generate')}
                 </button>
                 <button type="button" className="secondary-button" onClick={handleValidate}>
                   <BadgeCheck size={18} />
-                  Validate level
+                  {t('createLevel.validate')}
                 </button>
                 <button type="button" className="primary-button" onClick={handleSave}>
                   <Save size={18} />
-                  Save level
+                  {t('createLevel.saveLevel')}
                 </button>
               </div>
 
               <div className="editor-actions-group editor-actions-group-right">
                 <button type="button" className="secondary-button" onClick={handleClearBoard}>
-                  Clear board
+                  {t('createLevel.clearBoard')}
                 </button>
                 {routeLevelNumber ? (
                   <button
@@ -480,26 +484,26 @@ function CreateLevelPageView({
                     disabled={isDeleting}
                   >
                     <Trash2 size={18} />
-                    Delete level
+                    {t('createLevel.deleteLevel')}
                   </button>
                 ) : null}
               </div>
             </div>
 
             <p className="section-copy">
-              Pick a color, then click cells to assign them to that region. Every
-              cell must belong to some color before the level can be saved, and
-              cows should be placed inside each color. This board needs exactly {currentDraft.gridSize}{' '}
-              connected colors and {requiredCowCount} cows to be on the board.
+              {t('createLevel.sectionCopy', {
+                gridSize: currentDraft.gridSize,
+                requiredCowCount,
+              })}
             </p>
 
-            <div className="pen-palette" aria-label="Color palette">
+            <div className="pen-palette" aria-label={t('createLevel.paletteLabel')}>
               <button
                 type="button"
                 className={activeTool === 0 ? 'pen-chip pen-chip-active' : 'pen-chip'}
                 onClick={() => setActiveTool(0)}
               >
-                Erase
+                {t('createLevel.erase')}
               </button>
               <button
                 type="button"
@@ -508,7 +512,7 @@ function CreateLevelPageView({
                 }
                 onClick={() => setActiveTool(cowTool)}
               >
-                Cow
+                {t('createLevel.cow')}
               </button>
               {colorOptions.map((colorId) => (
                 <button
@@ -520,12 +524,12 @@ function CreateLevelPageView({
                   style={{ backgroundColor: getColorForId(colorId) }}
                   onClick={() => setActiveTool(colorId)}
                 >
-                  Color {colorId}
+                  {t('createLevel.color', { colorId })}
                 </button>
               ))}
             </div>
 
-            <div className="editor-board" aria-label="Level color editor">
+            <div className="editor-board" aria-label={t('createLevel.boardLabel')}>
               <div
                 className="editor-board-grid"
                 style={{
@@ -558,9 +562,10 @@ function CreateLevelPageView({
 
 export function CreateLevelPage() {
   const { difficulty, levelNumber } = useParams()
+  const { t } = useTranslation()
 
   if (!isDifficulty(difficulty)) {
-    return <div className="create-level-page"><p className="status-message">Unknown difficulty.</p></div>
+    return <div className="create-level-page"><p className="status-message">{t('createLevel.unknownDifficulty')}</p></div>
   }
 
   return (

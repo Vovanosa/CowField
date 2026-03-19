@@ -110,7 +110,7 @@
   .homeShell {
     width: 100%;
     gap: var(--space-6);
-    padding: var(--space-4) 0;
+    padding: calc(var(--space-4) + 44px) 0 var(--space-4);
   }
 
   .homeMenu {

@@ -8,6 +8,7 @@ import {
 
 function createDefaultSettingsRecord(): PlayerSettingsRecord {
   return {
+    language: 'en',
     soundEffectsEnabled: false,
     soundEffectsVolume: 50,
     musicEnabled: false,
