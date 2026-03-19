@@ -7,18 +7,22 @@ import { HttpError } from './errors/HttpError'
 import { FileContentRepository } from './repositories/FileContentRepository'
 import { FileLevelRepository } from './repositories/FileLevelRepository'
 import { FilePlayerProgressRepository } from './repositories/FilePlayerProgressRepository'
+import { FilePlayerSettingsRepository } from './repositories/FilePlayerSettingsRepository'
 import { FilePlayerStatisticsRepository } from './repositories/FilePlayerStatisticsRepository'
 import { createContentRoutes } from './routes/contentRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
 import { createPlayerProgressRoutes } from './routes/playerProgressRoutes'
+import { createPlayerSettingsRoutes } from './routes/playerSettingsRoutes'
 import { createPlayerStatisticsRoutes } from './routes/playerStatisticsRoutes'
 import { ContentController } from './controllers/contentController'
 import { LevelController } from './controllers/levelController'
 import { PlayerProgressController } from './controllers/playerProgressController'
+import { PlayerSettingsController } from './controllers/playerSettingsController'
 import { PlayerStatisticsController } from './controllers/playerStatisticsController'
 import { ContentService } from './services/ContentService'
 import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
+import { PlayerSettingsService } from './services/PlayerSettingsService'
 import { PlayerStatisticsService } from './services/PlayerStatisticsService'
 
 export function createApp() {
@@ -35,9 +39,13 @@ export function createApp() {
   const playerStatisticsRepository = new FilePlayerStatisticsRepository(
     path.resolve(process.cwd(), 'progress_data'),
   )
+  const playerSettingsRepository = new FilePlayerSettingsRepository(
+    path.resolve(process.cwd(), 'progress_data'),
+  )
   const levelService = new LevelService(repository)
   const contentService = new ContentService(contentRepository)
   const playerProgressService = new PlayerProgressService(playerProgressRepository)
+  const playerSettingsService = new PlayerSettingsService(playerSettingsRepository)
   const playerStatisticsService = new PlayerStatisticsService(
     playerProgressRepository,
     playerStatisticsRepository,
@@ -45,6 +53,7 @@ export function createApp() {
   const levelController = new LevelController(levelService)
   const contentController = new ContentController(contentService)
   const playerProgressController = new PlayerProgressController(playerProgressService)
+  const playerSettingsController = new PlayerSettingsController(playerSettingsService)
   const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
 
   app.use(cors())
@@ -57,6 +66,7 @@ export function createApp() {
   app.use('/api/levels', createLevelRoutes(levelController))
   app.use('/api/content', createContentRoutes(contentController))
   app.use('/api/progress', createPlayerProgressRoutes(playerProgressController))
+  app.use('/api/settings', createPlayerSettingsRoutes(playerSettingsController))
   app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController))
 
   app.use(

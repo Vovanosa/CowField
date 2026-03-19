@@ -1,4 +1,4 @@
-import { ArrowLeft, SquarePen, TimerReset } from 'lucide-react'
+import { ArrowLeft, SquarePen, TimerReset, Undo2 } from 'lucide-react'
 import {
   useEffect,
   useRef,
@@ -13,12 +13,17 @@ import { useRole } from '../../app/role'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getColorForId, getGapColorForId } from '../../game/levels'
 import { getUnlockedLevelNumbers } from '../../game/progression'
+import { usePlayerSettings } from '../../game/usePlayerSettings'
 import {
+  clearMoveHistory,
   completeLevelProgress,
+  getMoveHistoryCount,
   getLevelByDifficultyAndNumber,
   getLevelProgress,
   getProgressByDifficulty,
   getLevelsByDifficulty,
+  popMoveHistoryEntry,
+  pushMoveHistoryEntry,
   recordBullPlacement,
 } from '../../game/storage'
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
@@ -32,6 +37,101 @@ type CompletionModalState = {
   isOpen: boolean
   isNewBest: boolean
   timeSeconds: number
+}
+
+function getBullIndexes(marks: CellMark[]) {
+  return marks
+    .map((mark, index) => ({ mark, index }))
+    .filter((entry) => entry.mark === 'bull')
+    .map((entry) => entry.index)
+}
+
+function getAutoDotIndexes(level: LevelDefinition, bullIndexes: number[]) {
+  const autoDotIndexes = new Set<number>()
+
+  for (const bullIndex of bullIndexes) {
+    const row = Math.floor(bullIndex / level.gridSize)
+    const column = bullIndex % level.gridSize
+    const colorId = level.pensByCell[bullIndex]
+
+    for (let rowOffset = -1; rowOffset <= 1; rowOffset += 1) {
+      for (let columnOffset = -1; columnOffset <= 1; columnOffset += 1) {
+        if (rowOffset === 0 && columnOffset === 0) {
+          continue
+        }
+
+        const nextRow = row + rowOffset
+        const nextColumn = column + columnOffset
+
+        if (
+          nextRow < 0 ||
+          nextRow >= level.gridSize ||
+          nextColumn < 0 ||
+          nextColumn >= level.gridSize
+        ) {
+          continue
+        }
+
+        autoDotIndexes.add(nextRow * level.gridSize + nextColumn)
+      }
+    }
+
+    for (let nextColumn = 0; nextColumn < level.gridSize; nextColumn += 1) {
+      if (nextColumn !== column) {
+        autoDotIndexes.add(row * level.gridSize + nextColumn)
+      }
+    }
+
+    for (let nextRow = 0; nextRow < level.gridSize; nextRow += 1) {
+      if (nextRow !== row) {
+        autoDotIndexes.add(nextRow * level.gridSize + column)
+      }
+    }
+
+    for (let index = 0; index < level.pensByCell.length; index += 1) {
+      if (level.pensByCell[index] === colorId && index !== bullIndex) {
+        autoDotIndexes.add(index)
+      }
+    }
+  }
+
+  return autoDotIndexes
+}
+
+function applyAutoPlacedDots(
+  level: LevelDefinition,
+  previousMarks: CellMark[],
+  draftNextMarks: CellMark[],
+) {
+  const previousAutoDots = getAutoDotIndexes(level, getBullIndexes(previousMarks))
+  const nextBullIndexes = getBullIndexes(draftNextMarks)
+  const nextAutoDots = getAutoDotIndexes(level, nextBullIndexes)
+  const manualDots = new Set<number>()
+
+  for (let index = 0; index < draftNextMarks.length; index += 1) {
+    if (draftNextMarks[index] !== 'dot') {
+      continue
+    }
+
+    const wasPreviousManualDot =
+      previousMarks[index] === 'dot' && !previousAutoDots.has(index)
+
+    if (wasPreviousManualDot || previousMarks[index] === 'empty') {
+      manualDots.add(index)
+    }
+  }
+
+  return draftNextMarks.map((mark, index) => {
+    if (mark === 'bull') {
+      return 'bull'
+    }
+
+    if (nextAutoDots.has(index) || manualDots.has(index)) {
+      return 'dot'
+    }
+
+    return 'empty'
+  })
 }
 
 function isDifficulty(value: string | undefined): value is Difficulty {
@@ -232,6 +332,7 @@ function resetDragState(
     dragMode: DragMode
     dragged: boolean
     visited: Set<number>
+    historyRecorded: boolean
   }>,
 ) {
   dragStateRef.current = {
@@ -241,6 +342,7 @@ function resetDragState(
     dragMode: null,
     dragged: false,
     visited: new Set<number>(),
+    historyRecorded: false,
   }
 }
 
@@ -257,7 +359,11 @@ function GamePageScreen() {
   const [completionModal, setCompletionModal] = useState<CompletionModalState | null>(null)
   const [hasNextLevel, setHasNextLevel] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(true)
+  const [canUndo, setCanUndo] = useState(false)
   const { isAdmin } = useRole()
+  const settings = usePlayerSettings()
+  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
+  const isAutoPlaceDotsEnabled = settings?.autoPlaceDotsEnabled === true
   const completionHandledRef = useRef(false)
   const cellMarksRef = useRef<CellMark[]>([])
   const runStartedAtRef = useRef<number | null>(null)
@@ -270,6 +376,7 @@ function GamePageScreen() {
     dragMode: DragMode
     dragged: boolean
     visited: Set<number>
+    historyRecorded: boolean
   }>({
     isMouseDown: false,
     startIndex: null,
@@ -277,6 +384,7 @@ function GamePageScreen() {
     dragMode: null,
     dragged: false,
     visited: new Set<number>(),
+    historyRecorded: false,
   })
 
   useEffect(() => {
@@ -304,6 +412,7 @@ function GamePageScreen() {
     const currentLevelNumber = Number(levelNumber)
     let isActive = true
 
+    clearMoveHistory()
     completionHandledRef.current = false
     resetDragState(dragStateRef)
 
@@ -340,6 +449,7 @@ function GamePageScreen() {
 
     return () => {
       isActive = false
+      clearMoveHistory()
     }
   }, [difficulty, levelNumber])
 
@@ -390,18 +500,6 @@ function GamePageScreen() {
       window.clearInterval(intervalId)
     }
   }, [runStartedAt])
-
-  const currentLevel = level
-  const bullsPerGroup = currentLevel
-    ? getBullsPerGroupForDifficulty(currentLevel.difficulty)
-    : 0
-  const solutionState = currentLevel
-    ? getSolutionState(currentLevel, cellMarks, bullsPerGroup)
-    : null
-  const requiredBullCount = solutionState?.requiredBullCount ?? 0
-  const bullIndexes = solutionState?.bullIndexes ?? []
-  const invalidBullIndexes = solutionState?.invalidBullIndexes ?? new Set<number>()
-  const remainingBulls = Math.max(requiredBullCount - bullIndexes.length, 0)
 
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
@@ -463,8 +561,18 @@ function GamePageScreen() {
     )
   }
 
+  const currentLevel = level
+  const bullsPerGroup = getBullsPerGroupForDifficulty(currentLevel.difficulty)
+  const solutionState = getSolutionState(currentLevel, cellMarks, bullsPerGroup)
+  const requiredBullCount = solutionState.requiredBullCount
+  const bullIndexes = solutionState.bullIndexes
+  const invalidBullIndexes = solutionState.invalidBullIndexes
+  const remainingBulls = Math.max(requiredBullCount - bullIndexes.length, 0)
+
   function handleLevelSolved(completionTimeSeconds: number) {
     completionHandledRef.current = true
+    clearMoveHistory()
+    setCanUndo(false)
     elapsedSecondsRef.current = completionTimeSeconds
     runStartedAtRef.current = null
     setIsBoardLocked(true)
@@ -503,8 +611,11 @@ function GamePageScreen() {
   }
 
   function applyCellMarks(nextMarks: CellMark[], interactionTimestampMs: number) {
+    const resolvedMarks = isAutoPlaceDotsEnabled
+      ? applyAutoPlacedDots(currentLevel, cellMarksRef.current, nextMarks)
+      : nextMarks
     const nextStartedAt =
-      runStartedAtRef.current === null && nextMarks.some((mark) => mark !== 'empty')
+      runStartedAtRef.current === null && resolvedMarks.some((mark) => mark !== 'empty')
         ? interactionTimestampMs
         : runStartedAtRef.current
 
@@ -513,10 +624,10 @@ function GamePageScreen() {
       setRunStartedAt(nextStartedAt)
     }
 
-    cellMarksRef.current = nextMarks
-    setCellMarks(nextMarks)
+    cellMarksRef.current = resolvedMarks
+    setCellMarks(resolvedMarks)
 
-    const nextSolution = getSolutionState(currentLevel, nextMarks, bullsPerGroup)
+    const nextSolution = getSolutionState(currentLevel, resolvedMarks, bullsPerGroup)
 
     if (!completionHandledRef.current && nextSolution.isSolved) {
       handleLevelSolved(
@@ -527,12 +638,21 @@ function GamePageScreen() {
     }
   }
 
+  function recordUndoSnapshot() {
+    pushMoveHistoryEntry({
+      cellMarks: [...cellMarksRef.current],
+      elapsedSeconds: elapsedSecondsRef.current,
+      runStartedAt: runStartedAtRef.current,
+    })
+    setCanUndo(true)
+  }
+
   function handleCellClick(cellIndex: number, interactionTimestampMs: number) {
     if (isBoardLocked) {
       return
     }
 
-    const nextMarks = cellMarksRef.current.map((mark, index, allMarks) => {
+    const nextMarks = cellMarksRef.current.map((mark, index) => {
       if (index !== cellIndex) {
         return mark
       }
@@ -542,12 +662,6 @@ function GamePageScreen() {
       }
 
       if (mark === 'dot') {
-        const currentBullCount = allMarks.filter((entry) => entry === 'bull').length
-
-        if (currentBullCount >= requiredBullCount) {
-          return 'empty'
-        }
-
         void recordBullPlacement()
         return 'bull'
       }
@@ -555,6 +669,11 @@ function GamePageScreen() {
       return 'empty'
     })
 
+    if (nextMarks.every((mark, index) => mark === cellMarksRef.current[index])) {
+      return
+    }
+
+    recordUndoSnapshot()
     applyCellMarks(nextMarks, interactionTimestampMs)
   }
 
@@ -574,6 +693,15 @@ function GamePageScreen() {
 
       return dragMode === 'add-dot' ? 'dot' : 'empty'
     })
+
+    if (nextMarks.every((mark, index) => mark === cellMarksRef.current[index])) {
+      return
+    }
+
+    if (!dragStateRef.current.historyRecorded) {
+      recordUndoSnapshot()
+      dragStateRef.current.historyRecorded = true
+    }
 
     applyCellMarks(nextMarks, interactionTimestampMs)
   }
@@ -601,6 +729,7 @@ function GamePageScreen() {
             : null,
       dragged: false,
       visited: new Set<number>(),
+      historyRecorded: false,
     }
   }
 
@@ -653,6 +782,8 @@ function GamePageScreen() {
   function handleRestartBoard() {
     const emptyBoard = createEmptyBoard(currentLevel)
 
+    clearMoveHistory()
+    setCanUndo(false)
     cellMarksRef.current = emptyBoard
     runStartedAtRef.current = null
     elapsedSecondsRef.current = 0
@@ -663,6 +794,29 @@ function GamePageScreen() {
     setCompletionModal(null)
     completionHandledRef.current = false
     resetDragState(dragStateRef)
+  }
+
+  function handleUndoMove() {
+    if (!canUndo || isBoardLocked) {
+      return
+    }
+
+    const previousMove = popMoveHistoryEntry()
+
+    if (!previousMove) {
+      setCanUndo(false)
+      return
+    }
+
+    const restoredMarks = previousMove.cellMarks as CellMark[]
+
+    completionHandledRef.current = false
+    cellMarksRef.current = restoredMarks
+    setCellMarks(restoredMarks)
+    setIsBoardLocked(false)
+    setCompletionModal(null)
+    resetDragState(dragStateRef)
+    setCanUndo(getMoveHistoryCount() > 0)
   }
 
   function handleCloseCompletionModal() {
@@ -696,29 +850,54 @@ function GamePageScreen() {
           </Link>
           <p className="game-topbar-title">{`${difficulty} / ${level.levelNumber}`}</p>
         </div>
-        <button
-          type="button"
-          className="secondary-button game-topbar-reset"
-          onClick={handleRestartBoard}
-        >
-          <TimerReset size={18} />
-          Restart
-        </button>
       </div>
 
       <section className="game-layout">
         <div className="board-panel panel-surface">
           <div className="board-panel-header">
-            <div className="board-stat board-stat-compact">
-              <p className="board-panel-label">Remaining bulls</p>
-              <strong className="board-panel-value">{remainingBulls}</strong>
+            <div className="board-panel-header-left">
+              <button
+                type="button"
+                className="secondary-button board-undo-button"
+                onClick={handleUndoMove}
+                disabled={!canUndo || isBoardLocked}
+                aria-label="Undo"
+                data-tooltip="Undo"
+              >
+                <Undo2 size={18} />
+              </button>
             </div>
-            <div className="board-stat board-stat-compact">
-              <p className="board-panel-label">Timer</p>
-              <strong className="board-panel-value">{formatElapsedTime(elapsedSeconds)}</strong>
+            <div className="board-panel-header-right">
+              <div className="board-stat board-stat-compact">
+                <p className="board-panel-label">Remaining bulls</p>
+                <strong className="board-panel-value">{remainingBulls}</strong>
+              </div>
+              {!isTakeYourTimeEnabled ? (
+                <div className="board-stat board-stat-compact">
+                  <p className="board-panel-label">Timer</p>
+                  <strong className="board-panel-value">{formatElapsedTime(elapsedSeconds)}</strong>
+                </div>
+              ) : null}
             </div>
             {isAdmin ? (
               <div className="board-toolbar">
+                {isBoardLocked && hasNextLevel ? (
+                  <button
+                    type="button"
+                    className="primary-button board-next-button"
+                    onClick={handleNextLevel}
+                  >
+                    Next Level
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="secondary-button board-reset-button"
+                  onClick={handleRestartBoard}
+                >
+                  <TimerReset size={18} />
+                  Restart
+                </button>
                 <Link
                   className="secondary-button"
                   to={`/levels/${difficulty}/${level.levelNumber}/edit`}
@@ -727,7 +906,27 @@ function GamePageScreen() {
                   Edit level
                 </Link>
               </div>
-            ) : null}
+            ) : (
+              <div className="board-toolbar">
+                {isBoardLocked && hasNextLevel ? (
+                  <button
+                    type="button"
+                    className="primary-button board-next-button"
+                    onClick={handleNextLevel}
+                  >
+                    Next Level
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="secondary-button board-reset-button"
+                  onClick={handleRestartBoard}
+                >
+                  <TimerReset size={18} />
+                  Restart
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="board-preview" aria-label="Puzzle board">
@@ -783,8 +982,10 @@ function GamePageScreen() {
             aria-labelledby="game-completion-title"
           >
             <h2 id="game-completion-title">Level completed!</h2>
-            <p className="game-completion-time">{formatElapsedTime(completionModal.timeSeconds)}</p>
-            {completionModal.isNewBest ? (
+            {!isTakeYourTimeEnabled ? (
+              <p className="game-completion-time">{formatElapsedTime(completionModal.timeSeconds)}</p>
+            ) : null}
+            {!isTakeYourTimeEnabled && completionModal.isNewBest ? (
               <p className="game-completion-best">New best time!</p>
             ) : null}
             <div className="game-completion-actions">

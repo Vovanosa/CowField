@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { PageIntro } from '../../components/PageIntro'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getPlayerStatistics } from '../../game/storage'
+import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, PlayerStatisticsSummary } from '../../game/types'
 import styles from './StatisticsPage.module.css'
 
@@ -34,6 +35,8 @@ function formatFastestLevel(
 
 export function StatisticsPage() {
   const [statistics, setStatistics] = useState<PlayerStatisticsSummary | null>(null)
+  const settings = usePlayerSettings()
+  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
 
   useEffect(() => {
     let isActive = true
@@ -60,7 +63,22 @@ export function StatisticsPage() {
       return []
     }
 
+    const leadingDifficulty = statistics.byDifficulty.reduce((leader, item) =>
+      item.completedLevels > leader.completedLevels ? item : leader,
+    )
+
     return [
+      {
+        title: 'Most progress',
+        value: leadingDifficulty.completedLevels > 0
+          ? difficultyLabels[leadingDifficulty.difficulty]
+          : 'No data',
+        suffix: leadingDifficulty.completedLevels > 0
+          ? `${leadingDifficulty.completedLevels} completed levels`
+          : '',
+        inlineValue: true,
+        icon: Flag,
+      },
       {
         title: 'Completed levels',
         value: String(statistics.totalCompletedLevels),
@@ -79,57 +97,21 @@ export function StatisticsPage() {
     ]
   }, [statistics])
 
-  const mostCompletedDifficulty = useMemo(() => {
-    if (!statistics) {
-      return null
-    }
-
-    return statistics.byDifficulty.reduce<PlayerStatisticsSummary['byDifficulty'][number] | null>(
-      (currentLeader, difficultyStats) => {
-        if (currentLeader === null || difficultyStats.completedLevels > currentLeader.completedLevels) {
-          return difficultyStats
-        }
-
-        return currentLeader
-      },
-      null,
-    )
-  }, [statistics])
-
   return (
     <div className={`${styles.statisticsPage} page-shell page-shell-wide`}>
-      <section className={`${styles.heroPanel} panel-surface`}>
-        <div className={styles.heroTopRow}>
-          <div className={styles.pageIntroRow}>
-            <Link className="round-icon-link" to="/" aria-label="Back to home">
-              <ArrowLeft size={16} />
-            </Link>
-            <PageIntro
-              eyebrow="Statistics"
-              title="Player statistics"
-              description="A backend-calculated overview of your completed levels, placement habits, and pace across every difficulty."
-            />
-          </div>
-
-          {statistics ? (
-            <aside className={styles.progressFeature}>
-              <p className={styles.progressFeatureLabel}>Most progress</p>
-              <strong className={styles.progressFeatureValue}>
-                {mostCompletedDifficulty
-                  ? difficultyLabels[mostCompletedDifficulty.difficulty]
-                  : 'No data'}
-              </strong>
-              <p className={styles.progressFeatureDetail}>
-                {mostCompletedDifficulty
-                  ? `${mostCompletedDifficulty.completedLevels} completed levels`
-                  : 'Finish a level to start building statistics.'}
-              </p>
-            </aside>
-          ) : null}
+      <section className={styles.topSection}>
+        <div className={styles.pageIntroRow}>
+          <Link className="round-icon-link" to="/" aria-label="Back to home">
+            <ArrowLeft size={16} />
+          </Link>
+          <PageIntro
+            eyebrow="Statistics"
+            title="Player statistics"
+          />
         </div>
 
         {statistics ? (
-          <div className={styles.overviewRail}>
+          <div className={styles.overviewGrid}>
             {overviewItems.map((item) => {
               const Icon = item.icon
 
@@ -141,7 +123,19 @@ export function StatisticsPage() {
                     </span>
                     <p className={styles.overviewLabel}>{item.title}</p>
                   </div>
-                  <strong className={styles.overviewValue}>{item.value}</strong>
+                  {'inlineValue' in item && item.inlineValue && 'suffix' in item && item.suffix ? (
+                    <div className={styles.overviewInlineValueRow}>
+                      <strong className={styles.overviewValue}>{item.value}</strong>
+                      <p className={styles.overviewDetail}>{item.suffix}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <strong className={styles.overviewValue}>{item.value}</strong>
+                      {'suffix' in item && item.suffix ? (
+                        <p className={styles.overviewDetail}>{item.suffix}</p>
+                      ) : null}
+                    </>
+                  )}
                 </article>
               )
             })}
@@ -158,12 +152,7 @@ export function StatisticsPage() {
       {statistics ? (
         <section className={styles.sectionBlock}>
           <div className={styles.sectionHeading}>
-            <p className={styles.sectionEyebrow}>Performance breakdown</p>
-            <h2>By difficulty</h2>
-            <p className={styles.sectionDescription}>
-              Each card groups completion count, fastest solved level, and average completion pace
-              for one difficulty.
-            </p>
+            <h2>Performance breakdown by difficulty:</h2>
           </div>
 
           <div className={styles.difficultyGrid}>
@@ -173,34 +162,37 @@ export function StatisticsPage() {
                 className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]} panel-surface`}
               >
                 <div className={styles.difficultyCardTop}>
-                  <div>
-                    <p className={styles.difficultyEyebrow}>Difficulty</p>
-                    <h3 className={styles.difficultyTitle}>
+                  <div className={styles.inlinePair}>
+                    <p className={styles.difficultyLabel}>Difficulty</p>
+                    <p className={styles.difficultyTitleInline}>
                       {difficultyLabels[difficultyStatistics.difficulty]}
-                    </h3>
+                    </p>
+                  </div>
+                  <div className={styles.inlinePair}>
+                    <p className={styles.completedInline}>Completed levels</p>
+                    <strong className={styles.completedInlineValue}>
+                      {difficultyStatistics.completedLevels}
+                    </strong>
                   </div>
                 </div>
 
                 <div className={styles.metricStack}>
-                  <div className={styles.metricBlock}>
-                    <p className={styles.metricLabel}>Completed levels</p>
-                    <strong className={styles.metricPrimaryValue}>
-                      {difficultyStatistics.completedLevels}
-                    </strong>
-                  </div>
-
                   <div className={styles.metricSplitRow}>
                     <div className={styles.metricBlock}>
                       <p className={styles.metricLabel}>Fastest level</p>
                       <strong className={styles.metricValue}>
-                        {formatFastestLevel(difficultyStatistics.fastestLevel)}
+                        {isTakeYourTimeEnabled
+                          ? 'Hidden'
+                          : formatFastestLevel(difficultyStatistics.fastestLevel)}
                       </strong>
                     </div>
 
                     <div className={styles.metricBlock}>
                       <p className={styles.metricLabel}>Average per level</p>
                       <strong className={styles.metricValue}>
-                        {formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
+                        {isTakeYourTimeEnabled
+                          ? 'Hidden'
+                          : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
                       </strong>
                     </div>
                   </div>

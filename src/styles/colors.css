@@ -107,3 +107,75 @@
   --color-difficulty-hard-surface-start: rgba(252, 245, 232, 0.96);
   --color-difficulty-hard-surface-end: rgba(245, 231, 203, 0.92);
 }
+
+:root[data-theme='dark'] {
+  --color-background: #15120f;
+  --color-background-top-glow: rgba(72, 52, 28, 0.34);
+  --color-background-base-glow: rgba(22, 18, 14, 0.98);
+  --color-background-gradient-start: #1d1814;
+  --color-background-gradient-end: #12100d;
+  --color-background-shine-strong: rgba(255, 220, 168, 0.04);
+  --color-background-shine-soft: rgba(255, 220, 168, 0.02);
+
+  --color-surface: #201b17;
+  --color-surface-soft: #29221d;
+  --color-surface-strong: #2a241f;
+  --color-surface-glass-strong: rgba(41, 34, 29, 0.9);
+  --color-surface-glass-base: rgba(37, 31, 27, 0.84);
+  --color-surface-glass-soft: rgba(34, 29, 25, 0.76);
+  --color-surface-glass-faint: rgba(32, 27, 23, 0.74);
+  --color-surface-glass-header: rgba(35, 29, 25, 0.58);
+  --color-surface-glass-icon: rgba(45, 37, 31, 0.56);
+  --color-surface-panel-end: rgba(31, 26, 22, 0.92);
+  --color-surface-frame-start: rgba(34, 29, 24, 0.96);
+  --color-surface-frame-end: rgba(24, 21, 18, 0.98);
+  --color-surface-header-start: rgba(37, 31, 27, 0.88);
+  --color-surface-header-end: rgba(27, 23, 19, 0.76);
+  --color-surface-stat-start: rgba(43, 36, 30, 0.82);
+  --color-surface-stat-end: rgba(31, 27, 23, 0.74);
+  --color-surface-overlay: rgba(8, 7, 6, 0.58);
+
+  --color-frame-border: rgba(214, 176, 111, 0.12);
+  --color-border-soft: rgba(214, 176, 111, 0.1);
+  --color-border-strong: rgba(214, 176, 111, 0.18);
+  --color-border-stronger: rgba(214, 176, 111, 0.28);
+  --color-border-highlight: rgba(214, 176, 111, 0.1);
+  --color-border-icon: rgba(214, 176, 111, 0.14);
+  --color-border-hover: rgba(214, 176, 111, 0.24);
+
+  --color-heading: #f3e1c1;
+  --color-text: #dcc8a7;
+  --color-muted: #af9979;
+  --color-accent: #d0ab65;
+  --color-accent-strong: #d8b574;
+  --color-accent-soft: rgba(208, 171, 101, 0.14);
+  --color-accent-soft-strong: rgba(208, 171, 101, 0.18);
+  --color-accent-glow-start: rgba(216, 181, 116, 0.18);
+  --color-accent-glow-end: rgba(216, 181, 116, 0.06);
+  --color-button-text: #1a140e;
+  --color-button-primary-start: #d6b06c;
+  --color-button-primary-end: #b98943;
+  --color-success: #86b17b;
+  --color-invalid: #d66c58;
+  --color-danger-text: #f0b0a2;
+  --color-danger-surface: rgba(77, 36, 30, 0.78);
+  --color-danger-surface-hover: rgba(92, 43, 36, 0.88);
+  --color-danger-border: rgba(214, 108, 88, 0.24);
+  --color-danger-border-hover: rgba(214, 108, 88, 0.34);
+
+  --color-difficulty-light-border: rgba(203, 132, 150, 0.2);
+  --color-difficulty-light-surface-start: rgba(72, 43, 56, 0.78);
+  --color-difficulty-light-surface-end: rgba(52, 31, 40, 0.72);
+
+  --color-difficulty-easy-border: rgba(112, 156, 103, 0.22);
+  --color-difficulty-easy-surface-start: rgba(40, 58, 36, 0.8);
+  --color-difficulty-easy-surface-end: rgba(31, 44, 28, 0.72);
+
+  --color-difficulty-medium-border: rgba(193, 137, 72, 0.22);
+  --color-difficulty-medium-surface-start: rgba(70, 49, 29, 0.8);
+  --color-difficulty-medium-surface-end: rgba(49, 34, 21, 0.72);
+
+  --color-difficulty-hard-border: rgba(155, 113, 49, 0.22);
+  --color-difficulty-hard-surface-start: rgba(60, 45, 28, 0.8);
+  --color-difficulty-hard-surface-end: rgba(41, 31, 20, 0.72);
+}

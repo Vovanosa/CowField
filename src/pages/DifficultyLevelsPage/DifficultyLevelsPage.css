@@ -49,7 +49,7 @@
 
 .difficulty-level-card-locked {
   background:
-    linear-gradient(180deg, rgba(250, 246, 238, 0.92), rgba(243, 236, 224, 0.94)),
+    linear-gradient(180deg, var(--color-surface-glass-base), var(--color-surface-panel-end)),
     var(--color-surface);
   box-shadow: var(--shadow-soft);
 }
@@ -83,7 +83,7 @@
 }
 
 .difficulty-level-time {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.88rem;
   letter-spacing: 0.06em;
   color: var(--color-muted);
@@ -105,8 +105,8 @@
   height: 30px;
   border-radius: var(--radius-pill);
   color: var(--color-muted);
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(148, 112, 38, 0.12);
+  background: var(--color-surface-glass-soft);
+  border: 1px solid var(--color-border-icon);
 }
 
 .difficulty-level-actions {
@@ -124,8 +124,8 @@
   height: 34px;
   border-radius: var(--radius-pill);
   color: var(--color-accent-strong);
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(148, 112, 38, 0.12);
+  background: var(--color-surface-glass-base);
+  border: 1px solid var(--color-border-icon);
   text-decoration: none;
   transition:
     transform var(--transition-fast),
@@ -135,8 +135,8 @@
 
 .difficulty-level-edit:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(148, 112, 38, 0.22);
+  background: var(--color-surface-strong);
+  border-color: var(--color-border-hover);
 }
 
 .difficulty-level-loading {

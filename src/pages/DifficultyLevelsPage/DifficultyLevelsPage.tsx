@@ -7,6 +7,7 @@ import { PageIntro } from '../../components/PageIntro'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getUnlockedLevelNumbers } from '../../game/progression'
 import { getLevelsByDifficulty, getProgressByDifficulty } from '../../game/storage'
+import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, LevelDefinition, LevelProgress } from '../../game/types'
 import './DifficultyLevelsPage.css'
 
@@ -27,6 +28,8 @@ function DifficultyLevelsPageScreen() {
   const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
   const [isLoading, setIsLoading] = useState(true)
   const { isAdmin } = useRole()
+  const settings = usePlayerSettings()
+  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
 
   useEffect(() => {
     if (!isDifficulty(difficulty)) {
@@ -110,9 +113,11 @@ function DifficultyLevelsPageScreen() {
             ) : null}
             <div className="difficulty-level-summary">
               <span className="difficulty-level-number">{level.levelNumber}</span>
-              <span className="difficulty-level-time">
-                {formatElapsedTime(progressByLevelNumber[level.levelNumber]?.bestTimeSeconds ?? null)}
-              </span>
+              {!isTakeYourTimeEnabled ? (
+                <span className="difficulty-level-time">
+                  {formatElapsedTime(progressByLevelNumber[level.levelNumber]?.bestTimeSeconds ?? null)}
+                </span>
+              ) : null}
             </div>
             {!unlockedLevelNumbers.has(level.levelNumber) && !isAdmin ? (
               <div className="difficulty-level-lock" aria-hidden="true">
