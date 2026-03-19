@@ -47,6 +47,18 @@
   box-shadow: var(--shadow-raised);
 }
 
+.difficulty-level-card-locked {
+  background:
+    linear-gradient(180deg, rgba(250, 246, 238, 0.92), rgba(243, 236, 224, 0.94)),
+    var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.difficulty-level-card-locked:hover {
+  transform: none;
+  box-shadow: var(--shadow-soft);
+}
+
 .difficulty-level-link {
   position: absolute;
   inset: 0;
@@ -60,6 +72,41 @@
   font-weight: 600;
   color: var(--color-heading);
   line-height: 1;
+}
+
+.difficulty-level-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(-4px);
+}
+
+.difficulty-level-time {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.difficulty-level-card-locked .difficulty-level-number,
+.difficulty-level-card-locked .difficulty-level-time {
+  opacity: 0.58;
+}
+
+.difficulty-level-lock {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 112, 38, 0.12);
 }
 
 .difficulty-level-actions {

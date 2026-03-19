@@ -1,0 +1,99 @@
+:root {
+  --color-background: #f7efe0;
+  --color-background-top-glow: rgba(255, 247, 230, 0.9);
+  --color-background-base-glow: rgba(247, 239, 224, 0.98);
+  --color-background-gradient-start: #fbf3e4;
+  --color-background-gradient-end: #f6ecd8;
+  --color-background-shine-strong: rgba(255, 255, 255, 0.3);
+  --color-background-shine-soft: rgba(255, 255, 255, 0.2);
+
+  --color-surface: #fffaf1;
+  --color-surface-soft: #f7ebd8;
+  --color-surface-strong: #fffdf8;
+  --color-surface-glass-strong: rgba(255, 255, 255, 0.88);
+  --color-surface-glass-base: rgba(255, 255, 255, 0.82);
+  --color-surface-glass-soft: rgba(255, 255, 255, 0.72);
+  --color-surface-glass-faint: rgba(255, 255, 255, 0.68);
+  --color-surface-glass-header: rgba(255, 255, 255, 0.5);
+  --color-surface-glass-icon: rgba(255, 255, 255, 0.45);
+  --color-surface-panel-end: rgba(252, 245, 234, 0.88);
+  --color-surface-frame-start: rgba(255, 251, 243, 0.95);
+  --color-surface-frame-end: rgba(250, 245, 234, 0.96);
+  --color-surface-header-start: rgba(255, 252, 246, 0.85);
+  --color-surface-header-end: rgba(255, 250, 242, 0.55);
+  --color-surface-board-start: rgba(255, 255, 255, 0.7);
+  --color-surface-board-end: rgba(255, 247, 234, 0.58);
+  --color-surface-stat-start: rgba(255, 255, 255, 0.62);
+  --color-surface-stat-end: rgba(247, 235, 216, 0.42);
+  --color-surface-overlay: rgba(94, 70, 34, 0.28);
+
+  --color-frame-border: rgba(148, 112, 38, 0.14);
+  --color-border-soft: rgba(148, 112, 38, 0.1);
+  --color-border-strong: rgba(148, 112, 38, 0.16);
+  --color-border-stronger: rgba(148, 112, 38, 0.24);
+  --color-border-highlight: rgba(148, 112, 38, 0.08);
+  --color-border-icon: rgba(148, 112, 38, 0.12);
+  --color-border-hover: rgba(148, 112, 38, 0.22);
+
+  --color-heading: #5e4622;
+  --color-text: #7a6545;
+  --color-muted: #8d7a5d;
+  --color-accent: #c9a761;
+  --color-accent-strong: #9e7431;
+  --color-accent-soft: rgba(201, 167, 97, 0.14);
+  --color-accent-soft-strong: rgba(201, 167, 97, 0.16);
+  --color-accent-glow-start: rgba(205, 170, 96, 0.22);
+  --color-accent-glow-end: rgba(205, 170, 96, 0.08);
+  --color-button-text: #fffaf2;
+  --color-button-primary-start: #b9934a;
+  --color-button-primary-end: #9b7131;
+  --color-success: #55734c;
+  --color-invalid: #b04b38;
+  --color-danger-text: #8f4034;
+  --color-danger-surface: rgba(255, 244, 241, 0.92);
+  --color-danger-surface-hover: rgba(255, 238, 234, 0.98);
+  --color-danger-border: rgba(176, 75, 56, 0.22);
+  --color-danger-border-hover: rgba(176, 75, 56, 0.34);
+
+  --color-board-outline: rgba(122, 57, 69, 0.76);
+  --color-board-region-divider: rgba(122, 57, 69, 0.82);
+  --color-board-gap: #dbe7da;
+  --color-board-empty-cell: #f7f0e4;
+  --color-board-cell-ink: rgba(94, 70, 34, 0.56);
+  --color-board-cell-hover: rgba(255, 255, 255, 0.05);
+  --color-board-invalid-ring: rgba(176, 75, 56, 0.42);
+  --color-board-invalid-ring-soft: rgba(176, 75, 56, 0.34);
+  --color-board-invalid-overlay: rgba(255, 255, 255, 0.03);
+  --color-board-dot: rgba(126, 79, 71, 0.38);
+
+  --color-cow-fill: #fffaf4;
+  --color-cow-stroke: #7e4f47;
+  --color-cow-accent: #e9b0bb;
+
+  --color-pen-1: #dcecbf;
+  --color-pen-2: #f8b9af;
+  --color-pen-3: #ffe6a8;
+  --color-pen-4: #cbc7ef;
+  --color-pen-5: #a9c5e9;
+  --color-pen-6: #99d4e8;
+  --color-pen-7: #bee2c0;
+  --color-pen-8: #a9acec;
+  --color-pen-9: #f2deef;
+  --color-pen-10: #f6c1ce;
+
+  --color-difficulty-light-border: rgba(203, 132, 150, 0.26);
+  --color-difficulty-light-surface-start: rgba(255, 241, 245, 0.96);
+  --color-difficulty-light-surface-end: rgba(255, 233, 239, 0.92);
+
+  --color-difficulty-easy-border: rgba(112, 156, 103, 0.26);
+  --color-difficulty-easy-surface-start: rgba(236, 248, 233, 0.96);
+  --color-difficulty-easy-surface-end: rgba(223, 242, 216, 0.92);
+
+  --color-difficulty-medium-border: rgba(193, 137, 72, 0.26);
+  --color-difficulty-medium-surface-start: rgba(255, 242, 227, 0.96);
+  --color-difficulty-medium-surface-end: rgba(252, 232, 205, 0.92);
+
+  --color-difficulty-hard-border: rgba(155, 113, 49, 0.24);
+  --color-difficulty-hard-surface-start: rgba(252, 245, 232, 0.96);
+  --color-difficulty-hard-surface-end: rgba(245, 231, 203, 0.92);
+}

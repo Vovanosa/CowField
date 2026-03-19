@@ -1,21 +1,6 @@
+@import './styles/colors.css';
+
 :root {
-  --color-background: #f7efe0;
-  --color-surface: #fffaf1;
-  --color-surface-soft: #f7ebd8;
-  --color-surface-strong: #fffdf8;
-  --color-frame-border: rgba(148, 112, 38, 0.14);
-  --color-border-soft: rgba(148, 112, 38, 0.1);
-  --color-border-strong: rgba(148, 112, 38, 0.16);
-  --color-heading: #5e4622;
-  --color-text: #7a6545;
-  --color-muted: #8d7a5d;
-  --color-accent: #c9a761;
-  --color-accent-strong: #9e7431;
-  --color-button-text: #fffaf2;
-  --color-success: #55734c;
-  --color-invalid: #b04b38;
-  --color-board-outline: rgba(122, 57, 69, 0.76);
-  --color-board-gap: #dbe7da;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
@@ -48,8 +33,8 @@
   font-weight: 400;
   color: var(--color-text);
   background:
-    radial-gradient(circle at top, rgba(255, 247, 230, 0.9), rgba(247, 239, 224, 0.98) 48%),
-    linear-gradient(180deg, #fbf3e4 0%, #f6ecd8 100%);
+    radial-gradient(circle at top, var(--color-background-top-glow), var(--color-background-base-glow) 48%),
+    linear-gradient(180deg, var(--color-background-gradient-start) 0%, var(--color-background-gradient-end) 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -75,8 +60,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.3), transparent 30%),
-    radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.2), transparent 24%);
+    radial-gradient(circle at 15% 20%, var(--color-background-shine-strong), transparent 30%),
+    radial-gradient(circle at 85% 10%, var(--color-background-shine-soft), transparent 24%);
 }
 
 a,
@@ -136,7 +121,7 @@ p {
 code {
   padding: 0.18rem 0.42rem;
   border-radius: 8px;
-  background: rgba(201, 167, 97, 0.14);
+  background: var(--color-accent-soft);
   font-family: var(--font-mono);
   color: var(--color-heading);
 }
@@ -164,25 +149,25 @@ code {
 
 .primary-button {
   color: var(--color-button-text);
-  background: linear-gradient(180deg, #b9934a, #9b7131);
+  background: linear-gradient(180deg, var(--color-button-primary-start), var(--color-button-primary-end));
   box-shadow: 0 14px 26px rgba(142, 103, 38, 0.22);
 }
 
 .secondary-button {
   color: var(--color-heading);
-  background: rgba(255, 255, 255, 0.68);
+  background: var(--color-surface-glass-faint);
   border: 1px solid var(--color-border-strong);
 }
 
 .danger-button {
-  color: #8f4034;
-  border-color: rgba(176, 75, 56, 0.22);
-  background: rgba(255, 244, 241, 0.92);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-surface);
 }
 
 .danger-button:hover {
-  border-color: rgba(176, 75, 56, 0.34);
-  background: rgba(255, 238, 234, 0.98);
+  border-color: var(--color-danger-border-hover);
+  background: var(--color-danger-surface-hover);
 }
 
 .primary-button:hover,
@@ -211,7 +196,7 @@ textarea:focus-visible {
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-soft);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 245, 234, 0.88)),
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
     var(--color-surface);
   box-shadow: var(--shadow-soft);
 }
@@ -224,7 +209,7 @@ textarea:focus-visible {
   height: 40px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--color-border-soft);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-glass-soft);
   color: var(--color-heading);
   text-decoration: none;
   box-shadow: var(--shadow-soft);
@@ -261,7 +246,7 @@ textarea:focus-visible {
 }
 
 .form-control:hover {
-  border-color: rgba(148, 112, 38, 0.24);
+  border-color: var(--color-border-stronger);
 }
 
 .form-control:disabled,

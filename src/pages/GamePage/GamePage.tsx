@@ -1,16 +1,37 @@
 import { ArrowLeft, SquarePen, TimerReset } from 'lucide-react'
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
+import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getColorForId } from '../../game/levels'
-import { getLevelByDifficultyAndNumber } from '../../game/storage'
+import { getUnlockedLevelNumbers } from '../../game/progression'
+import {
+  completeLevelProgress,
+  getLevelByDifficultyAndNumber,
+  getLevelProgress,
+  getProgressByDifficulty,
+  getLevelsByDifficulty,
+  recordBullPlacement,
+} from '../../game/storage'
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
-import type { Difficulty, LevelDefinition } from '../../game/types'
+import type { Difficulty, LevelDefinition, LevelProgress } from '../../game/types'
 import './GamePage.css'
 
 type CellMark = 'empty' | 'dot' | 'bull'
 type DragMode = 'add-dot' | 'clear-dot' | null
+
+type CompletionModalState = {
+  isOpen: boolean
+  isNewBest: boolean
+  timeSeconds: number
+}
 
 function isDifficulty(value: string | undefined): value is Difficulty {
   return value === 'light' || value === 'easy' || value === 'medium' || value === 'hard'
@@ -26,22 +47,22 @@ function CowMarker() {
     >
       <path
         d="M8 10 5.5 5.8l5 2.4L12.6 7h6.8l2.1 1.2 5-2.4L24 10v8.2A4.8 4.8 0 0 1 19.2 23H12.8A4.8 4.8 0 0 1 8 18.2Z"
-        fill="#fffaf4"
-        stroke="#7e4f47"
+        fill="var(--color-cow-fill)"
+        stroke="var(--color-cow-stroke)"
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <circle cx="12.2" cy="15.2" r="1" fill="#7e4f47" />
-      <circle cx="19.8" cy="15.2" r="1" fill="#7e4f47" />
+      <circle cx="12.2" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
+      <circle cx="19.8" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
       <path
         d="M12.2 18.4h7.6a2.8 2.8 0 0 1-2.8 3h-2a2.8 2.8 0 0 1-2.8-3Z"
-        fill="#e9b0bb"
-        stroke="#7e4f47"
+        fill="var(--color-cow-accent)"
+        stroke="var(--color-cow-stroke)"
         strokeWidth="1.4"
         strokeLinejoin="round"
       />
-      <circle cx="14.4" cy="19.7" r="0.6" fill="#7e4f47" />
-      <circle cx="17.6" cy="19.7" r="0.6" fill="#7e4f47" />
+      <circle cx="14.4" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
+      <circle cx="17.6" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
     </svg>
   )
 }
@@ -137,7 +158,7 @@ function getCellBorderStyle(level: LevelDefinition, cellIndex: number) {
   const colorId = pensByCell[cellIndex]
   const row = Math.floor(cellIndex / gridSize)
   const column = cellIndex % gridSize
-  const internalBorderColor = 'rgba(122, 57, 69, 0.82)'
+  const internalBorderColor = 'var(--color-board-region-divider)'
   const sameColorGapColor = darkenHexColor(getColorForId(colorId), 12)
 
   const rightNeighbor = column < gridSize - 1 ? pensByCell[cellIndex + 1] : null
@@ -149,12 +170,12 @@ function getCellBorderStyle(level: LevelDefinition, cellIndex: number) {
         ? `2px 0 0 ${internalBorderColor}`
         : rightNeighbor !== null
           ? `2px 0 0 ${sameColorGapColor}`
-        : null,
+          : null,
       bottomNeighbor !== null && bottomNeighbor !== colorId
         ? `0 2px 0 ${internalBorderColor}`
         : bottomNeighbor !== null
           ? `0 2px 0 ${sameColorGapColor}`
-        : null,
+          : null,
     ]
       .filter(Boolean)
       .join(', '),
@@ -167,8 +188,8 @@ function getCellStyle(level: LevelDefinition, cellIndex: number, isInvalid: bool
   return {
     backgroundColor: getColorForId(level.pensByCell[cellIndex]),
     boxShadow: [
-      isInvalid ? 'inset 0 0 0 3px rgba(176, 75, 56, 0.42)' : null,
-      isInvalid ? 'inset 0 0 0 999px rgba(255, 255, 255, 0.03)' : null,
+      isInvalid ? 'inset 0 0 0 3px var(--color-board-invalid-ring)' : null,
+      isInvalid ? 'inset 0 0 0 999px var(--color-board-invalid-overlay)' : null,
       borderStyle.boxShadow || null,
     ]
       .filter(Boolean)
@@ -176,12 +197,49 @@ function getCellStyle(level: LevelDefinition, cellIndex: number, isInvalid: bool
   }
 }
 
-export function GamePage() {
+function createEmptyBoard(level: LevelDefinition) {
+  return Array.from({ length: level.gridSize * level.gridSize }, () => 'empty' as const)
+}
+
+function resetDragState(
+  dragStateRef: MutableRefObject<{
+    isMouseDown: boolean
+    startIndex: number | null
+    startMark: CellMark | null
+    dragMode: DragMode
+    dragged: boolean
+    visited: Set<number>
+  }>,
+) {
+  dragStateRef.current = {
+    isMouseDown: false,
+    startIndex: null,
+    startMark: null,
+    dragMode: null,
+    dragged: false,
+    visited: new Set<number>(),
+  }
+}
+
+function GamePageScreen() {
   const { difficulty, levelNumber } = useParams()
+  const navigate = useNavigate()
   const [level, setLevel] = useState<LevelDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [cellMarks, setCellMarks] = useState<CellMark[]>([])
+  const [levelProgress, setLevelProgress] = useState<LevelProgress | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null)
+  const [isBoardLocked, setIsBoardLocked] = useState(false)
+  const [completionModal, setCompletionModal] = useState<CompletionModalState | null>(null)
+  const [hasNextLevel, setHasNextLevel] = useState(false)
+  const [isUnlocked, setIsUnlocked] = useState(true)
   const { isAdmin } = useRole()
+  const completionHandledRef = useRef(false)
+  const cellMarksRef = useRef<CellMark[]>([])
+  const runStartedAtRef = useRef<number | null>(null)
+  const elapsedSecondsRef = useRef(0)
+  const levelProgressRef = useRef<LevelProgress | null>(null)
   const dragStateRef = useRef<{
     isMouseDown: boolean
     startIndex: number | null
@@ -199,29 +257,59 @@ export function GamePage() {
   })
 
   useEffect(() => {
+    cellMarksRef.current = cellMarks
+  }, [cellMarks])
+
+  useEffect(() => {
+    runStartedAtRef.current = runStartedAt
+  }, [runStartedAt])
+
+  useEffect(() => {
+    elapsedSecondsRef.current = elapsedSeconds
+  }, [elapsedSeconds])
+
+  useEffect(() => {
+    levelProgressRef.current = levelProgress
+  }, [levelProgress])
+
+  useEffect(() => {
     if (!isDifficulty(difficulty) || !levelNumber) {
       return
     }
 
     const difficultyKey = difficulty
+    const currentLevelNumber = Number(levelNumber)
     let isActive = true
 
+    completionHandledRef.current = false
+    resetDragState(dragStateRef)
+
     async function loadLevel() {
-      const nextLevel = await getLevelByDifficultyAndNumber(
-        difficultyKey,
-        Number(levelNumber),
-      )
+      const [nextLevel, nextProgress, nextLevelInSequence, difficultyLevels, difficultyProgress] = await Promise.all([
+        getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
+        getLevelProgress(difficultyKey, currentLevelNumber),
+        getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber + 1),
+        getLevelsByDifficulty(difficultyKey),
+        getProgressByDifficulty(difficultyKey),
+      ])
 
       if (!isActive) {
         return
       }
 
       setLevel(nextLevel)
-      setCellMarks(
-        nextLevel
-          ? Array.from({ length: nextLevel.gridSize * nextLevel.gridSize }, () => 'empty')
-          : [],
+      setLevelProgress(nextProgress)
+      setHasNextLevel(nextLevelInSequence !== null)
+      setIsUnlocked(
+        getUnlockedLevelNumbers(
+          difficultyLevels,
+          difficultyProgress.reduce<Record<number, LevelProgress>>((allProgress, progress) => {
+            allProgress[progress.levelNumber] = progress
+            return allProgress
+          }, {}),
+        ).has(currentLevelNumber),
       )
+      setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
       setIsLoading(false)
     }
 
@@ -234,14 +322,7 @@ export function GamePage() {
 
   useEffect(() => {
     function stopDragging() {
-      dragStateRef.current = {
-        isMouseDown: false,
-        startIndex: null,
-        startMark: null,
-        dragMode: null,
-        dragged: false,
-        visited: new Set<number>(),
-      }
+      resetDragState(dragStateRef)
     }
 
     window.addEventListener('pointerup', stopDragging)
@@ -252,6 +333,52 @@ export function GamePage() {
       window.removeEventListener('pointercancel', stopDragging)
     }
   }, [])
+
+  useEffect(() => {
+    if (!completionModal?.isOpen) {
+      return
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setCompletionModal((currentModal) =>
+          currentModal ? { ...currentModal, isOpen: false } : null,
+        )
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [completionModal])
+
+  useEffect(() => {
+    if (runStartedAt === null) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - runStartedAt) / 1000))
+    }, 250)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [runStartedAt])
+
+  const currentLevel = level
+  const bullsPerGroup = currentLevel
+    ? getBullsPerGroupForDifficulty(currentLevel.difficulty)
+    : 0
+  const solutionState = currentLevel
+    ? getSolutionState(currentLevel, cellMarks, bullsPerGroup)
+    : null
+  const requiredBullCount = solutionState?.requiredBullCount ?? 0
+  const bullIndexes = solutionState?.bullIndexes ?? []
+  const invalidBullIndexes = solutionState?.invalidBullIndexes ?? new Set<number>()
+  const remainingBulls = Math.max(requiredBullCount - bullIndexes.length, 0)
 
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
@@ -293,57 +420,149 @@ export function GamePage() {
     )
   }
 
-  const currentLevel = level
-  const bullsPerGroup = getBullsPerGroupForDifficulty(currentLevel.difficulty)
-  const { requiredBullCount, bullIndexes, invalidBullIndexes, isSolved } = getSolutionState(
-    currentLevel,
-    cellMarks,
-    bullsPerGroup,
-  )
-  const remainingBulls = Math.max(requiredBullCount - bullIndexes.length, 0)
-
-  function handleCellClick(cellIndex: number) {
-    setCellMarks((currentMarks) =>
-      currentMarks.map((mark, index, allMarks) => {
-        if (index !== cellIndex) {
-          return mark
-        }
-
-        if (mark === 'empty') {
-          return 'dot'
-        }
-
-        if (mark === 'dot') {
-          const currentBullCount = allMarks.filter((entry) => entry === 'bull').length
-
-          if (currentBullCount >= requiredBullCount) {
-            return 'empty'
-          }
-
-          return 'bull'
-        }
-
-        return 'empty'
-      }),
+  if (!isUnlocked && !isAdmin) {
+    return (
+      <div className="game-page">
+        <div className="game-topbar">
+          <div className="game-topbar-left">
+            <Link className="round-icon-link" to={`/levels/${difficulty}`} aria-label="Back to level list">
+              <ArrowLeft size={16} />
+            </Link>
+            <p className="game-topbar-title">{`${difficulty} / ${levelNumber}`}</p>
+          </div>
+        </div>
+        <div className="game-empty-state panel-surface">
+          <p className="game-fallback-message">
+            This level is locked. Complete the previous level first to open it.
+          </p>
+        </div>
+      </div>
     )
   }
 
-  function applyDragMode(cellIndex: number, dragMode: Exclude<DragMode, null>) {
-    setCellMarks((currentMarks) =>
-      currentMarks.map((mark, index) => {
-        if (index !== cellIndex || mark === 'bull') {
-          return mark
+  function handleLevelSolved(completionTimeSeconds: number) {
+    completionHandledRef.current = true
+    elapsedSecondsRef.current = completionTimeSeconds
+    runStartedAtRef.current = null
+    setIsBoardLocked(true)
+    setElapsedSeconds(completionTimeSeconds)
+    setRunStartedAt(null)
+
+    async function saveCompletion() {
+      try {
+        const response = await completeLevelProgress(
+          currentLevel.difficulty,
+          currentLevel.levelNumber,
+          completionTimeSeconds,
+        )
+
+        setLevelProgress(response.progress)
+        setCompletionModal({
+          isOpen: true,
+          isNewBest: response.isNewBest,
+          timeSeconds: completionTimeSeconds,
+        })
+      } catch {
+        const previousBestTime = levelProgressRef.current?.bestTimeSeconds
+
+        setCompletionModal({
+          isOpen: true,
+          isNewBest:
+            previousBestTime === null ||
+            previousBestTime === undefined ||
+            completionTimeSeconds < previousBestTime,
+          timeSeconds: completionTimeSeconds,
+        })
+      }
+    }
+
+    void saveCompletion()
+  }
+
+  function applyCellMarks(nextMarks: CellMark[], interactionTimestampMs: number) {
+    const nextStartedAt =
+      runStartedAtRef.current === null && nextMarks.some((mark) => mark !== 'empty')
+        ? interactionTimestampMs
+        : runStartedAtRef.current
+
+    if (runStartedAtRef.current === null && nextStartedAt !== null) {
+      runStartedAtRef.current = nextStartedAt
+      setRunStartedAt(nextStartedAt)
+    }
+
+    cellMarksRef.current = nextMarks
+    setCellMarks(nextMarks)
+
+    const nextSolution = getSolutionState(currentLevel, nextMarks, bullsPerGroup)
+
+    if (!completionHandledRef.current && nextSolution.isSolved) {
+      handleLevelSolved(
+        nextStartedAt === null
+          ? elapsedSecondsRef.current
+          : Math.floor((interactionTimestampMs - nextStartedAt) / 1000),
+      )
+    }
+  }
+
+  function handleCellClick(cellIndex: number, interactionTimestampMs: number) {
+    if (isBoardLocked) {
+      return
+    }
+
+    const nextMarks = cellMarksRef.current.map((mark, index, allMarks) => {
+      if (index !== cellIndex) {
+        return mark
+      }
+
+      if (mark === 'empty') {
+        return 'dot'
+      }
+
+      if (mark === 'dot') {
+        const currentBullCount = allMarks.filter((entry) => entry === 'bull').length
+
+        if (currentBullCount >= requiredBullCount) {
+          return 'empty'
         }
 
-        return dragMode === 'add-dot' ? 'dot' : 'empty'
-      }),
-    )
+        void recordBullPlacement()
+        return 'bull'
+      }
+
+      return 'empty'
+    })
+
+    applyCellMarks(nextMarks, interactionTimestampMs)
+  }
+
+  function applyDragMode(
+    cellIndex: number,
+    dragMode: Exclude<DragMode, null>,
+    interactionTimestampMs: number,
+  ) {
+    if (isBoardLocked) {
+      return
+    }
+
+    const nextMarks = cellMarksRef.current.map((mark, index) => {
+      if (index !== cellIndex || mark === 'bull') {
+        return mark
+      }
+
+      return dragMode === 'add-dot' ? 'dot' : 'empty'
+    })
+
+    applyCellMarks(nextMarks, interactionTimestampMs)
   }
 
   function handleCellPointerDown(
     event: ReactPointerEvent<HTMLButtonElement>,
     cellIndex: number,
   ) {
+    if (isBoardLocked) {
+      return
+    }
+
     event.preventDefault()
     const startMark = cellMarks[cellIndex]
 
@@ -362,7 +581,14 @@ export function GamePage() {
     }
   }
 
-  function handleCellPointerEnter(cellIndex: number) {
+  function handleCellPointerEnter(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    cellIndex: number,
+  ) {
+    if (isBoardLocked) {
+      return
+    }
+
     const dragState = dragStateRef.current
 
     if (!dragState.isMouseDown || dragState.dragMode === null || dragState.startIndex === null) {
@@ -371,7 +597,7 @@ export function GamePage() {
 
     if (!dragState.dragged) {
       dragState.dragged = true
-      applyDragMode(dragState.startIndex, dragState.dragMode)
+      applyDragMode(dragState.startIndex, dragState.dragMode, performance.timeOrigin + event.timeStamp)
       dragState.visited.add(dragState.startIndex)
     }
 
@@ -380,30 +606,62 @@ export function GamePage() {
     }
 
     dragState.visited.add(cellIndex)
-    applyDragMode(cellIndex, dragState.dragMode)
+    applyDragMode(cellIndex, dragState.dragMode, performance.timeOrigin + event.timeStamp)
   }
 
-  function handleCellPointerUp(cellIndex: number) {
+  function handleCellPointerUp(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    cellIndex: number,
+  ) {
+    if (isBoardLocked) {
+      resetDragState(dragStateRef)
+      return
+    }
+
     const dragState = dragStateRef.current
 
     if (dragState.isMouseDown && !dragState.dragged && dragState.startIndex === cellIndex) {
-      handleCellClick(cellIndex)
+      handleCellClick(cellIndex, performance.timeOrigin + event.timeStamp)
     }
 
-    dragStateRef.current = {
-      isMouseDown: false,
-      startIndex: null,
-      startMark: null,
-      dragMode: null,
-      dragged: false,
-      visited: new Set<number>(),
+    resetDragState(dragStateRef)
+  }
+
+  function handleRestartBoard() {
+    const emptyBoard = createEmptyBoard(currentLevel)
+
+    cellMarksRef.current = emptyBoard
+    runStartedAtRef.current = null
+    elapsedSecondsRef.current = 0
+    setCellMarks(emptyBoard)
+    setElapsedSeconds(0)
+    setRunStartedAt(null)
+    setIsBoardLocked(false)
+    setCompletionModal(null)
+    completionHandledRef.current = false
+    resetDragState(dragStateRef)
+  }
+
+  function handleCloseCompletionModal() {
+    setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
+  }
+
+  function handleCompletionBackdropClick(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.target === event.currentTarget) {
+      handleCloseCompletionModal()
     }
   }
 
-  function handleResetBoard() {
-    setCellMarks(
-      Array.from({ length: currentLevel.gridSize * currentLevel.gridSize }, () => 'empty'),
-    )
+  function handleBackToLevels() {
+    navigate(`/levels/${difficulty}`)
+  }
+
+  function handleNextLevel() {
+    if (!hasNextLevel) {
+      return
+    }
+
+    navigate(`/game/${difficulty}/${currentLevel.levelNumber + 1}`)
   }
 
   return (
@@ -418,10 +676,10 @@ export function GamePage() {
         <button
           type="button"
           className="secondary-button game-topbar-reset"
-          onClick={handleResetBoard}
+          onClick={handleRestartBoard}
         >
           <TimerReset size={18} />
-          Reset
+          Restart
         </button>
       </div>
 
@@ -432,15 +690,9 @@ export function GamePage() {
               <p className="board-panel-label">Remaining bulls</p>
               <strong className="board-panel-value">{remainingBulls}</strong>
             </div>
-            <div className="board-stat board-stat-status">
-              <p className="board-panel-label">Status</p>
-              <p className={isSolved ? 'game-status game-status-solved' : 'game-status'}>
-                {isSolved
-                  ? 'Level solved.'
-                  : invalidBullIndexes.size > 0
-                    ? 'Some bulls break the rules.'
-                    : 'Tap a cell to place notes and bulls.'}
-              </p>
+            <div className="board-stat board-stat-compact">
+              <p className="board-panel-label">Timer</p>
+              <strong className="board-panel-value">{formatElapsedTime(elapsedSeconds)}</strong>
             </div>
             {isAdmin ? (
               <div className="board-toolbar">
@@ -471,9 +723,10 @@ export function GamePage() {
                   }
                   style={getCellStyle(level, index, invalidBullIndexes.has(index))}
                   onPointerDown={(event) => handleCellPointerDown(event, index)}
-                  onPointerEnter={() => handleCellPointerEnter(index)}
-                  onPointerUp={() => handleCellPointerUp(index)}
+                  onPointerEnter={(event) => handleCellPointerEnter(event, index)}
+                  onPointerUp={(event) => handleCellPointerUp(event, index)}
                   onDragStart={(event) => event.preventDefault()}
+                  disabled={isBoardLocked}
                 >
                   {cellMarks[index] === 'dot' ? <span className="board-cell-dot" /> : null}
                   {cellMarks[index] === 'bull' ? <CowMarker /> : null}
@@ -483,6 +736,45 @@ export function GamePage() {
           </div>
         </div>
       </section>
+
+      {completionModal?.isOpen ? (
+        <div
+          className="game-completion-modal-backdrop"
+          onPointerDown={handleCompletionBackdropClick}
+        >
+          <section
+            className="game-completion-modal panel-surface"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-completion-title"
+          >
+            <h2 id="game-completion-title">Level completed!</h2>
+            <p className="game-completion-time">{formatElapsedTime(completionModal.timeSeconds)}</p>
+            {completionModal.isNewBest ? (
+              <p className="game-completion-best">New best time!</p>
+            ) : null}
+            <div className="game-completion-actions">
+              <button type="button" className="secondary-button" onClick={handleBackToLevels}>
+                Back
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleNextLevel}
+                disabled={!hasNextLevel}
+              >
+                Next Level
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   )
+}
+
+export function GamePage() {
+  const { difficulty, levelNumber } = useParams()
+
+  return <GamePageScreen key={`${difficulty ?? 'unknown'}-${levelNumber ?? 'unknown'}`} />
 }

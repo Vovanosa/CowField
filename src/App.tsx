@@ -7,6 +7,7 @@ import { DifficultyLevelsPage } from './pages/DifficultyLevelsPage'
 import { GamePage } from './pages/GamePage'
 import { HomePage } from './pages/HomePage'
 import { LevelsPage } from './pages/LevelsPage'
+import { StatisticsPage } from './pages/StatisticsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import './App.css'
 
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: 'about',
         element: <AboutPage />,
+      },
+      {
+        path: 'statistics',
+        element: <StatisticsPage />,
       },
       {
         path: 'settings',

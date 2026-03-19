@@ -38,34 +38,41 @@
     background-color var(--transition-fast);
   box-shadow: var(--shadow-soft);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 245, 234, 0.88)),
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
     var(--color-surface);
 }
 
 .difficultyLinkChipLight {
-  border-color: rgba(203, 132, 150, 0.26);
+  border-color: var(--color-difficulty-light-border);
   background:
-    linear-gradient(180deg, rgba(255, 241, 245, 0.96), rgba(255, 233, 239, 0.92)),
+    linear-gradient(180deg, var(--color-difficulty-light-surface-start), var(--color-difficulty-light-surface-end)),
     var(--color-surface);
 }
 
 .difficultyLinkChipEasy {
-  border-color: rgba(112, 156, 103, 0.26);
+  border-color: var(--color-difficulty-easy-border);
   background:
-    linear-gradient(180deg, rgba(236, 248, 233, 0.96), rgba(223, 242, 216, 0.92)),
+    linear-gradient(180deg, var(--color-difficulty-easy-surface-start), var(--color-difficulty-easy-surface-end)),
     var(--color-surface);
 }
 
 .difficultyLinkChipMedium {
-  border-color: rgba(193, 137, 72, 0.26);
+  border-color: var(--color-difficulty-medium-border);
   background:
-    linear-gradient(180deg, rgba(255, 242, 227, 0.96), rgba(252, 232, 205, 0.92)),
+    linear-gradient(180deg, var(--color-difficulty-medium-surface-start), var(--color-difficulty-medium-surface-end)),
+    var(--color-surface);
+}
+
+.difficultyLinkChip:not(.difficultyLinkChipLight):not(.difficultyLinkChipEasy):not(.difficultyLinkChipMedium) {
+  border-color: var(--color-difficulty-hard-border);
+  background:
+    linear-gradient(180deg, var(--color-difficulty-hard-surface-start), var(--color-difficulty-hard-surface-end)),
     var(--color-surface);
 }
 
 .difficultyLinkChip:hover {
   transform: translateY(-2px);
-  border-color: rgba(155, 113, 49, 0.24);
+  border-color: var(--color-difficulty-hard-border);
   box-shadow: var(--shadow-raised);
 }
 

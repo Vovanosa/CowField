@@ -6,12 +6,20 @@ import { ZodError } from 'zod'
 import { HttpError } from './errors/HttpError'
 import { FileContentRepository } from './repositories/FileContentRepository'
 import { FileLevelRepository } from './repositories/FileLevelRepository'
+import { FilePlayerProgressRepository } from './repositories/FilePlayerProgressRepository'
+import { FilePlayerStatisticsRepository } from './repositories/FilePlayerStatisticsRepository'
 import { createContentRoutes } from './routes/contentRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
+import { createPlayerProgressRoutes } from './routes/playerProgressRoutes'
+import { createPlayerStatisticsRoutes } from './routes/playerStatisticsRoutes'
 import { ContentController } from './controllers/contentController'
 import { LevelController } from './controllers/levelController'
+import { PlayerProgressController } from './controllers/playerProgressController'
+import { PlayerStatisticsController } from './controllers/playerStatisticsController'
 import { ContentService } from './services/ContentService'
 import { LevelService } from './services/LevelService'
+import { PlayerProgressService } from './services/PlayerProgressService'
+import { PlayerStatisticsService } from './services/PlayerStatisticsService'
 
 export function createApp() {
   const app = express()
@@ -21,10 +29,23 @@ export function createApp() {
   const contentRepository = new FileContentRepository(
     path.resolve(process.cwd(), 'content_data'),
   )
+  const playerProgressRepository = new FilePlayerProgressRepository(
+    path.resolve(process.cwd(), 'progress_data'),
+  )
+  const playerStatisticsRepository = new FilePlayerStatisticsRepository(
+    path.resolve(process.cwd(), 'progress_data'),
+  )
   const levelService = new LevelService(repository)
   const contentService = new ContentService(contentRepository)
+  const playerProgressService = new PlayerProgressService(playerProgressRepository)
+  const playerStatisticsService = new PlayerStatisticsService(
+    playerProgressRepository,
+    playerStatisticsRepository,
+  )
   const levelController = new LevelController(levelService)
   const contentController = new ContentController(contentService)
+  const playerProgressController = new PlayerProgressController(playerProgressService)
+  const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
 
   app.use(cors())
   app.use(express.json({ limit: '1mb' }))
@@ -35,6 +56,8 @@ export function createApp() {
 
   app.use('/api/levels', createLevelRoutes(levelController))
   app.use('/api/content', createContentRoutes(contentController))
+  app.use('/api/progress', createPlayerProgressRoutes(playerProgressController))
+  app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController))
 
   app.use(
     (

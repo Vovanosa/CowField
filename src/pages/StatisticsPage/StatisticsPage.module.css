@@ -1,0 +1,299 @@
+.statisticsPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.heroPanel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background:
+    radial-gradient(circle at top right, var(--color-accent-soft), transparent 30%),
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
+    var(--color-surface);
+}
+
+.heroPanel::after {
+  content: '';
+  position: absolute;
+  inset: auto -6% -30% auto;
+  width: 260px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent-soft), transparent 68%);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.heroTopRow {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.72fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+.pageIntroRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.pageIntroRow :global(.page-intro) {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.progressFeature {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 100%;
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-icon);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 249, 239, 0.62));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 14px 28px rgba(120, 88, 30, 0.06);
+}
+
+.progressFeatureLabel {
+  color: var(--color-muted);
+}
+
+.progressFeatureValue {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 0.95;
+  color: var(--color-heading);
+}
+
+.progressFeatureDetail {
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.overviewRail {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.overviewCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 150px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-icon);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 249, 239, 0.58));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 12px 24px rgba(120, 88, 30, 0.05);
+}
+
+.overviewCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.overviewIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  color: var(--color-accent-strong);
+  background: linear-gradient(180deg, var(--color-accent-glow-start), var(--color-accent-glow-end));
+  border: 1px solid var(--color-border-icon);
+}
+
+.overviewLabel {
+  color: var(--color-muted);
+}
+
+.overviewValue {
+  margin-top: auto;
+  font-family: var(--font-heading);
+  font-size: clamp(2.6rem, 4vw, 3.8rem);
+  line-height: 0.95;
+  color: var(--color-heading);
+}
+
+.loadingPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+}
+
+.loadingMessage {
+  color: var(--color-muted);
+}
+
+.sectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sectionHeading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionEyebrow {
+  color: var(--color-accent-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.sectionDescription {
+  max-width: 60ch;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.difficultyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.difficultyCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.difficultyCardLight {
+  border-color: var(--color-difficulty-light-border);
+  background:
+    linear-gradient(180deg, var(--color-difficulty-light-surface-start), var(--color-difficulty-light-surface-end)),
+    var(--color-surface);
+}
+
+.difficultyCardEasy {
+  border-color: var(--color-difficulty-easy-border);
+  background:
+    linear-gradient(180deg, var(--color-difficulty-easy-surface-start), var(--color-difficulty-easy-surface-end)),
+    var(--color-surface);
+}
+
+.difficultyCardMedium {
+  border-color: var(--color-difficulty-medium-border);
+  background:
+    linear-gradient(180deg, var(--color-difficulty-medium-surface-start), var(--color-difficulty-medium-surface-end)),
+    var(--color-surface);
+}
+
+.difficultyCardHard {
+  border-color: var(--color-difficulty-hard-border);
+  background:
+    linear-gradient(180deg, var(--color-difficulty-hard-surface-start), var(--color-difficulty-hard-surface-end)),
+    var(--color-surface);
+}
+
+.difficultyCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.difficultyEyebrow {
+  color: var(--color-muted);
+  margin-bottom: 6px;
+}
+
+.difficultyTitle {
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.difficultyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-icon);
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--color-heading);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.metricStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.metricSplitRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.metricBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(148, 112, 38, 0.08);
+}
+
+.metricLabel {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.metricPrimaryValue {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--color-heading);
+}
+
+.metricValue {
+  color: var(--color-heading);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+@media (max-width: 960px) {
+  .heroTopRow,
+  .overviewRail,
+  .difficultyGrid,
+  .metricSplitRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .pageIntroRow,
+  .difficultyCardTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

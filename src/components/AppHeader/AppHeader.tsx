@@ -7,6 +7,7 @@ import './AppHeader.css'
 const navigationLinks = [
   { to: '/', label: 'Home' },
   { to: '/levels', label: 'Levels' },
+  { to: '/statistics', label: 'Statistics' },
   { to: '/about', label: 'About' },
 ]
 
