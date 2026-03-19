@@ -25,7 +25,7 @@ export function LevelsPage() {
   const { isAdmin } = useRole()
 
   return (
-    <div className={styles.levelsPage}>
+    <div className={`${styles.levelsPage} page-shell`}>
       <div className={styles.levelsIntroRow}>
         <Link className="round-icon-link" to="/" aria-label="Back to home">
           <ArrowLeft size={16} />

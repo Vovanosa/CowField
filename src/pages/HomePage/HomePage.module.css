@@ -1,133 +1,124 @@
 .homePage {
   display: flex;
+  width: 100%;
+}
+
+.homeShell {
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100svh - 300px);
-  gap: var(--space-6);
+  gap: var(--space-7);
+  width: min(100%, 720px);
+  padding: clamp(20px, 4vw, 40px) 0;
   text-align: center;
 }
 
-.homeHero {
+.homeWordmark {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  max-width: 640px;
+  justify-content: center;
+  width: 100%;
+  padding: clamp(16px, 3vw, 28px) 0;
 }
 
-.homeEyebrow {
-  margin: 0;
-  color: var(--color-accent-strong);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.76rem;
-  font-weight: 700;
+.homeWordmark::before {
+  content: '';
+  position: absolute;
+  inset: 8% 12%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--color-accent-soft), transparent 66%);
+  opacity: 0.9;
+  filter: blur(10px);
+  pointer-events: none;
 }
 
-.homeHero h2 {
-  font-size: clamp(2rem, 3vw, 3.6rem);
-  line-height: 1;
-}
-
-.homeDescription {
-  max-width: 34rem;
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 1.05rem;
-  line-height: 1.7;
+.homeTitle {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  font-size: clamp(4rem, 9vw, 6rem);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  color: var(--color-heading);
+  opacity: 0.3;
 }
 
 .homeMenu {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-}
-
-.homeNoteWrap {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-  width: 100%;
-  margin: 0;
-  max-width: 760px;
-  text-align: left;
+  width: min(100%, 560px);
 }
 
-.homeNoteIcon {
-  flex-shrink: 0;
+.homeMenuButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(180deg, rgba(205, 170, 96, 0.22), rgba(205, 170, 96, 0.08));
-  border: 1px solid var(--color-border-soft);
-  color: var(--color-accent-strong);
-  box-shadow: var(--shadow-soft);
-}
-
-.homeNotePanel {
-  flex: 1;
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-}
-
-.homeNoteRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.homeNoteText {
-  margin: 0;
-  color: var(--color-muted);
-  line-height: 1.7;
-}
-
-.homeNoteEditor {
-  display: flex;
-  flex-direction: column;
   gap: var(--space-3);
-}
-
-.homeNoteEditor textarea {
-  width: 100%;
-  min-height: 96px;
-  resize: vertical;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-strong);
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--color-heading);
-  font: inherit;
+  min-height: 72px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  font-size: 1.08rem;
+  font-weight: 600;
   transition:
-    border-color var(--transition-base),
+    transform var(--transition-base),
     box-shadow var(--transition-base),
+    border-color var(--transition-base),
     background-color var(--transition-base);
 }
 
-.homeNoteEditor textarea:hover {
-  border-color: rgba(148, 112, 38, 0.24);
+.homeMenuButton:hover {
+  transform: translateY(-2px);
 }
 
-.homeNoteActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+.homeMenuButtonPrimary {
+  color: var(--color-button-text);
+  background: linear-gradient(180deg, var(--color-button-primary-start), var(--color-button-primary-end));
+  box-shadow: 0 18px 28px rgba(142, 103, 38, 0.18);
 }
 
-@media (max-width: 960px) {
-  .homePage {
-    min-height: auto;
-    justify-content: flex-start;
+.homeMenuButtonSecondary {
+  color: var(--color-heading);
+  border: 1px solid var(--color-border-icon);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 249, 240, 0.74)),
+    var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.homeMenuIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--color-accent-glow-start), var(--color-accent-glow-end));
+  color: var(--color-accent-strong);
+}
+
+.homeMenuButtonPrimary .homeMenuIcon {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--color-button-text);
+}
+
+@media (max-width: 768px) {
+  .homeShell {
+    width: 100%;
+    gap: var(--space-6);
+    padding: var(--space-4) 0;
   }
 
-  .homeNoteWrap {
-    align-items: flex-start;
-    flex-direction: column;
+  .homeMenu {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .homeMenuButton {
+    min-height: 64px;
   }
 }

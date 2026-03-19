@@ -65,7 +65,7 @@ function DifficultyLevelsPageScreen() {
 
   if (!isDifficulty(difficulty)) {
     return (
-      <div className="difficulty-page">
+      <div className="difficulty-page page-shell">
         <PageIntro
           eyebrow="Levels"
           title="Unknown difficulty."
@@ -78,7 +78,7 @@ function DifficultyLevelsPageScreen() {
   const unlockedLevelNumbers = getUnlockedLevelNumbers(levels, progressByLevelNumber)
 
   return (
-    <div className="difficulty-page">
+    <div className="difficulty-page page-shell">
       <div className="difficulty-page-intro-row">
         <Link className="round-icon-link" to="/levels" aria-label="Back to all difficulties">
           <ArrowLeft size={16} />

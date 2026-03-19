@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
@@ -10,7 +11,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
-import { getColorForId } from '../../game/levels'
+import { getColorForId, getGapColorForId } from '../../game/levels'
 import { getUnlockedLevelNumbers } from '../../game/progression'
 import {
   completeLevelProgress,
@@ -65,20 +66,6 @@ function CowMarker() {
       <circle cx="17.6" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
     </svg>
   )
-}
-
-function darkenHexColor(hexColor: string, amount: number) {
-  const normalized = hexColor.replace('#', '')
-
-  if (normalized.length !== 6) {
-    return hexColor
-  }
-
-  const red = Math.max(0, Number.parseInt(normalized.slice(0, 2), 16) - amount)
-  const green = Math.max(0, Number.parseInt(normalized.slice(2, 4), 16) - amount)
-  const blue = Math.max(0, Number.parseInt(normalized.slice(4, 6), 16) - amount)
-
-  return `rgb(${red} ${green} ${blue})`
 }
 
 function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGroup: number) {
@@ -159,7 +146,7 @@ function getCellBorderStyle(level: LevelDefinition, cellIndex: number) {
   const row = Math.floor(cellIndex / gridSize)
   const column = cellIndex % gridSize
   const internalBorderColor = 'var(--color-board-region-divider)'
-  const sameColorGapColor = darkenHexColor(getColorForId(colorId), 12)
+  const sameColorGapColor = getGapColorForId(colorId)
 
   const rightNeighbor = column < gridSize - 1 ? pensByCell[cellIndex + 1] : null
   const bottomNeighbor = row < gridSize - 1 ? pensByCell[cellIndex + gridSize] : null
@@ -194,6 +181,42 @@ function getCellStyle(level: LevelDefinition, cellIndex: number, isInvalid: bool
     ]
       .filter(Boolean)
       .join(', '),
+  }
+}
+
+function getIntersectionColor(level: LevelDefinition, row: number, column: number) {
+  const { gridSize, pensByCell } = level
+  const topLeft = pensByCell[(row - 1) * gridSize + (column - 1)]
+  const topRight = pensByCell[(row - 1) * gridSize + column]
+  const bottomLeft = pensByCell[row * gridSize + (column - 1)]
+  const bottomRight = pensByCell[row * gridSize + column]
+
+  const hasDarkGap =
+    topLeft !== topRight ||
+    topLeft !== bottomLeft ||
+    topRight !== bottomRight ||
+    bottomLeft !== bottomRight
+
+  return hasDarkGap
+    ? 'var(--color-board-region-divider)'
+    : getGapColorForId(topLeft)
+}
+
+function getIntersectionStyle(
+  level: LevelDefinition,
+  row: number,
+  column: number,
+): CSSProperties {
+  const gapSizePx = 2
+  const totalGapPx = (level.gridSize - 1) * gapSizePx
+  const cellTrack = `(100% - ${totalGapPx}px) / ${level.gridSize}`
+  const left = `calc(${column} * (${cellTrack}) + ${(column - 1) * gapSizePx}px)`
+  const top = `calc(${row} * (${cellTrack}) + ${(row - 1) * gapSizePx}px)`
+
+  return {
+    left,
+    top,
+    backgroundColor: getIntersectionColor(level, row, column),
   }
 }
 
@@ -732,6 +755,17 @@ function GamePageScreen() {
                   {cellMarks[index] === 'bull' ? <CowMarker /> : null}
                 </button>
               ))}
+
+              {Array.from({ length: Math.max(level.gridSize - 1, 0) }, (_, rowIndex) =>
+                Array.from({ length: Math.max(level.gridSize - 1, 0) }, (_, columnIndex) => (
+                  <span
+                    key={`intersection-${rowIndex + 1}-${columnIndex + 1}`}
+                    className="board-grid-intersection"
+                    style={getIntersectionStyle(level, rowIndex + 1, columnIndex + 1)}
+                    aria-hidden="true"
+                  />
+                )),
+              )}
             </div>
           </div>
         </div>

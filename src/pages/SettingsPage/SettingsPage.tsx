@@ -7,7 +7,7 @@ import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
   return (
-    <div className={styles.simplePage}>
+    <div className={`${styles.simplePage} page-shell`}>
       <div className={styles.pageIntroRow}>
         <Link className="round-icon-link" to="/" aria-label="Back to home">
           <ArrowLeft size={16} />

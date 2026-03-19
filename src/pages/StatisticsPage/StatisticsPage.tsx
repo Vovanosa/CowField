@@ -97,7 +97,7 @@ export function StatisticsPage() {
   }, [statistics])
 
   return (
-    <div className={styles.statisticsPage}>
+    <div className={`${styles.statisticsPage} page-shell page-shell-wide`}>
       <section className={`${styles.heroPanel} panel-surface`}>
         <div className={styles.heroTopRow}>
           <div className={styles.pageIntroRow}>
@@ -179,9 +179,6 @@ export function StatisticsPage() {
                       {difficultyLabels[difficultyStatistics.difficulty]}
                     </h3>
                   </div>
-                  <span className={styles.difficultyBadge}>
-                    {difficultyStatistics.completedLevels} done
-                  </span>
                 </div>
 
                 <div className={styles.metricStack}>

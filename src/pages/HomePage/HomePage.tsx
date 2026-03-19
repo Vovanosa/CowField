@@ -1,124 +1,66 @@
-import { BookOpenText, Pencil, Play } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { BarChart3, BookOpenText, Play, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { useRole } from '../../app/role'
-import { getContentByKey, saveContentByKey } from '../../game/storage'
 import styles from './HomePage.module.css'
 
+const menuItems = [
+  {
+    to: '/levels',
+    label: 'Play',
+    icon: Play,
+    variant: 'primary',
+  },
+  {
+    to: '/about',
+    label: 'About',
+    icon: BookOpenText,
+    variant: 'secondary',
+  },
+  {
+    to: '/statistics',
+    label: 'Statistics',
+    icon: BarChart3,
+    variant: 'secondary',
+  },
+  {
+    to: '/settings',
+    label: 'Settings',
+    icon: Settings,
+    variant: 'secondary',
+  },
+] as const
+
 export function HomePage() {
-  const { isAdmin } = useRole()
-  const [homeText, setHomeText] = useState('')
-  const [draftText, setDraftText] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    let isActive = true
-
-    async function loadContent() {
-      try {
-        const content = await getContentByKey('home')
-
-        if (!isActive) {
-          return
-        }
-
-        setHomeText(content.text)
-        setDraftText(content.text)
-      } finally {
-        if (isActive) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    void loadContent()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
-
-  async function handleSaveHomeText() {
-    const content = await saveContentByKey('home', draftText)
-    setHomeText(content.text)
-    setDraftText(content.text)
-    setIsEditing(false)
-  }
-
   return (
-    <div className={styles.homePage}>
-      <section className={styles.homeHero}>
-        <p className={styles.homeEyebrow}>Logic puzzle prototype</p>
-        <h2>Place bulls without letting them touch.</h2>
-        <p className={styles.homeDescription}>
-          Each row, column, and color must hit the target count. Dot marks are
-          just notes.
-        </p>
-
-        <div className={styles.homeMenu} aria-label="Home menu">
-          <Link className="primary-button" to="/levels">
-            <Play size={18} />
-            Play
-          </Link>
-          <Link className="secondary-button" to="/about">
-            <BookOpenText size={18} />
-            Learn the rules
-          </Link>
+    <div className={`${styles.homePage} page-shell page-shell-compact`}>
+      <section className={styles.homeShell}>
+        <div className={styles.homeWordmark}>
+          <p className={styles.homeTitle}>Bullpen</p>
         </div>
+
+        <nav className={styles.homeMenu} aria-label="Home menu">
+          {menuItems.map((item) => {
+            const Icon = item.icon
+
+            return (
+              <Link
+                key={item.to}
+                className={
+                  item.variant === 'primary'
+                    ? `${styles.homeMenuButton} ${styles.homeMenuButtonPrimary}`
+                    : `${styles.homeMenuButton} ${styles.homeMenuButtonSecondary}`
+                }
+                to={item.to}
+              >
+                <span className={styles.homeMenuIcon}>
+                  <Icon size={18} />
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
       </section>
-
-      <div className={styles.homeNoteWrap}>
-        <div className={styles.homeNoteIcon}>
-          <BookOpenText size={18} />
-        </div>
-        <div className={`${styles.homeNotePanel} panel-surface`}>
-          {isLoading ? (
-            <p className={styles.homeNoteText}>Loading...</p>
-          ) : isEditing ? (
-            <div className={styles.homeNoteEditor}>
-              <textarea
-                value={draftText}
-                onChange={(event) => setDraftText(event.target.value)}
-                rows={3}
-              />
-              <div className={styles.homeNoteActions}>
-                <button type="button" className="primary-button" onClick={() => void handleSaveHomeText()}>
-                  Save text
-                </button>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => {
-                    setDraftText(homeText)
-                    setIsEditing(false)
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.homeNoteRow}>
-              <p className={styles.homeNoteText}>{homeText}</p>
-              {isAdmin ? (
-                <button
-                  type="button"
-                  className="icon-link home-note-edit"
-                  aria-label="Edit home text"
-                  onClick={() => {
-                    setDraftText(homeText)
-                    setIsEditing(true)
-                  }}
-                >
-                  <Pencil size={16} />
-                </button>
-              ) : null}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
