@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useRole } from '../../app/role'
 import { PageIntro } from '../../components/PageIntro'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
+import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getUnlockedLevelNumbers } from '../../game/progression'
 import { getLevelsByDifficulty, getProgressByDifficulty } from '../../game/storage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
@@ -66,8 +67,8 @@ function DifficultyLevelsPageScreen() {
       <div className="difficulty-page page-shell">
         <PageIntro
           eyebrow="Levels"
-          title={t('levels.unknownDifficultyTitle')}
-          description={t('levels.unknownDifficultyDescription')}
+          title={t('Unknown difficulty.')}
+          description={t('Choose one of the available difficulty groups to browse levels.')}
         />
       </div>
     )
@@ -78,18 +79,18 @@ function DifficultyLevelsPageScreen() {
   return (
     <div className="difficulty-page page-shell">
       <div className="difficulty-page-intro-row">
-        <Link className="round-icon-link" to="/levels" aria-label={t('common.backToAllDifficulties')}>
+        <Link className="round-icon-link" to="/levels" aria-label={t('Back to all difficulties')}>
           <ArrowLeft size={16} />
         </Link>
 
         <PageIntro
-          eyebrow={t('levels.pageEyebrow')}
-          title={t('levels.difficultyTitle', { difficulty: t(`difficulty.${difficulty}`) })}
+          eyebrow={t('Levels')}
+          title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
         />
       </div>
 
       <section className="difficulty-levels-grid">
-        {isLoading ? <p className="difficulty-level-loading">{t('levels.loading')}</p> : null}
+        {isLoading ? <p className="difficulty-level-loading">{t('Loading levels...')}</p> : null}
         {levels.map((level) => (
           <article
             key={level.id}
@@ -103,7 +104,7 @@ function DifficultyLevelsPageScreen() {
               <Link
                 className="difficulty-level-link"
                 to={`/game/${level.difficulty}/${level.levelNumber}`}
-                aria-label={t('levels.openLevel', { levelNumber: level.levelNumber })}
+                aria-label={t('Open level {{levelNumber}}', { levelNumber: level.levelNumber })}
               />
             ) : null}
             <div className="difficulty-level-summary">
@@ -112,7 +113,7 @@ function DifficultyLevelsPageScreen() {
                 <span className="difficulty-level-time">
                   {formatElapsedTime(progressByLevelNumber[level.levelNumber]?.bestTimeSeconds ?? null)}
                 </span>
-              ) : <span className="difficulty-level-time">{t('levels.bestTimeHidden')}</span>}
+              ) : null}
             </div>
             {!unlockedLevelNumbers.has(level.levelNumber) && !isAdmin ? (
               <div className="difficulty-level-lock" aria-hidden="true">
@@ -124,7 +125,7 @@ function DifficultyLevelsPageScreen() {
                 <Link
                   className="difficulty-level-edit"
                   to={`/levels/${level.difficulty}/${level.levelNumber}/edit`}
-                  aria-label={t('levels.editLevel', { levelNumber: level.levelNumber })}
+                  aria-label={t('Edit level {{levelNumber}}', { levelNumber: level.levelNumber })}
                 >
                   <SquarePen size={16} />
                 </Link>

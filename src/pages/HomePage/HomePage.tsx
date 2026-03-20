@@ -9,25 +9,25 @@ export function HomePage() {
   const menuItems = [
     {
       to: '/levels',
-      label: t('home.play'),
+      label: t('Play'),
       icon: Play,
       variant: 'primary',
     },
     {
       to: '/about',
-      label: t('home.about'),
+      label: t('About'),
       icon: BookOpenText,
       variant: 'secondary',
     },
     {
       to: '/statistics',
-      label: t('home.statistics'),
+      label: t('Statistics'),
       icon: BarChart3,
       variant: 'secondary',
     },
     {
       to: '/settings',
-      label: t('home.settings'),
+      label: t('Settings'),
       icon: Settings,
       variant: 'secondary',
     },
@@ -37,10 +37,10 @@ export function HomePage() {
     <div className={`${styles.homePage} page-shell page-shell-compact`}>
       <section className={styles.homeShell}>
         <div className={styles.homeWordmark}>
-          <p className={styles.homeTitle}>{t('common.appName')}</p>
+          <p className={styles.homeTitle}>{t('Bullpen')}</p>
         </div>
 
-        <nav className={styles.homeMenu} aria-label={t('home.menuLabel')}>
+        <nav className={styles.homeMenu} aria-label={t('Home menu')}>
           {menuItems.map((item) => {
             const Icon = item.icon
 

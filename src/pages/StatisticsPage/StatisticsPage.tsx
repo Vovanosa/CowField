@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { PageIntro } from '../../components/PageIntro'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
+import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getPlayerStatistics } from '../../game/storage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, PlayerStatisticsSummary } from '../../game/types'
@@ -22,10 +23,10 @@ function formatFastestLevel(
   t: (key: string, options?: Record<string, unknown>) => string,
 ) {
   if (!fastestLevel) {
-    return t('statistics.noCompletedLevel')
+    return t('No completed level')
   }
 
-  return `${t('common.levelNumber', { levelNumber: fastestLevel.levelNumber })} | ${formatElapsedTime(fastestLevel.timeSeconds)}`
+  return `${t('Level {{levelNumber}}', { levelNumber: fastestLevel.levelNumber })} | ${formatElapsedTime(fastestLevel.timeSeconds)}`
 }
 
 export function StatisticsPage() {
@@ -65,30 +66,30 @@ export function StatisticsPage() {
 
     return [
       {
-        title: t('statistics.mostProgress'),
+        title: t('Most progress'),
         value: leadingDifficulty.completedLevels > 0
-          ? t(`difficulty.${leadingDifficulty.difficulty}`)
-          : t('statistics.noData'),
+          ? getDifficultyLabel(t, leadingDifficulty.difficulty)
+          : t('No data'),
         suffix: leadingDifficulty.completedLevels > 0
-          ? t('statistics.completedLevelsCount', { count: leadingDifficulty.completedLevels })
+          ? t('{{count}} completed levels', { count: leadingDifficulty.completedLevels })
           : '',
         inlineValue: true,
         icon: Flag,
       },
       {
-        title: t('statistics.completedLevels'),
+        title: t('Completed levels'),
         value: String(statistics.totalCompletedLevels),
         icon: Flag,
       },
       {
-        title: t('statistics.placedBulls'),
+        title: t('Placed bulls'),
         value: String(statistics.totalBullPlacements),
         icon: Trophy,
       },
       {
-        title: t('statistics.totalCompletionTime'),
+        title: t('Total completion time'),
         value: isTakeYourTimeEnabled
-          ? t('common.hidden')
+          ? t('Hidden')
           : formatElapsedTime(statistics.totalCompletionTimeSeconds),
         icon: Clock3,
       },
@@ -99,12 +100,12 @@ export function StatisticsPage() {
     <div className={`${styles.statisticsPage} page-shell page-shell-wide`}>
       <section className={styles.topSection}>
         <div className={styles.pageIntroRow}>
-          <Link className="round-icon-link" to="/" aria-label={t('common.backToHome')}>
+          <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
             <ArrowLeft size={16} />
           </Link>
           <PageIntro
-            eyebrow={t('statistics.eyebrow')}
-            title={t('statistics.title')}
+            eyebrow={t('Statistics')}
+            title={t('Player statistics')}
           />
         </div>
 
@@ -143,14 +144,14 @@ export function StatisticsPage() {
 
       {!statistics ? (
         <section className={`${styles.loadingPanel} panel-surface`}>
-          <p className={styles.loadingMessage}>{t('statistics.loading')}</p>
+          <p className={styles.loadingMessage}>{t('Loading statistics...')}</p>
         </section>
       ) : null}
 
       {statistics ? (
         <section className={styles.sectionBlock}>
           <div className={styles.sectionHeading}>
-            <h2>{t('statistics.performanceBreakdown')}</h2>
+            <h2>{t('Performance breakdown by difficulty:')}</h2>
           </div>
 
           <div className={styles.difficultyGrid}>
@@ -161,13 +162,13 @@ export function StatisticsPage() {
               >
                 <div className={styles.difficultyCardTop}>
                   <div className={styles.inlinePair}>
-                    <p className={styles.difficultyLabel}>{t('statistics.difficulty')}</p>
+                    <p className={styles.difficultyLabel}>{t('Difficulty')}</p>
                     <p className={styles.difficultyTitleInline}>
-                      {t(`difficulty.${difficultyStatistics.difficulty}`)}
+                      {getDifficultyLabel(t, difficultyStatistics.difficulty)}
                     </p>
                   </div>
                   <div className={styles.inlinePair}>
-                    <p className={styles.completedInline}>{t('statistics.completedLevels')}</p>
+                    <p className={styles.completedInline}>{t('Completed levels')}</p>
                     <strong className={styles.completedInlineValue}>
                       {difficultyStatistics.completedLevels}
                     </strong>
@@ -177,19 +178,19 @@ export function StatisticsPage() {
                 <div className={styles.metricStack}>
                   <div className={styles.metricSplitRow}>
                     <div className={styles.metricBlock}>
-                      <p className={styles.metricLabel}>{t('statistics.fastestLevel')}</p>
+                      <p className={styles.metricLabel}>{t('Fastest level')}</p>
                       <strong className={styles.metricValue}>
                         {isTakeYourTimeEnabled
-                          ? t('common.hidden')
+                          ? t('Hidden')
                           : formatFastestLevel(difficultyStatistics.fastestLevel, t)}
                       </strong>
                     </div>
 
                     <div className={styles.metricBlock}>
-                      <p className={styles.metricLabel}>{t('statistics.averagePerLevel')}</p>
+                      <p className={styles.metricLabel}>{t('Average per level')}</p>
                       <strong className={styles.metricValue}>
                         {isTakeYourTimeEnabled
-                          ? t('common.hidden')
+                          ? t('Hidden')
                           : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
                       </strong>
                     </div>

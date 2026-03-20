@@ -12,11 +12,11 @@ export function AboutPage() {
   return (
     <div className={`${styles.simplePage} page-shell`}>
       <div className={styles.pageIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label={t('common.backToHome')}>
+        <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
           <ArrowLeft size={16} />
         </Link>
         <PageIntro
-          title={t('about.title')}
+          title={t('About the game')}
         />
       </div>
       <EditableContentPanel contentKey="about" />

@@ -47,7 +47,7 @@ export function EditableContentPanel({
         }
 
         setStatusMessage(
-          error instanceof Error ? error.message : t('editableContent.loadFailed'),
+          error instanceof Error ? error.message : t('Failed to load content.'),
         )
       } finally {
         if (isActive) {
@@ -73,7 +73,7 @@ export function EditableContentPanel({
       setStatusMessage('')
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : t('editableContent.saveFailed'),
+        error instanceof Error ? error.message : t('Failed to save content.'),
       )
     }
   }
@@ -87,7 +87,7 @@ export function EditableContentPanel({
             : 'simple-panel panel-surface'
         }
         >
-        <p>{t('common.loading')}</p>
+        <p>{t('Loading...')}</p>
       </section>
     )
   }
@@ -109,7 +109,7 @@ export function EditableContentPanel({
           />
           <div className="about-editor-actions">
             <button type="button" className="primary-button" onClick={handleSave}>
-              {t('editableContent.saveText')}
+              {t('Save text')}
             </button>
             <button
               type="button"
@@ -120,7 +120,7 @@ export function EditableContentPanel({
                 setStatusMessage('')
               }}
             >
-              {t('editableContent.cancel')}
+              {t('Cancel')}
             </button>
           </div>
         </div>
@@ -131,7 +131,7 @@ export function EditableContentPanel({
             <button
               type="button"
               className="icon-link about-edit-button"
-              aria-label={t('editableContent.editText')}
+              aria-label={t('Edit text')}
               onClick={() => {
                 setDraftText(text)
                 setIsEditing(true)

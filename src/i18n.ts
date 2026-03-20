@@ -38,6 +38,8 @@ void i18n.use(initReactI18next).init({
   },
   lng: getPreferredLanguage(),
   fallbackLng: 'en',
+  keySeparator: false,
+  nsSeparator: false,
   interpolation: {
     escapeValue: false,
   },

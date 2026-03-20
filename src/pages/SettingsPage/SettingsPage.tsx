@@ -146,59 +146,59 @@ export function SettingsPage() {
 
   function getSettingTitle(key: ToggleSettingKey) {
     if (key === 'soundEffectsEnabled') {
-      return t('settings.soundEffectsTitle')
+      return t('Sound effects')
     }
 
     if (key === 'musicEnabled') {
-      return t('settings.musicTitle')
+      return t('Music')
     }
 
     if (key === 'darkModeEnabled') {
-      return t('settings.darkModeTitle')
+      return t('Dark mode')
     }
 
     if (key === 'takeYourTimeEnabled') {
-      return t('settings.takeYourTimeTitle')
+      return t('Take your time')
     }
 
-    return t('settings.autoPlaceDotsTitle')
+    return t('Auto-place dots')
   }
 
   function getSettingDescription(key: ToggleSettingKey) {
     if (key === 'soundEffectsEnabled') {
-      return t('settings.soundEffectsDescription')
+      return t('Enable interface and gameplay sound effects.')
     }
 
     if (key === 'musicEnabled') {
-      return t('settings.musicDescription')
+      return t('Enable background music during play.')
     }
 
     if (key === 'darkModeEnabled') {
-      return t('settings.darkModeDescription')
+      return t('Use a darker visual theme for low-light play.')
     }
 
     if (key === 'takeYourTimeEnabled') {
-      return t('settings.takeYourTimeDescription')
+      return t('Hide visible timers so play can stay fully relaxed.')
     }
 
-    return t('settings.autoPlaceDotsDescription')
+    return t('Automatically place helper dots around confirmed bull placements.')
   }
 
   return (
     <div className={`${styles.simplePage} page-shell`}>
       <div className={styles.pageIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label={t('common.backToHome')}>
+        <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
           <ArrowLeft size={16} />
         </Link>
         <PageIntro
-          eyebrow={t('settings.eyebrow')}
-          title={t('settings.title')}
-          description={t('settings.description')}
+          eyebrow={t('Settings')}
+          title={t('Settings')}
+          description={t('Adjust player preferences here. These switches are remembered by the backend.')}
         />
       </div>
 
       <section className={`${styles.settingsPanel} panel-surface`}>
-        {!settings ? <p className={styles.loadingMessage}>{t('settings.loading')}</p> : null}
+        {!settings ? <p className={styles.loadingMessage}>{t('Loading settings...')}</p> : null}
         <div className={styles.settingsList}>
           {settings ? (
             <>
@@ -234,7 +234,7 @@ export function SettingsPage() {
                     {setting.volumeKey && isEnabled ? (
                       <div className={styles.sliderRow}>
                         <div className={styles.sliderHeader}>
-                          <p className={styles.sliderLabel}>{t('common.volume')}</p>
+                          <p className={styles.sliderLabel}>{t('Volume')}</p>
                           <span className={styles.sliderValue}>{settings[setting.volumeKey]}%</span>
                         </div>
                         <input

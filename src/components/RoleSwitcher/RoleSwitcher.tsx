@@ -8,16 +8,16 @@ export function RoleSwitcher() {
   const { t } = useTranslation()
 
   return (
-    <aside className="role-switcher-panel" aria-label={t('common.role')}>
+    <aside className="role-switcher-panel" aria-label={t('Role')}>
       <label className="role-switcher">
-        <span>{t('common.role')}</span>
+        <span>{t('Role')}</span>
         <select
           className="form-control"
           value={role}
           onChange={(event) => setRole(event.target.value as typeof role)}
         >
-          <option value="player">{t('common.player')}</option>
-          <option value="admin">{t('common.admin')}</option>
+          <option value="player">{t('Player')}</option>
+          <option value="admin">{t('Admin')}</option>
         </select>
       </label>
     </aside>

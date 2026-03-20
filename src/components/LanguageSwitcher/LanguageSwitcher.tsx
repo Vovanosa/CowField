@@ -68,7 +68,7 @@ export function LanguageSwitcher() {
         className="language-trigger"
         aria-haspopup="menu"
         aria-expanded={isMenuOpen}
-        aria-label={t('common.language')}
+        aria-label={t('Language')}
         onClick={() => setIsMenuOpen((current) => !current)}
       >
         <img
@@ -81,7 +81,7 @@ export function LanguageSwitcher() {
       </button>
 
       {isMenuOpen ? (
-        <div className="language-menu" role="menu" aria-label={t('common.language')}>
+        <div className="language-menu" role="menu" aria-label={t('Language')}>
           <button
             type="button"
             className={language === 'en' ? 'language-option language-option-active' : 'language-option'}
