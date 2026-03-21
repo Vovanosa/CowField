@@ -362,9 +362,9 @@ function GamePageScreen() {
   const [hasNextLevel, setHasNextLevel] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
-  const { isAdmin } = useRole()
+  const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
-  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
+  const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const isAutoPlaceDotsEnabled = settings?.autoPlaceDotsEnabled === true
   const { t } = useTranslation()
   const completionHandledRef = useRef(false)
@@ -667,7 +667,9 @@ function GamePageScreen() {
       }
 
       if (mark === 'dot') {
-        void recordBullPlacement()
+        if (!isGuest) {
+          void recordBullPlacement()
+        }
         return 'bull'
       }
 

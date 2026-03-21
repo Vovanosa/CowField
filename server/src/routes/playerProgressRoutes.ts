@@ -1,11 +1,18 @@
 import { Router } from 'express'
 
+import { createRequireAuthMiddleware } from '../middleware/authMiddleware'
 import { PlayerProgressController } from '../controllers/playerProgressController'
+import { AuthService } from '../services/AuthService'
 import { asyncHandler } from '../utils/asyncHandler'
 
-export function createPlayerProgressRoutes(playerProgressController: PlayerProgressController) {
+export function createPlayerProgressRoutes(
+  playerProgressController: PlayerProgressController,
+  authService: AuthService,
+) {
   const router = Router()
+  const requireAuth = createRequireAuthMiddleware(authService)
 
+  router.use(requireAuth)
   router.get('/:difficulty', asyncHandler(playerProgressController.listByDifficulty))
   router.get('/:difficulty/:levelNumber', asyncHandler(playerProgressController.getByDifficultyAndNumber))
   router.post(

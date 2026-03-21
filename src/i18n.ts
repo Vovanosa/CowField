@@ -6,6 +6,7 @@ import uk from './locales/uk'
 
 export const supportedLanguages = ['en', 'uk'] as const
 export type SupportedLanguage = (typeof supportedLanguages)[number]
+export const LANGUAGE_STORAGE_KEY = 'cowfield.language'
 
 export function normalizeLanguage(value: unknown): SupportedLanguage {
   if (typeof value === 'string') {
@@ -19,12 +20,21 @@ export function normalizeLanguage(value: unknown): SupportedLanguage {
   return 'en'
 }
 
-export function getPreferredLanguage() {
-  if (typeof navigator === 'undefined') {
+export function getStoredLanguage() {
+  if (typeof window === 'undefined') {
     return 'en' as SupportedLanguage
   }
 
-  return normalizeLanguage(navigator.language)
+  const storedValue = window.localStorage.getItem(LANGUAGE_STORAGE_KEY)
+  return normalizeLanguage(storedValue)
+}
+
+export function setStoredLanguage(language: SupportedLanguage) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
 }
 
 void i18n.use(initReactI18next).init({
@@ -36,7 +46,7 @@ void i18n.use(initReactI18next).init({
       translation: uk,
     },
   },
-  lng: getPreferredLanguage(),
+  lng: getStoredLanguage(),
   fallbackLng: 'en',
   keySeparator: false,
   nsSeparator: false,

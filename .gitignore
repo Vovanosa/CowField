@@ -30,3 +30,5 @@ AGENTS.md
 /levels_data/**/*.json
 content_data/*.json
 progress_data/*.json
+auth_data/*.json
+.env

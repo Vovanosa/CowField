@@ -1,0 +1,18 @@
+<svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="50" cy="92" rx="18" ry="26" fill="#F7C6CF" stroke="#222" stroke-width="4"/>
+  <ellipse cx="170" cy="92" rx="18" ry="26" fill="#F7C6CF" stroke="#222" stroke-width="4"/>
+
+  <path d="M72 64C68 48 80 40 92 46C86 50 84 58 86 68" fill="#F3E3BE" stroke="#222" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M148 64C152 48 140 40 128 46C134 50 136 58 134 68" fill="#F3E3BE" stroke="#222" stroke-width="4" stroke-linejoin="round"/>
+
+  <rect x="54" y="54" width="112" height="104" rx="38" fill="#FFFDF8" stroke="#222" stroke-width="4"/>
+  <path d="M72 78C62 74 56 82 58 90C60 100 74 102 80 94C84 88 82 80 72 78Z" fill="#222"/>
+  <path d="M144 72C154 70 160 78 158 88C156 98 142 100 136 92C132 86 134 74 144 72Z" fill="#222"/>
+
+  <circle cx="94" cy="104" r="5" fill="#222"/>
+  <circle cx="126" cy="104" r="5" fill="#222"/>
+
+  <rect x="84" y="120" width="52" height="30" rx="15" fill="#F7C6CF" stroke="#222" stroke-width="4"/>
+  <ellipse cx="100" cy="135" rx="4" ry="5" fill="#222"/>
+  <ellipse cx="120" cy="135" rx="4" ry="5" fill="#222"/>
+</svg>

@@ -24,6 +24,11 @@
   flex-direction: column;
 }
 
+.guestNote {
+  padding: var(--space-5) var(--space-5) 0;
+  color: var(--color-muted);
+}
+
 .settingCard {
   display: flex;
   flex-direction: column;
@@ -93,6 +98,11 @@
     background-color var(--transition-base),
     border-color var(--transition-base);
   flex-shrink: 0;
+}
+
+.toggle:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .toggleActive {

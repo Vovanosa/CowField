@@ -2,10 +2,12 @@ import { BarChart3, BookOpenText, Play, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { useAuth } from '../../app/useAuth'
 import styles from './HomePage.module.css'
 
 export function HomePage() {
   const { t } = useTranslation()
+  const { isGuest } = useAuth()
   const menuItems = [
     {
       to: '/levels',
@@ -24,6 +26,7 @@ export function HomePage() {
       label: t('Statistics'),
       icon: BarChart3,
       variant: 'secondary',
+      hidden: isGuest,
     },
     {
       to: '/settings',
@@ -41,7 +44,7 @@ export function HomePage() {
         </div>
 
         <nav className={styles.homeMenu} aria-label={t('Home menu')}>
-          {menuItems.map((item) => {
+          {menuItems.filter((item) => !('hidden' in item) || !item.hidden).map((item) => {
             const Icon = item.icon
 
             return (

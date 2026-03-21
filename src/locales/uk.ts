@@ -122,6 +122,44 @@ const uk = {
   'Failed to save content.': 'Не вдалося зберегти вміст.',
   'Save text': 'Зберегти текст',
   'Edit text': 'Редагувати текст',
+  Profile: 'Профіль',
+  Guest: 'Гість',
+  User: 'Користувач',
+  'Preview role': 'Режим перегляду',
+  'Log out': 'Вийти',
+  Login: 'Вхід',
+  'Sign in with your email and password, create an account, or continue as a guest.':
+    'Увійдіть за допомогою електронної пошти й пароля, створіть акаунт або продовжуйте як гість.',
+  Email: 'Електронна пошта',
+  Password: 'Пароль',
+  'Log in': 'Увійти',
+  'Play as guest': 'Грати як гість',
+  'Create account': 'Створити акаунт',
+  'Forgot password?': 'Забули пароль?',
+  'Passwords do not match.': 'Паролі не збігаються.',
+  'Request failed.': 'Запит не вдався.',
+  'Create a user account with your email and password.':
+    'Створіть акаунт користувача за допомогою електронної пошти й пароля.',
+  'Confirm password': 'Підтвердіть пароль',
+  'Back to login': 'Назад до входу',
+  'Reset password': 'Скидання пароля',
+  'Enter your email to start the password reset flow.':
+    'Введіть свою електронну пошту, щоб розпочати скидання пароля.',
+  'If the account exists, a reset email flow has been started.':
+    'Якщо акаунт існує, процес скидання пароля вже розпочато.',
+  'Send reset link': 'Надіслати посилання для скидання',
+  'I already have a reset token': 'У мене вже є токен скидання',
+  'Your password has been updated.': 'Ваш пароль оновлено.',
+  'Paste your reset token from the email flow and choose a new password.':
+    'Вставте токен скидання з листа та виберіть новий пароль.',
+  'Reset token': 'Токен скидання',
+  'New password': 'Новий пароль',
+  'Save new password': 'Зберегти новий пароль',
+  'You are playing as a Guest.': 'Ви граєте як гість.',
+  'Show password': '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0438 \u043f\u0430\u0440\u043e\u043b\u044c',
+  'Hide password': '\u0421\u0445\u043e\u0432\u0430\u0442\u0438 \u043f\u0430\u0440\u043e\u043b\u044c',
+  'Continue with Google': '\u041f\u0440\u043e\u0434\u043e\u0432\u0436\u0438\u0442\u0438 \u0437 Google',
+  'Completing Google login...': '\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0432\u0445\u043e\u0434\u0443 \u0447\u0435\u0440\u0435\u0437 Google...',
 } as const
 
 export default uk

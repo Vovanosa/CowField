@@ -123,6 +123,44 @@ const en = {
   'Failed to save content.': 'Failed to save content.',
   'Save text': 'Save text',
   'Edit text': 'Edit text',
+  Profile: 'Profile',
+  Guest: 'Guest',
+  User: 'User',
+  'Preview role': 'Preview role',
+  'Log out': 'Log out',
+  Login: 'Login',
+  'Sign in with your email and password, create an account, or continue as a guest.':
+    'Sign in with your email and password, create an account, or continue as a guest.',
+  Email: 'Email',
+  Password: 'Password',
+  'Log in': 'Log in',
+  'Continue with Google': 'Continue with Google',
+  'Completing Google login...': 'Completing Google login...',
+  'Play as guest': 'Play as guest',
+  'Create account': 'Create account',
+  'Forgot password?': 'Forgot password?',
+  'Passwords do not match.': 'Passwords do not match.',
+  'Request failed.': 'Request failed.',
+  'Create a user account with your email and password.':
+    'Create a user account with your email and password.',
+  'Confirm password': 'Confirm password',
+  'Back to login': 'Back to login',
+  'Reset password': 'Reset password',
+  'Enter your email to start the password reset flow.':
+    'Enter your email to start the password reset flow.',
+  'If the account exists, a reset email flow has been started.':
+    'If the account exists, a reset email flow has been started.',
+  'Send reset link': 'Send reset link',
+  'I already have a reset token': 'I already have a reset token',
+  'Your password has been updated.': 'Your password has been updated.',
+  'Paste your reset token from the email flow and choose a new password.':
+    'Paste your reset token from the email flow and choose a new password.',
+  'Reset token': 'Reset token',
+  'New password': 'New password',
+  'Save new password': 'Save new password',
+  'Show password': 'Show password',
+  'Hide password': 'Hide password',
+  'You are playing as a Guest.': 'You are playing as a Guest.',
 } as const
 
 export default en

@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 
+import { getAuthenticatedActor } from '../middleware/authMiddleware'
 import { playerSettingsInputSchema } from '../schemas/settingsSchemas'
 import { PlayerSettingsService } from '../services/PlayerSettingsService'
 
@@ -10,14 +11,16 @@ export class PlayerSettingsController {
     this.playerSettingsService = playerSettingsService
   }
 
-  getSettings = async (_request: Request, response: Response) => {
-    const settings = await this.playerSettingsService.getSettings()
+  getSettings = async (request: Request, response: Response) => {
+    const actor = getAuthenticatedActor(request)
+    const settings = await this.playerSettingsService.getSettings(actor.actorKey, actor.role)
     response.json(settings)
   }
 
   saveSettings = async (request: Request, response: Response) => {
+    const actor = getAuthenticatedActor(request)
     const payload = playerSettingsInputSchema.parse(request.body)
-    const settings = await this.playerSettingsService.saveSettings(payload)
+    const settings = await this.playerSettingsService.saveSettings(actor.actorKey, actor.role, payload)
     response.status(200).json(settings)
   }
 }

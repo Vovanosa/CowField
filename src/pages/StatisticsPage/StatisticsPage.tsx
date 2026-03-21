@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { PageIntro } from '../../components/PageIntro'
+import { useRole } from '../../app/role'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getPlayerStatistics } from '../../game/storage'
@@ -31,8 +32,9 @@ function formatFastestLevel(
 
 export function StatisticsPage() {
   const [statistics, setStatistics] = useState<PlayerStatisticsSummary | null>(null)
+  const { isGuest } = useRole()
   const settings = usePlayerSettings()
-  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
+  const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
 
   useEffect(() => {

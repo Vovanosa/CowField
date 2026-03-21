@@ -13,33 +13,42 @@ export class FilePlayerProgressRepository {
     this.rootDirectory = rootDirectory
   }
 
-  private getFilePath() {
-    return path.join(this.rootDirectory, 'player-progress.json')
+  private getFilePath(actorKey: string) {
+    return path.join(
+      this.rootDirectory,
+      'actors',
+      this.toSafeActorDirectory(actorKey),
+      'player-progress.json',
+    )
   }
 
-  private async readAll() {
+  private toSafeActorDirectory(actorKey: string) {
+    return actorKey.replace(/[^a-zA-Z0-9_-]/g, '_')
+  }
+
+  private async readAll(actorKey: string) {
     try {
-      const rawFile = await readFile(this.getFilePath(), 'utf8')
+      const rawFile = await readFile(this.getFilePath(actorKey), 'utf8')
       return fileSchema.parse(JSON.parse(rawFile))
     } catch {
       return []
     }
   }
 
-  private async writeAll(records: LevelProgressRecord[]) {
-    await mkdir(this.rootDirectory, { recursive: true })
-    await writeFile(this.getFilePath(), `${JSON.stringify(records, null, 2)}\n`, 'utf8')
+  private async writeAll(actorKey: string, records: LevelProgressRecord[]) {
+    await mkdir(path.dirname(this.getFilePath(actorKey)), { recursive: true })
+    await writeFile(this.getFilePath(actorKey), `${JSON.stringify(records, null, 2)}\n`, 'utf8')
   }
 
-  async listByDifficulty(difficulty: Difficulty) {
-    const records = await this.readAll()
+  async listByDifficulty(actorKey: string, difficulty: Difficulty) {
+    const records = await this.readAll(actorKey)
     return records
       .filter((record) => record.difficulty === difficulty)
       .sort((left, right) => left.levelNumber - right.levelNumber)
   }
 
-  async listAll() {
-    const records = await this.readAll()
+  async listAll(actorKey: string) {
+    const records = await this.readAll(actorKey)
     return records.sort((left, right) => {
       if (left.difficulty === right.difficulty) {
         return left.levelNumber - right.levelNumber
@@ -49,8 +58,8 @@ export class FilePlayerProgressRepository {
     })
   }
 
-  async getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number) {
-    const records = await this.readAll()
+  async getByDifficultyAndNumber(actorKey: string, difficulty: Difficulty, levelNumber: number) {
+    const records = await this.readAll(actorKey)
     return (
       records.find(
         (record) => record.difficulty === difficulty && record.levelNumber === levelNumber,
@@ -58,8 +67,8 @@ export class FilePlayerProgressRepository {
     )
   }
 
-  async save(progress: LevelProgressRecord) {
-    const records = await this.readAll()
+  async save(actorKey: string, progress: LevelProgressRecord) {
+    const records = await this.readAll(actorKey)
     const nextRecords = records.filter(
       (record) =>
         !(record.difficulty === progress.difficulty && record.levelNumber === progress.levelNumber),
@@ -74,7 +83,7 @@ export class FilePlayerProgressRepository {
       return left.difficulty.localeCompare(right.difficulty)
     })
 
-    await this.writeAll(nextRecords)
+    await this.writeAll(actorKey, nextRecords)
     return progress
   }
 }

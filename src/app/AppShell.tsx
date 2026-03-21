@@ -2,13 +2,13 @@ import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
-import { RoleSwitcher } from '../components/RoleSwitcher'
+import { ProfileMenu } from '../components/ProfileMenu/ProfileMenu'
 import { applyThemeMode, getPlayerSettings } from '../game/storage'
-import i18n from '../i18n'
-import { RoleProvider } from './RoleContext'
+import { useAuth } from './useAuth'
 
 export function AppShell() {
   const location = useLocation()
+  const { session } = useAuth()
 
   useEffect(() => {
     let isActive = true
@@ -21,7 +21,6 @@ export function AppShell() {
       }
 
       applyThemeMode(settings.darkModeEnabled)
-      void i18n.changeLanguage(settings.language)
     }
 
     void loadThemePreference()
@@ -32,16 +31,14 @@ export function AppShell() {
   }, [])
 
   return (
-    <RoleProvider>
-      <div className="app-shell">
-        <RoleSwitcher />
-        <div className="app-frame">
-          <main className="app-content">
-            {location.pathname === '/' ? <LanguageSwitcher /> : null}
-            <Outlet />
-          </main>
-        </div>
+    <div className="app-shell">
+      <div className="app-frame">
+        <main className="app-content">
+          {location.pathname === '/' && session ? <ProfileMenu /> : null}
+          <LanguageSwitcher />
+          <Outlet />
+        </main>
       </div>
-    </RoleProvider>
+    </div>
   )
 }

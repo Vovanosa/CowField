@@ -3,34 +3,36 @@ import { useTranslation } from 'react-i18next'
 
 import gbFlag from '../../assets/flags/gb.svg'
 import uaFlag from '../../assets/flags/ua.svg'
-import { getPlayerSettings, savePlayerSettings } from '../../game/storage'
-import i18n, { normalizeLanguage, type SupportedLanguage } from '../../i18n'
+import i18n, {
+  getStoredLanguage,
+  normalizeLanguage,
+  setStoredLanguage,
+  type SupportedLanguage,
+} from '../../i18n'
 import './LanguageSwitcher.css'
 
 export function LanguageSwitcher() {
   const { t } = useTranslation()
-  const [language, setLanguage] = useState<SupportedLanguage>(normalizeLanguage(i18n.resolvedLanguage))
+  const [language, setLanguage] = useState<SupportedLanguage>(getStoredLanguage())
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const currentFlag = language === 'uk' ? uaFlag : gbFlag
 
   useEffect(() => {
-    let isActive = true
+    const nextLanguage = getStoredLanguage()
 
-    async function loadLanguage() {
-      const settings = await getPlayerSettings()
-
-      if (!isActive) {
-        return
-      }
-
-      setLanguage(settings.language)
+    if (normalizeLanguage(i18n.resolvedLanguage) !== nextLanguage) {
+      void i18n.changeLanguage(nextLanguage)
     }
 
-    void loadLanguage()
+    function handleLanguageChanged(nextLanguageCode: string) {
+      setLanguage(normalizeLanguage(nextLanguageCode))
+    }
+
+    i18n.on('languageChanged', handleLanguageChanged)
 
     return () => {
-      isActive = false
+      i18n.off('languageChanged', handleLanguageChanged)
     }
   }, [])
 
@@ -51,14 +53,8 @@ export function LanguageSwitcher() {
   async function handleLanguageSelect(nextLanguage: SupportedLanguage) {
     setLanguage(nextLanguage)
     setIsMenuOpen(false)
+    setStoredLanguage(nextLanguage)
     void i18n.changeLanguage(nextLanguage)
-
-    const settings = await getPlayerSettings()
-
-    void savePlayerSettings({
-      ...settings,
-      language: nextLanguage,
-    })
   }
 
   return (

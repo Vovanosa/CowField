@@ -4,11 +4,16 @@ import path from 'node:path'
 import { ZodError } from 'zod'
 
 import { HttpError } from './errors/HttpError'
+import { AuthController } from './controllers/authController'
 import { FileContentRepository } from './repositories/FileContentRepository'
 import { FileLevelRepository } from './repositories/FileLevelRepository'
+import { FilePasswordResetTokenRepository } from './repositories/FilePasswordResetTokenRepository'
 import { FilePlayerProgressRepository } from './repositories/FilePlayerProgressRepository'
 import { FilePlayerSettingsRepository } from './repositories/FilePlayerSettingsRepository'
 import { FilePlayerStatisticsRepository } from './repositories/FilePlayerStatisticsRepository'
+import { FileSessionRepository } from './repositories/FileSessionRepository'
+import { FileUserRepository } from './repositories/FileUserRepository'
+import { createAuthRoutes } from './routes/authRoutes'
 import { createContentRoutes } from './routes/contentRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
 import { createPlayerProgressRoutes } from './routes/playerProgressRoutes'
@@ -19,6 +24,7 @@ import { LevelController } from './controllers/levelController'
 import { PlayerProgressController } from './controllers/playerProgressController'
 import { PlayerSettingsController } from './controllers/playerSettingsController'
 import { PlayerStatisticsController } from './controllers/playerStatisticsController'
+import { AuthService } from './services/AuthService'
 import { ContentService } from './services/ContentService'
 import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
@@ -42,14 +48,44 @@ export function createApp() {
   const playerSettingsRepository = new FilePlayerSettingsRepository(
     path.resolve(process.cwd(), 'progress_data'),
   )
+  const userRepository = new FileUserRepository(
+    path.resolve(process.cwd(), 'auth_data'),
+  )
+  const sessionRepository = new FileSessionRepository(
+    path.resolve(process.cwd(), 'auth_data'),
+  )
+  const passwordResetTokenRepository = new FilePasswordResetTokenRepository(
+    path.resolve(process.cwd(), 'auth_data'),
+  )
   const levelService = new LevelService(repository)
   const contentService = new ContentService(contentRepository)
   const playerProgressService = new PlayerProgressService(playerProgressRepository)
   const playerSettingsService = new PlayerSettingsService(playerSettingsRepository)
+  const authService = new AuthService(
+    userRepository,
+    sessionRepository,
+    passwordResetTokenRepository,
+    process.env.BULLPEN_ADMIN_EMAIL ?? 'vovanosa06@gmail.com',
+    process.env.GOOGLE_CLIENT_ID &&
+      process.env.GOOGLE_CLIENT_SECRET &&
+      process.env.GOOGLE_CALLBACK_URL
+      ? {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+          frontendCallbackUrl:
+            process.env.GOOGLE_FRONTEND_CALLBACK_URL ??
+            'http://localhost:5173/auth/google/callback',
+          stateSecret:
+            process.env.GOOGLE_STATE_SECRET ?? 'bullpen-google-state-secret',
+        }
+      : null,
+  )
   const playerStatisticsService = new PlayerStatisticsService(
     playerProgressRepository,
     playerStatisticsRepository,
   )
+  const authController = new AuthController(authService)
   const levelController = new LevelController(levelService)
   const contentController = new ContentController(contentService)
   const playerProgressController = new PlayerProgressController(playerProgressService)
@@ -63,11 +99,12 @@ export function createApp() {
     response.json({ ok: true })
   })
 
-  app.use('/api/levels', createLevelRoutes(levelController))
-  app.use('/api/content', createContentRoutes(contentController))
-  app.use('/api/progress', createPlayerProgressRoutes(playerProgressController))
-  app.use('/api/settings', createPlayerSettingsRoutes(playerSettingsController))
-  app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController))
+  app.use('/api/auth', createAuthRoutes(authController))
+  app.use('/api/levels', createLevelRoutes(levelController, authService))
+  app.use('/api/content', createContentRoutes(contentController, authService))
+  app.use('/api/progress', createPlayerProgressRoutes(playerProgressController, authService))
+  app.use('/api/settings', createPlayerSettingsRoutes(playerSettingsController, authService))
+  app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController, authService))
 
   app.use(
     (

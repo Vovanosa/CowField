@@ -20,10 +20,10 @@ export class PlayerStatisticsService {
     this.statisticsRepository = statisticsRepository
   }
 
-  async getSummary(): Promise<PlayerStatisticsSummary> {
+  async getSummary(actorKey: string): Promise<PlayerStatisticsSummary> {
     const [allProgress, statisticsRecord] = await Promise.all([
-      this.progressRepository.listAll(),
-      this.statisticsRepository.get(),
+      this.progressRepository.listAll(actorKey),
+      this.statisticsRepository.get(actorKey),
     ])
 
     const completedProgress = allProgress.filter((progress) => progress.bestTimeSeconds !== null)
@@ -77,14 +77,14 @@ export class PlayerStatisticsService {
     }
   }
 
-  async recordBullPlacement() {
-    const currentStatistics = await this.statisticsRepository.get()
+  async recordBullPlacement(actorKey: string) {
+    const currentStatistics = await this.statisticsRepository.get(actorKey)
     const nextStatistics = {
       totalBullPlacements: currentStatistics.totalBullPlacements + 1,
       updatedAt: new Date().toISOString(),
     }
 
-    await this.statisticsRepository.save(nextStatistics)
+    await this.statisticsRepository.save(actorKey, nextStatistics)
 
     return {
       totalBullPlacements: nextStatistics.totalBullPlacements,

@@ -1,4 +1,5 @@
 export type AppContentKey = 'home' | 'about' | 'settings'
+import { buildAuthenticatedHeaders } from './authSessionStorage'
 
 type ContentApiRecord = {
   key: AppContentKey
@@ -11,7 +12,7 @@ const CONTENT_API_BASE = '/api/content'
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${CONTENT_API_BASE}${path}`, {
     headers: {
-      'Content-Type': 'application/json',
+      ...buildAuthenticatedHeaders(),
     },
     ...init,
   })

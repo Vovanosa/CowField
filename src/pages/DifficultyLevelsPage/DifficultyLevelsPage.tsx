@@ -22,9 +22,9 @@ function DifficultyLevelsPageScreen() {
   const [levels, setLevels] = useState<LevelDefinition[]>([])
   const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
   const [isLoading, setIsLoading] = useState(true)
-  const { isAdmin } = useRole()
+  const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
-  const isTakeYourTimeEnabled = settings?.takeYourTimeEnabled === true
+  const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
 
   useEffect(() => {

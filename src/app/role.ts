@@ -1,21 +1,21 @@
-import { createContext, useContext } from 'react'
+import { useAuth } from './useAuth'
 
-export type AppRole = 'player' | 'admin'
+export type AppRole = 'admin' | 'user' | 'guest'
 
 export type RoleContextValue = {
   role: AppRole
-  setRole: (role: AppRole) => void
+  setRole: (role: 'admin' | 'user') => void
   isAdmin: boolean
+  isGuest: boolean
 }
 
-export const RoleContext = createContext<RoleContextValue | null>(null)
-
 export function useRole() {
-  const context = useContext(RoleContext)
+  const auth = useAuth()
 
-  if (!context) {
-    throw new Error('useRole must be used within RoleProvider.')
+  return {
+    role: auth.effectiveRole ?? 'guest',
+    setRole: auth.setPreviewRole,
+    isAdmin: auth.isAdmin,
+    isGuest: auth.isGuest,
   }
-
-  return context
 }

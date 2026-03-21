@@ -20,5 +20,18 @@ export {
   getPlayerSettings,
   savePlayerSettings,
 } from './playerSettingsStorage'
+export {
+  buildAuthenticatedHeaders,
+  clearStoredSessionToken,
+  getCurrentSession,
+  getStoredSessionToken,
+  login,
+  loginAsGuest,
+  logout,
+  register,
+  requestPasswordReset,
+  resetPassword,
+  setStoredSessionToken,
+} from './authSessionStorage'
 export { completeLevelProgress, getLevelProgress, getProgressByDifficulty } from './progressStorage'
 export { getPlayerStatistics, recordBullPlacement } from './statisticsStorage'

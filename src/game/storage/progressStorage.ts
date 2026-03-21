@@ -1,4 +1,5 @@
 import type { Difficulty, LevelProgress } from '../types'
+import { buildAuthenticatedHeaders } from './authSessionStorage'
 
 const API_BASE = '/api/progress'
 
@@ -15,7 +16,7 @@ type CompleteLevelResponse = {
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
-      'Content-Type': 'application/json',
+      ...buildAuthenticatedHeaders(),
     },
     ...init,
   })

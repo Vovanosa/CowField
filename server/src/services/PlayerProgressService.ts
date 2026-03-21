@@ -19,30 +19,35 @@ export class PlayerProgressService {
     this.repository = repository
   }
 
-  async listByDifficulty(difficulty: Difficulty) {
-    return this.repository.listByDifficulty(difficulty)
+  async listByDifficulty(actorKey: string, difficulty: Difficulty) {
+    return this.repository.listByDifficulty(actorKey, difficulty)
   }
 
-  async getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number) {
+  async getByDifficultyAndNumber(actorKey: string, difficulty: Difficulty, levelNumber: number) {
     return (
-      (await this.repository.getByDifficultyAndNumber(difficulty, levelNumber)) ??
+      (await this.repository.getByDifficultyAndNumber(actorKey, difficulty, levelNumber)) ??
       createEmptyProgress(difficulty, levelNumber)
     )
   }
 
   async completeLevel(
+    actorKey: string,
     difficulty: Difficulty,
     levelNumber: number,
     input: CompleteLevelInput,
   ) {
-    const existing = await this.repository.getByDifficultyAndNumber(difficulty, levelNumber)
+    const existing = await this.repository.getByDifficultyAndNumber(
+      actorKey,
+      difficulty,
+      levelNumber,
+    )
     const timestamp = new Date().toISOString()
     const isNewBest =
       existing?.bestTimeSeconds === null ||
       existing?.bestTimeSeconds === undefined ||
       input.timeSeconds < existing.bestTimeSeconds
 
-    const progress = await this.repository.save({
+    const progress = await this.repository.save(actorKey, {
       difficulty,
       levelNumber,
       bestTimeSeconds: isNewBest ? input.timeSeconds : (existing?.bestTimeSeconds ?? input.timeSeconds),

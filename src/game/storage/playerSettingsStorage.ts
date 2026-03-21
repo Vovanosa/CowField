@@ -1,10 +1,11 @@
-import { getPreferredLanguage, normalizeLanguage } from '../../i18n'
+import { getStoredLanguage, normalizeLanguage } from '../../i18n'
 import type { PlayerSettings } from '../types'
+import { buildAuthenticatedHeaders } from './authSessionStorage'
 
 const SETTINGS_API_BASE = '/api/settings'
 
 const defaultPlayerSettings: PlayerSettings = {
-  language: getPreferredLanguage(),
+  language: getStoredLanguage(),
   soundEffectsEnabled: false,
   soundEffectsVolume: 50,
   musicEnabled: false,
@@ -58,7 +59,7 @@ export function applyThemeMode(isDarkModeEnabled: boolean) {
 async function requestJson<T>(init?: RequestInit): Promise<T> {
   const response = await fetch(SETTINGS_API_BASE, {
     headers: {
-      'Content-Type': 'application/json',
+      ...buildAuthenticatedHeaders(),
     },
     ...init,
   })

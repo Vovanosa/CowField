@@ -2,7 +2,7 @@ import { ArrowLeft, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import i18n from 'i18next'
+import { useAuth } from '../../app/useAuth'
 import { PageIntro } from '../../components/PageIntro'
 import { applyThemeMode, getPlayerSettings, savePlayerSettings } from '../../game/storage'
 import type { PlayerSettings } from '../../game/types'
@@ -47,6 +47,7 @@ const settingsConfig: Array<{
 ]
 
 export function SettingsPage() {
+  const { isGuest } = useAuth()
   const [settings, setSettings] = useState<PlayerSettings | null>(null)
   const hasLoadedSettingsRef = useRef(false)
   const previousSettingsRef = useRef<PlayerSettings | null>(null)
@@ -64,7 +65,6 @@ export function SettingsPage() {
 
       setSettings(nextSettings)
       applyThemeMode(nextSettings.darkModeEnabled)
-      void i18n.changeLanguage(nextSettings.language)
       hasLoadedSettingsRef.current = true
       previousSettingsRef.current = nextSettings
     }
@@ -116,6 +116,10 @@ export function SettingsPage() {
 
   function handleToggle(key: ToggleSettingKey) {
     if (!settings) {
+      return
+    }
+
+    if (isGuest && key === 'takeYourTimeEnabled') {
       return
     }
 
@@ -199,12 +203,14 @@ export function SettingsPage() {
 
       <section className={`${styles.settingsPanel} panel-surface`}>
         {!settings ? <p className={styles.loadingMessage}>{t('Loading settings...')}</p> : null}
+        {settings && isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
         <div className={styles.settingsList}>
           {settings ? (
             <>
               {settingsConfig.map((setting) => {
                 const Icon = setting.icon
                 const isEnabled = settings[setting.key]
+                const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
 
                 return (
                   <article key={setting.key} className={styles.settingCard}>
@@ -226,6 +232,7 @@ export function SettingsPage() {
                         className={isEnabled ? `${styles.toggle} ${styles.toggleActive}` : styles.toggle}
                         onClick={() => handleToggle(setting.key)}
                         aria-pressed={isEnabled}
+                        disabled={isDisabled}
                       >
                         <span className={styles.toggleThumb} />
                       </button>

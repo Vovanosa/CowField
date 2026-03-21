@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 
+import { getAuthenticatedActor } from '../middleware/authMiddleware'
 import { PlayerStatisticsService } from '../services/PlayerStatisticsService'
 
 export class PlayerStatisticsController {
@@ -9,13 +10,15 @@ export class PlayerStatisticsController {
     this.playerStatisticsService = playerStatisticsService
   }
 
-  getSummary = async (_request: Request, response: Response) => {
-    const summary = await this.playerStatisticsService.getSummary()
+  getSummary = async (request: Request, response: Response) => {
+    const actor = getAuthenticatedActor(request)
+    const summary = await this.playerStatisticsService.getSummary(actor.actorKey)
     response.json(summary)
   }
 
-  recordBullPlacement = async (_request: Request, response: Response) => {
-    const payload = await this.playerStatisticsService.recordBullPlacement()
+  recordBullPlacement = async (request: Request, response: Response) => {
+    const actor = getAuthenticatedActor(request)
+    const payload = await this.playerStatisticsService.recordBullPlacement(actor.actorKey)
     response.status(201).json(payload)
   }
 }
