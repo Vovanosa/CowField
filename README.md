@@ -121,6 +121,7 @@ Main local env values:
 
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/cowfield?schema=public
+DIRECT_URL=postgresql://postgres:password@localhost:5432/cowfield?schema=public
 PORT=4000
 BULLPEN_ADMIN_EMAIL=your-admin@example.com
 ALLOWED_ORIGINS=http://localhost:5173
@@ -247,6 +248,7 @@ src/
 - The configured admin email is enforced as the single admin account.
 - The frontend can target a separate backend host through `VITE_API_BASE_URL`.
 - The backend now uses `ALLOWED_ORIGINS` for deployment-safe CORS control.
+- `DIRECT_URL` can be used for Prisma CLI commands when the runtime `DATABASE_URL` uses a pooled host such as a Neon pooler URL.
 
 ## Deployment Direction
 

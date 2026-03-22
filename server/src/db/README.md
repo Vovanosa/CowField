@@ -11,6 +11,7 @@ Current state:
 
 Expected environment:
 - `DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB?schema=public`
+- `DIRECT_URL=postgresql://USER:PASSWORD@HOST:PORT/DB?schema=public` for Prisma CLI commands when the runtime URL is pooled
 - `BULLPEN_ADMIN_EMAIL=admin@example.com`
 - `ALLOWED_ORIGINS=http://localhost:5173,https://your-frontend-domain`
 - `VITE_API_BASE_URL=http://localhost:4000` on the frontend side
