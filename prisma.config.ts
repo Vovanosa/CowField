@@ -15,7 +15,7 @@ function getPrismaDatasourceUrl() {
     return databaseUrl
   }
 
-  throw new Error('DATABASE_URL or DIRECT_URL must be set for Prisma CLI commands.')
+  return 'postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public'
 }
 
 export default defineConfig({
