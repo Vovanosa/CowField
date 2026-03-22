@@ -1,6 +1,6 @@
 import type { CompleteLevelInput } from '../schemas/progressSchemas'
-import { FilePlayerProgressRepository } from '../repositories/FilePlayerProgressRepository'
 import type { Difficulty } from '../types/level'
+import type { PlayerProgressRepository } from '../repositories/interfaces'
 
 function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
   return {
@@ -13,9 +13,9 @@ function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
 }
 
 export class PlayerProgressService {
-  private readonly repository: FilePlayerProgressRepository
+  private readonly repository: PlayerProgressRepository
 
-  constructor(repository: FilePlayerProgressRepository) {
+  constructor(repository: PlayerProgressRepository) {
     this.repository = repository
   }
 

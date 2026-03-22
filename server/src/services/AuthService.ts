@@ -9,10 +9,17 @@ import type {
   ResetPasswordInput,
 } from '../schemas/authSchemas'
 import { HttpError } from '../errors/HttpError'
-import { FilePasswordResetTokenRepository } from '../repositories/FilePasswordResetTokenRepository'
-import { FileSessionRepository } from '../repositories/FileSessionRepository'
-import { FileUserRepository } from '../repositories/FileUserRepository'
 import type { SessionRecord, UserRecord } from '../types/auth'
+import type {
+  PasswordResetTokenRepository,
+  SessionRepository,
+  UserRepository,
+} from '../repositories/interfaces'
+import {
+  enforceConfiguredAdminAccount,
+  hashPassword,
+  normalizeEmail,
+} from '../auth/adminAccount'
 
 const scrypt = promisify(nodeScrypt)
 
@@ -39,19 +46,9 @@ type GoogleUserInfo = {
   name?: string
 }
 
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase()
-}
-
 function deriveDisplayNameFromEmail(email: string) {
   const [prefix] = email.split('@')
   return prefix || 'User'
-}
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString('hex')
-  const derivedKey = (await scrypt(password, salt, 64)) as Buffer
-  return `${salt}:${derivedKey.toString('hex')}`
 }
 
 async function verifyPassword(password: string, passwordHash: string) {
@@ -121,16 +118,16 @@ function createActorKey(userId: string | null, role: 'admin' | 'user' | 'guest')
 }
 
 export class AuthService {
-  private readonly userRepository: FileUserRepository
-  private readonly sessionRepository: FileSessionRepository
-  private readonly passwordResetTokenRepository: FilePasswordResetTokenRepository
+  private readonly userRepository: UserRepository
+  private readonly sessionRepository: SessionRepository
+  private readonly passwordResetTokenRepository: PasswordResetTokenRepository
   private readonly adminEmail: string
   private readonly googleOAuthConfig: GoogleOAuthConfig | null
 
   constructor(
-    userRepository: FileUserRepository,
-    sessionRepository: FileSessionRepository,
-    passwordResetTokenRepository: FilePasswordResetTokenRepository,
+    userRepository: UserRepository,
+    sessionRepository: SessionRepository,
+    passwordResetTokenRepository: PasswordResetTokenRepository,
     adminEmail: string,
     googleOAuthConfig: GoogleOAuthConfig | null,
   ) {
@@ -142,26 +139,7 @@ export class AuthService {
   }
 
   private async ensureAdminSeed() {
-    const existingAdmin = await this.userRepository.getByEmail(this.adminEmail)
-
-    if (existingAdmin) {
-      return existingAdmin
-    }
-
-    const timestamp = new Date().toISOString()
-    const adminUser: UserRecord = {
-      id: randomUUID(),
-      email: this.adminEmail,
-      passwordHash: await hashPassword('adminadmin'),
-      googleId: null,
-      role: 'admin',
-      displayName: 'Admin',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }
-
-    await this.userRepository.save(adminUser)
-    return adminUser
+    return enforceConfiguredAdminAccount(this.userRepository, this.adminEmail, 'adminadmin')
   }
 
   private getRequiredGoogleOAuthConfig() {

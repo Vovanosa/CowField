@@ -1,11 +1,11 @@
 import type { PlayerSettingsInput } from '../schemas/settingsSchemas'
-import { FilePlayerSettingsRepository } from '../repositories/FilePlayerSettingsRepository'
 import type { SessionRole } from '../types/auth'
+import type { PlayerSettingsRepository } from '../repositories/interfaces'
 
 export class PlayerSettingsService {
-  private readonly playerSettingsRepository: FilePlayerSettingsRepository
+  private readonly playerSettingsRepository: PlayerSettingsRepository
 
-  constructor(playerSettingsRepository: FilePlayerSettingsRepository) {
+  constructor(playerSettingsRepository: PlayerSettingsRepository) {
     this.playerSettingsRepository = playerSettingsRepository
   }
 

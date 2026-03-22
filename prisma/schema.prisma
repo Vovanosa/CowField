@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountRole {
+  admin
+  user
+}
+
+enum SessionRole {
+  admin
+  user
+  guest
+}
+
+enum ActorType {
+  user
+  guest
+}
+
+enum Difficulty {
+  light
+  easy
+  medium
+  hard
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String?              @map("password_hash")
+  googleId            String?              @unique @map("google_id")
+  role                AccountRole
+  displayName         String               @map("display_name")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  playerSettings      PlayerSettings[]
+  levelProgress       LevelProgress[]
+  statisticsTotals    PlayerStatisticsTotal[]
+  statisticsByDiff    PlayerStatisticsByDifficulty[]
+  authoredLevels      Level[]
+  contentEdits        ContentEntry[]
+
+  @@map("users")
+}
+
+model GuestProfile {
+  id               String                         @id @default(uuid())
+  actorKey         String                         @unique @map("actor_key")
+  displayName      String                         @default("Guest") @map("display_name")
+  createdAt        DateTime                       @default(now()) @map("created_at")
+  updatedAt        DateTime                       @updatedAt @map("updated_at")
+  sessions         Session[]
+  playerSettings   PlayerSettings[]
+  levelProgress    LevelProgress[]
+  statisticsTotals PlayerStatisticsTotal[]
+  statisticsByDiff PlayerStatisticsByDifficulty[]
+
+  @@map("guest_profiles")
+}
+
+model Session {
+  token          String        @id
+  actorKey       String        @map("actor_key")
+  actorType      ActorType     @map("actor_type")
+  role           SessionRole
+  userId         String?       @map("user_id")
+  guestProfileId String?       @map("guest_profile_id")
+  email          String?
+  displayName    String        @map("display_name")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestProfile   GuestProfile? @relation(fields: [guestProfileId], references: [id], onDelete: Cascade)
+
+  @@index([actorKey], map: "sessions_actor_key_idx")
+  @@index([userId], map: "sessions_user_id_idx")
+  @@index([guestProfileId], map: "sessions_guest_profile_id_idx")
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  email     String
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "password_reset_tokens_user_id_idx")
+  @@map("password_reset_tokens")
+}
+
+model PlayerSettings {
+  id                  String        @id @default(uuid())
+  actorType           ActorType     @map("actor_type")
+  userId              String?       @map("user_id")
+  guestProfileId      String?       @map("guest_profile_id")
+  language            String        @default("en")
+  soundEffectsEnabled Boolean       @default(false) @map("sound_effects_enabled")
+  soundEffectsVolume  Int           @default(50) @map("sound_effects_volume")
+  musicEnabled        Boolean       @default(false) @map("music_enabled")
+  musicVolume         Int           @default(50) @map("music_volume")
+  darkModeEnabled     Boolean       @default(false) @map("dark_mode_enabled")
+  takeYourTimeEnabled Boolean       @default(false) @map("take_your_time_enabled")
+  autoPlaceDotsEnabled Boolean      @default(false) @map("auto_place_dots_enabled")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  user                User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestProfile        GuestProfile? @relation(fields: [guestProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId], map: "player_settings_user_id_unique")
+  @@unique([guestProfileId], map: "player_settings_guest_profile_id_unique")
+  @@index([actorType], map: "player_settings_actor_type_idx")
+  @@map("player_settings")
+}
+
+model LevelProgress {
+  id              String        @id @default(uuid())
+  actorType       ActorType     @map("actor_type")
+  userId          String?       @map("user_id")
+  guestProfileId  String?       @map("guest_profile_id")
+  difficulty      Difficulty
+  levelNumber     Int           @map("level_number")
+  bestTimeSeconds Int?          @map("best_time_seconds")
+  completedAt     DateTime?     @map("completed_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  user            User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestProfile    GuestProfile? @relation(fields: [guestProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, difficulty, levelNumber], map: "level_progress_user_level_unique")
+  @@unique([guestProfileId, difficulty, levelNumber], map: "level_progress_guest_level_unique")
+  @@index([actorType], map: "level_progress_actor_type_idx")
+  @@index([difficulty, levelNumber], map: "level_progress_level_lookup_idx")
+  @@map("level_progress")
+}
+
+model PlayerStatisticsTotal {
+  id                         String        @id @default(uuid())
+  actorType                  ActorType     @map("actor_type")
+  userId                     String?       @map("user_id")
+  guestProfileId             String?       @map("guest_profile_id")
+  totalCompletedLevels       Int           @default(0) @map("total_completed_levels")
+  totalBullPlacements        Int           @default(0) @map("total_bull_placements")
+  totalCompletionTimeSeconds Int           @default(0) @map("total_completion_time_seconds")
+  updatedAt                  DateTime      @updatedAt @map("updated_at")
+  user                       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestProfile               GuestProfile? @relation(fields: [guestProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId], map: "player_statistics_totals_user_id_unique")
+  @@unique([guestProfileId], map: "player_statistics_totals_guest_profile_id_unique")
+  @@index([actorType], map: "player_statistics_totals_actor_type_idx")
+  @@map("player_statistics_totals")
+}
+
+model PlayerStatisticsByDifficulty {
+  id                 String        @id @default(uuid())
+  actorType          ActorType     @map("actor_type")
+  userId             String?       @map("user_id")
+  guestProfileId     String?       @map("guest_profile_id")
+  difficulty         Difficulty
+  completedLevels    Int           @default(0) @map("completed_levels")
+  fastestLevelNumber Int?          @map("fastest_level_number")
+  fastestTimeSeconds Int?          @map("fastest_time_seconds")
+  averageTimeSeconds Int?          @map("average_time_seconds")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  user               User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestProfile       GuestProfile? @relation(fields: [guestProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, difficulty], map: "player_statistics_by_difficulty_user_unique")
+  @@unique([guestProfileId, difficulty], map: "player_statistics_by_difficulty_guest_unique")
+  @@index([actorType], map: "player_statistics_by_difficulty_actor_type_idx")
+  @@map("player_statistics_by_difficulty")
+}
+
+model Level {
+  id              String     @id @default(uuid())
+  difficulty      Difficulty
+  levelNumber     Int        @map("level_number")
+  title           String
+  gridSize        Int        @map("grid_size")
+  pensByCell      Json       @map("pens_by_cell")
+  cowsByCell      Json       @map("cows_by_cell")
+  createdByUserId String?    @map("created_by_user_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  createdByUser   User?      @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([difficulty, levelNumber], map: "levels_difficulty_level_number_unique")
+  @@index([createdByUserId], map: "levels_created_by_user_id_idx")
+  @@map("levels")
+}
+
+model ContentEntry {
+  key             String    @id
+  text            String
+  updatedByUserId String?   @map("updated_by_user_id")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  updatedByUser   User?     @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([updatedByUserId], map: "content_entries_updated_by_user_id_idx")
+  @@map("content_entries")
+}

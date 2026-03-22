@@ -1,12 +1,12 @@
 import { HttpError } from '../errors/HttpError'
 import type { LevelRecordInput } from '../schemas/levelSchemas'
 import { validateLevelRecord } from './levelValidation'
-import { FileLevelRepository } from '../repositories/FileLevelRepository'
+import type { LevelRepository } from '../repositories/interfaces'
 
 export class LevelService {
-  private readonly repository: FileLevelRepository
+  private readonly repository: LevelRepository
 
-  constructor(repository: FileLevelRepository) {
+  constructor(repository: LevelRepository) {
     this.repository = repository
   }
 

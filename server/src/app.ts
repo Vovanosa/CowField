@@ -1,18 +1,9 @@
 import cors from 'cors'
 import express from 'express'
-import path from 'node:path'
 import { ZodError } from 'zod'
 
 import { HttpError } from './errors/HttpError'
 import { AuthController } from './controllers/authController'
-import { FileContentRepository } from './repositories/FileContentRepository'
-import { FileLevelRepository } from './repositories/FileLevelRepository'
-import { FilePasswordResetTokenRepository } from './repositories/FilePasswordResetTokenRepository'
-import { FilePlayerProgressRepository } from './repositories/FilePlayerProgressRepository'
-import { FilePlayerSettingsRepository } from './repositories/FilePlayerSettingsRepository'
-import { FilePlayerStatisticsRepository } from './repositories/FilePlayerStatisticsRepository'
-import { FileSessionRepository } from './repositories/FileSessionRepository'
-import { FileUserRepository } from './repositories/FileUserRepository'
 import { createAuthRoutes } from './routes/authRoutes'
 import { createContentRoutes } from './routes/contentRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
@@ -30,41 +21,33 @@ import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
 import { PlayerSettingsService } from './services/PlayerSettingsService'
 import { PlayerStatisticsService } from './services/PlayerStatisticsService'
+import { createRepositories } from './repositories/createRepositories'
+import { getPrismaClient } from './db/prismaClient'
+
+function getAllowedOrigins() {
+  const configuredOrigins = process.env.ALLOWED_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  if (configuredOrigins && configuredOrigins.length > 0) {
+    return configuredOrigins
+  }
+
+  return ['http://localhost:5173']
+}
 
 export function createApp() {
   const app = express()
-  const repository = new FileLevelRepository(
-    path.resolve(process.cwd(), 'levels_data'),
-  )
-  const contentRepository = new FileContentRepository(
-    path.resolve(process.cwd(), 'content_data'),
-  )
-  const playerProgressRepository = new FilePlayerProgressRepository(
-    path.resolve(process.cwd(), 'progress_data'),
-  )
-  const playerStatisticsRepository = new FilePlayerStatisticsRepository(
-    path.resolve(process.cwd(), 'progress_data'),
-  )
-  const playerSettingsRepository = new FilePlayerSettingsRepository(
-    path.resolve(process.cwd(), 'progress_data'),
-  )
-  const userRepository = new FileUserRepository(
-    path.resolve(process.cwd(), 'auth_data'),
-  )
-  const sessionRepository = new FileSessionRepository(
-    path.resolve(process.cwd(), 'auth_data'),
-  )
-  const passwordResetTokenRepository = new FilePasswordResetTokenRepository(
-    path.resolve(process.cwd(), 'auth_data'),
-  )
-  const levelService = new LevelService(repository)
-  const contentService = new ContentService(contentRepository)
-  const playerProgressService = new PlayerProgressService(playerProgressRepository)
-  const playerSettingsService = new PlayerSettingsService(playerSettingsRepository)
+  const allowedOrigins = new Set(getAllowedOrigins())
+  const repositories = createRepositories()
+  const levelService = new LevelService(repositories.levelRepository)
+  const contentService = new ContentService(repositories.contentRepository)
+  const playerProgressService = new PlayerProgressService(repositories.playerProgressRepository)
+  const playerSettingsService = new PlayerSettingsService(repositories.playerSettingsRepository)
   const authService = new AuthService(
-    userRepository,
-    sessionRepository,
-    passwordResetTokenRepository,
+    repositories.userRepository,
+    repositories.sessionRepository,
+    repositories.passwordResetTokenRepository,
     process.env.BULLPEN_ADMIN_EMAIL ?? 'vovanosa06@gmail.com',
     process.env.GOOGLE_CLIENT_ID &&
       process.env.GOOGLE_CLIENT_SECRET &&
@@ -82,8 +65,8 @@ export function createApp() {
       : null,
   )
   const playerStatisticsService = new PlayerStatisticsService(
-    playerProgressRepository,
-    playerStatisticsRepository,
+    repositories.playerProgressRepository,
+    repositories.playerStatisticsRepository,
   )
   const authController = new AuthController(authService)
   const levelController = new LevelController(levelService)
@@ -92,11 +75,28 @@ export function createApp() {
   const playerSettingsController = new PlayerSettingsController(playerSettingsService)
   const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
 
-  app.use(cors())
+  app.use(
+    cors({
+      origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin)) {
+          callback(null, true)
+          return
+        }
+
+        callback(new HttpError(403, 'Origin is not allowed by CORS.'))
+      },
+      allowedHeaders: ['Authorization', 'Content-Type'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    }),
+  )
   app.use(express.json({ limit: '1mb' }))
 
-  app.get('/api/health', (_request, response) => {
-    response.json({ ok: true })
+  app.get('/api/health', async (_request, response) => {
+    await getPrismaClient().$queryRaw`SELECT 1`
+    response.json({
+      ok: true,
+      storage: 'database',
+    })
   })
 
   app.use('/api/auth', createAuthRoutes(authController))

@@ -1,7 +1,8 @@
 import type { PlayerStatisticsSummary } from '../types'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildApiUrl } from './apiBase'
 
-const API_BASE = '/api/statistics'
+const API_BASE = buildApiUrl('/api/statistics')
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {

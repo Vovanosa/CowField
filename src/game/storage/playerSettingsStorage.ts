@@ -1,8 +1,9 @@
 import { getStoredLanguage, normalizeLanguage } from '../../i18n'
 import type { PlayerSettings } from '../types'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildApiUrl } from './apiBase'
 
-const SETTINGS_API_BASE = '/api/settings'
+const SETTINGS_API_BASE = buildApiUrl('/api/settings')
 
 const defaultPlayerSettings: PlayerSettings = {
   language: getStoredLanguage(),

@@ -1,20 +1,22 @@
-import { FilePlayerProgressRepository } from '../repositories/FilePlayerProgressRepository'
-import { FilePlayerStatisticsRepository } from '../repositories/FilePlayerStatisticsRepository'
 import type { Difficulty } from '../types/level'
 import type {
   DifficultyStatisticsSummary,
   PlayerStatisticsSummary,
 } from '../types/statistics'
+import type {
+  PlayerProgressRepository,
+  PlayerStatisticsRepository,
+} from '../repositories/interfaces'
 
 const difficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 export class PlayerStatisticsService {
-  private readonly progressRepository: FilePlayerProgressRepository
-  private readonly statisticsRepository: FilePlayerStatisticsRepository
+  private readonly progressRepository: PlayerProgressRepository
+  private readonly statisticsRepository: PlayerStatisticsRepository
 
   constructor(
-    progressRepository: FilePlayerProgressRepository,
-    statisticsRepository: FilePlayerStatisticsRepository,
+    progressRepository: PlayerProgressRepository,
+    statisticsRepository: PlayerStatisticsRepository,
   ) {
     this.progressRepository = progressRepository
     this.statisticsRepository = statisticsRepository

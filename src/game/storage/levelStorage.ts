@@ -1,8 +1,9 @@
 import type { Difficulty, LevelDefinition, LevelDraft } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildApiUrl } from './apiBase'
 
-const API_BASE = '/api/levels'
+const API_BASE = buildApiUrl('/api/levels')
 export const DIFFICULTIES: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 type LevelApiRecord = {

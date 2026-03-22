@@ -1,7 +1,8 @@
 import type { Difficulty, LevelProgress } from '../types'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildApiUrl } from './apiBase'
 
-const API_BASE = '/api/progress'
+const API_BASE = buildApiUrl('/api/progress')
 
 type DifficultyProgressResponse = {
   difficulty: Difficulty

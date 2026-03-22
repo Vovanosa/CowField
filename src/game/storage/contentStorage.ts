@@ -1,5 +1,6 @@
 export type AppContentKey = 'home' | 'about' | 'settings'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildApiUrl } from './apiBase'
 
 type ContentApiRecord = {
   key: AppContentKey
@@ -7,7 +8,7 @@ type ContentApiRecord = {
   updatedAt: string
 }
 
-const CONTENT_API_BASE = '/api/content'
+const CONTENT_API_BASE = buildApiUrl('/api/content')
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${CONTENT_API_BASE}${path}`, {

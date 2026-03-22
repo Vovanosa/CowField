@@ -1,6 +1,7 @@
 import type { AuthSession } from '../types'
+import { buildApiUrl } from './apiBase'
 
-const AUTH_API_BASE = '/api/auth'
+const AUTH_API_BASE = buildApiUrl('/api/auth')
 const SESSION_TOKEN_STORAGE_KEY = 'cowfield.auth-session-token'
 
 type PasswordResetRequestResponse = {

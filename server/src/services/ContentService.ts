@@ -1,7 +1,7 @@
 import { HttpError } from '../errors/HttpError'
 import type { ContentRecordInput } from '../schemas/contentSchemas'
-import { FileContentRepository } from '../repositories/FileContentRepository'
 import type { ContentKey } from '../types/content'
+import type { ContentRepository } from '../repositories/interfaces'
 
 const defaultContentByKey: Record<ContentKey, string> = {
   home: 'Choose a difficulty to play, or switch to admin mode to create and edit levels.',
@@ -12,9 +12,9 @@ const defaultContentByKey: Record<ContentKey, string> = {
 }
 
 export class ContentService {
-  private readonly repository: FileContentRepository
+  private readonly repository: ContentRepository
 
-  constructor(repository: FileContentRepository) {
+  constructor(repository: ContentRepository) {
     this.repository = repository
   }
 

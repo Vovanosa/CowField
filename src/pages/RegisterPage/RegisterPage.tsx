@@ -5,12 +5,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
+import { buildApiUrl } from '../../game/storage/apiBase'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function RegisterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const googleLoginUrl = '/api/auth/google'
+  const googleLoginUrl = buildApiUrl('/api/auth/google')
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
