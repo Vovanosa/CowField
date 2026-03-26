@@ -154,18 +154,32 @@ const en = {
   'Confirm password': 'Confirm password',
   'Back to login': 'Back to login',
   'Reset password': 'Reset password',
-  'Enter your email to start the password reset flow.':
-    'Enter your email to start the password reset flow.',
-  'If the account exists, a reset email flow has been started.':
-    'If the account exists, a reset email flow has been started.',
+  'Enter your email and we will send you a password reset link.':
+    'Enter your email and we will send you a password reset link.',
+  'If the account exists, a reset link has been sent to that email address.':
+    'If the account exists, a reset link has been sent to that email address.',
   'Send reset link': 'Send reset link',
-  'I already have a reset token': 'I already have a reset token',
+  'I already have a reset link': 'I already have a reset link',
   'Your password has been updated.': 'Your password has been updated.',
-  'Paste your reset token from the email flow and choose a new password.':
-    'Paste your reset token from the email flow and choose a new password.',
+  'Open the reset link from your email and choose a new password.':
+    'Open the reset link from your email and choose a new password.',
   'Reset token': 'Reset token',
   'New password': 'New password',
   'Save new password': 'Save new password',
+  'Account created. Check your email to verify it before logging in.':
+    'Account created. Check your email to verify it before logging in.',
+  'Verification email sent again.': 'Verification email sent again.',
+  'Resend verification email': 'Resend verification email',
+  'Verify email': 'Verify email',
+  'Enter the verification code sent to your email to finish creating your account.':
+    'Enter the verification code sent to your email to finish creating your account.',
+  'Verification code': 'Verification code',
+  'Verify code': 'Verify code',
+  'Verification code sent again.': 'Verification code sent again.',
+  'Resend verification code': 'Resend verification code',
+  'Enter verification code': 'Enter verification code',
+  'Your email has been verified. You can log in now.':
+    'Your email has been verified. You can log in now.',
   'Show password': 'Show password',
   'Hide password': 'Hide password',
   'You are playing as a Guest.': 'You are playing as a Guest.',

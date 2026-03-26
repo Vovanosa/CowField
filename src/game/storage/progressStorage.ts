@@ -24,9 +24,7 @@ type CompleteLevelResponse = {
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      ...buildAuthenticatedHeaders(),
-    },
+    headers: await buildAuthenticatedHeaders(),
     ...init,
   })
 

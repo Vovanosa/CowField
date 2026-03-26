@@ -69,10 +69,18 @@ function PublicShell() {
 
 const router = createBrowserRouter([
   {
-    element: <PublicOnlyRoute />,
+    element: <PublicShell />,
     children: [
       {
-        element: <PublicShell />,
+        path: '/auth/google/callback',
+        element: <GoogleAuthCallbackPage />,
+      },
+      {
+        path: '/reset-password',
+        element: <ResetPasswordPage />,
+      },
+      {
+        element: <PublicOnlyRoute />,
         children: [
           {
             path: '/login',
@@ -85,14 +93,6 @@ const router = createBrowserRouter([
           {
             path: '/forgot-password',
             element: <ForgotPasswordPage />,
-          },
-          {
-            path: '/auth/google/callback',
-            element: <GoogleAuthCallbackPage />,
-          },
-          {
-            path: '/reset-password',
-            element: <ResetPasswordPage />,
           },
         ],
       },

@@ -18,7 +18,7 @@ export function ForgotPasswordPage() {
 
     try {
       await requestPasswordReset(email)
-      setMessage(t('If the account exists, a reset email flow has been started.'))
+      setMessage(t('If the account exists, a reset link has been sent to that email address.'))
     } catch (error) {
       setMessage(error instanceof Error ? error.message : t('Request failed.'))
     } finally {
@@ -33,7 +33,7 @@ export function ForgotPasswordPage() {
           <p className={styles.authEyebrow}>{t('Reset password')}</p>
           <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
           <p className={styles.authDescription}>
-            {t('Enter your email to start the password reset flow.')}
+            {t('Enter your email and we will send you a password reset link.')}
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export function ForgotPasswordPage() {
 
         <div className={styles.authLinks}>
           <Link className="text-link" to="/reset-password">
-            {t('I already have a reset token')}
+            {t('I already have a reset link')}
           </Link>
           <Link className="text-link" to="/login">
             {t('Back to login')}

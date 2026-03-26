@@ -12,6 +12,7 @@ export const loginInputSchema = z.object({
 
 export const requestPasswordResetInputSchema = z.object({
   email: z.string().trim().email(),
+  frontendOrigin: z.string().trim().url().optional(),
 })
 
 export const resetPasswordInputSchema = z.object({

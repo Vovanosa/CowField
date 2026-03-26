@@ -1,6 +1,5 @@
 import { getPrismaClient } from '../db/prismaClient'
 import { PrismaLevelRepository } from './PrismaLevelRepository'
-import { PrismaPasswordResetTokenRepository } from './PrismaPasswordResetTokenRepository'
 import { PrismaPlayerProgressRepository } from './PrismaPlayerProgressRepository'
 import { PrismaPlayerStatisticsRepository } from './PrismaPlayerStatisticsRepository'
 import { PrismaSessionRepository } from './PrismaSessionRepository'
@@ -12,7 +11,6 @@ export function createRepositories(): AppRepositories {
 
   return {
     levelRepository: new PrismaLevelRepository(prisma),
-    passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
     playerProgressRepository: new PrismaPlayerProgressRepository(prisma),
     playerStatisticsRepository: new PrismaPlayerStatisticsRepository(prisma),
     sessionRepository: new PrismaSessionRepository(prisma),

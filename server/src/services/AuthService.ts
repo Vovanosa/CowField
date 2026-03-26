@@ -1,17 +1,12 @@
 import { randomBytes, randomUUID, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto'
-import { createHmac } from 'node:crypto'
 import { promisify } from 'node:util'
-
 import type {
   LoginInput,
   RegisterInput,
-  RequestPasswordResetInput,
-  ResetPasswordInput,
 } from '../schemas/authSchemas'
 import { HttpError } from '../errors/HttpError'
 import type { SessionRecord, UserRecord } from '../types/auth'
 import type {
-  PasswordResetTokenRepository,
   SessionRepository,
   UserRepository,
 } from '../repositories/interfaces'
@@ -31,24 +26,87 @@ type AuthSessionPayload = {
   displayName: string
 }
 
-type GoogleOAuthConfig = {
-  clientId: string
-  clientSecret: string
-  callbackUrl: string
-  frontendCallbackUrl: string
-  stateSecret: string
-}
-
-type GoogleUserInfo = {
-  sub: string
-  email: string
-  email_verified?: boolean
-  name?: string
-}
-
 function deriveDisplayNameFromEmail(email: string) {
   const [prefix] = email.split('@')
   return prefix || 'User'
+}
+
+type NeonJwtPayload = {
+  sub: string
+  aud: string
+  email?: string
+  name?: string
+  iss?: string
+}
+
+type NeonSessionResponse = {
+  user: {
+    id: string
+    email: string
+    name: string
+  }
+  session: {
+    token: string
+  }
+} | null
+
+type NeonAccountInfoResponse = {
+  user?: {
+    id?: string
+    sub?: string
+    email?: string
+    name?: string
+  } | null
+  data?: {
+    id?: string
+    sub?: string
+    email?: string
+    name?: string
+  } | null
+} | null
+
+function decodeJwtPayload(token: string): NeonJwtPayload | null {
+  const segments = token.split('.')
+
+  if (segments.length < 2) {
+    return null
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(segments[1], 'base64url').toString('utf8')) as {
+      sub?: unknown
+      aud?: unknown
+      email?: unknown
+      name?: unknown
+      iss?: unknown
+      exp?: unknown
+    }
+
+    if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
+      return null
+    }
+
+    if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
+      return null
+    }
+
+    const audience =
+      typeof payload.aud === 'string'
+        ? payload.aud
+        : Array.isArray(payload.aud) && typeof payload.aud[0] === 'string'
+          ? payload.aud[0]
+          : 'neon-auth'
+
+    return {
+      sub: payload.sub,
+      aud: audience,
+      email: typeof payload.email === 'string' ? payload.email : undefined,
+      name: typeof payload.name === 'string' ? payload.name : undefined,
+      iss: typeof payload.iss === 'string' ? payload.iss : undefined,
+    }
+  } catch {
+    return null
+  }
 }
 
 async function verifyPassword(password: string, passwordHash: string) {
@@ -68,47 +126,6 @@ async function verifyPassword(password: string, passwordHash: string) {
   return timingSafeEqual(derivedKey, expectedHash)
 }
 
-function createGoogleState(frontendCallbackUrl: string, stateSecret: string) {
-  const payload = JSON.stringify({
-    nonce: randomBytes(12).toString('hex'),
-    issuedAt: Date.now(),
-    frontendCallbackUrl,
-  })
-  const encodedPayload = Buffer.from(payload, 'utf8').toString('base64url')
-  const signature = createHmac('sha256', stateSecret).update(encodedPayload).digest('base64url')
-  return `${encodedPayload}.${signature}`
-}
-
-function verifyGoogleState(state: string, stateSecret: string) {
-  const [encodedPayload, signature] = state.split('.')
-
-  if (!encodedPayload || !signature) {
-    throw new HttpError(400, 'Google login state is invalid.')
-  }
-
-  const expectedSignature = createHmac('sha256', stateSecret).update(encodedPayload).digest('base64url')
-
-  if (signature !== expectedSignature) {
-    throw new HttpError(400, 'Google login state is invalid.')
-  }
-
-  const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as {
-    nonce: string
-    issuedAt: number
-    frontendCallbackUrl: string
-  }
-
-  if (!payload.nonce || !payload.issuedAt || !payload.frontendCallbackUrl) {
-    throw new HttpError(400, 'Google login state is invalid.')
-  }
-
-  if (Date.now() - payload.issuedAt > 1000 * 60 * 10) {
-    throw new HttpError(400, 'Google login request expired.')
-  }
-
-  return payload
-}
-
 function createActorKey(userId: string | null, role: 'admin' | 'user' | 'guest') {
   if (role === 'guest') {
     return `guest:${randomUUID()}`
@@ -120,150 +137,23 @@ function createActorKey(userId: string | null, role: 'admin' | 'user' | 'guest')
 export class AuthService {
   private readonly userRepository: UserRepository
   private readonly sessionRepository: SessionRepository
-  private readonly passwordResetTokenRepository: PasswordResetTokenRepository
   private readonly adminEmail: string
-  private readonly googleOAuthConfig: GoogleOAuthConfig | null
+  private readonly neonAuthUrl: string | null
 
   constructor(
     userRepository: UserRepository,
     sessionRepository: SessionRepository,
-    passwordResetTokenRepository: PasswordResetTokenRepository,
     adminEmail: string,
-    googleOAuthConfig: GoogleOAuthConfig | null,
+    neonAuthUrl: string | null,
   ) {
     this.userRepository = userRepository
     this.sessionRepository = sessionRepository
-    this.passwordResetTokenRepository = passwordResetTokenRepository
     this.adminEmail = normalizeEmail(adminEmail)
-    this.googleOAuthConfig = googleOAuthConfig
+    this.neonAuthUrl = neonAuthUrl?.trim() || null
   }
 
   private async ensureAdminSeed() {
     return enforceConfiguredAdminAccount(this.userRepository, this.adminEmail, 'adminadmin')
-  }
-
-  private getRequiredGoogleOAuthConfig() {
-    if (!this.googleOAuthConfig) {
-      throw new HttpError(503, 'Google login is not configured.')
-    }
-
-    return this.googleOAuthConfig
-  }
-
-  getGoogleFrontendCallbackUrl() {
-    return this.getRequiredGoogleOAuthConfig().frontendCallbackUrl
-  }
-
-  private async exchangeGoogleCodeForUserInfo(code: string) {
-    const googleOAuthConfig = this.getRequiredGoogleOAuthConfig()
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: googleOAuthConfig.clientId,
-        client_secret: googleOAuthConfig.clientSecret,
-        code,
-        grant_type: 'authorization_code',
-        redirect_uri: googleOAuthConfig.callbackUrl,
-      }),
-    })
-
-    if (!tokenResponse.ok) {
-      throw new HttpError(401, 'Google login failed.')
-    }
-
-    const tokenPayload = (await tokenResponse.json()) as { access_token?: string }
-
-    if (!tokenPayload.access_token) {
-      throw new HttpError(401, 'Google login failed.')
-    }
-
-    const userInfoResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-      headers: {
-        Authorization: `Bearer ${tokenPayload.access_token}`,
-      },
-    })
-
-    if (!userInfoResponse.ok) {
-      throw new HttpError(401, 'Unable to verify Google account.')
-    }
-
-    const userInfo = (await userInfoResponse.json()) as GoogleUserInfo
-
-    if (!userInfo.sub || !userInfo.email) {
-      throw new HttpError(401, 'Unable to verify Google account.')
-    }
-
-    if (userInfo.email_verified === false) {
-      throw new HttpError(403, 'Google email must be verified.')
-    }
-
-    return userInfo
-  }
-
-  getGoogleAuthorizationUrl() {
-    const googleOAuthConfig = this.getRequiredGoogleOAuthConfig()
-    const state = createGoogleState(
-      googleOAuthConfig.frontendCallbackUrl,
-      googleOAuthConfig.stateSecret,
-    )
-
-    const searchParams = new URLSearchParams({
-      client_id: googleOAuthConfig.clientId,
-      redirect_uri: googleOAuthConfig.callbackUrl,
-      response_type: 'code',
-      scope: 'openid email profile',
-      state,
-      access_type: 'offline',
-      prompt: 'select_account',
-    })
-
-    return `https://accounts.google.com/o/oauth2/v2/auth?${searchParams.toString()}`
-  }
-
-  async loginWithGoogleCallback(code: string, state: string) {
-    const googleOAuthConfig = this.getRequiredGoogleOAuthConfig()
-    const verifiedState = verifyGoogleState(state, googleOAuthConfig.stateSecret)
-    const googleUserInfo = await this.exchangeGoogleCodeForUserInfo(code)
-    const normalizedEmail = normalizeEmail(googleUserInfo.email)
-    const timestamp = new Date().toISOString()
-    let user = await this.userRepository.getByGoogleId(googleUserInfo.sub)
-
-    if (!user) {
-      user = await this.userRepository.getByEmail(normalizedEmail)
-    }
-
-    if (!user) {
-      user = {
-        id: randomUUID(),
-        email: normalizedEmail,
-        passwordHash: null,
-        googleId: googleUserInfo.sub,
-        role: normalizedEmail === this.adminEmail ? 'admin' : 'user',
-        displayName: googleUserInfo.name?.trim() || deriveDisplayNameFromEmail(normalizedEmail),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      }
-    } else {
-      user = {
-        ...user,
-        googleId: user.googleId ?? googleUserInfo.sub,
-        role: user.email === this.adminEmail ? 'admin' : user.role,
-        displayName: googleUserInfo.name?.trim() || user.displayName,
-        updatedAt: timestamp,
-      }
-    }
-
-    await this.userRepository.save(user)
-
-    const session = await this.createSessionPayload(user.role, user.id, user.email, user.displayName)
-
-    return {
-      session,
-      frontendCallbackUrl: verifiedState.frontendCallbackUrl,
-    }
   }
 
   private async createSessionPayload(
@@ -342,84 +232,164 @@ export class AuthService {
     return this.createSessionPayload('guest', null, null, 'Guest')
   }
 
-  async getSessionByToken(token: string) {
-    await this.ensureAdminSeed()
-
-    const session = await this.sessionRepository.getByToken(token)
-
-    if (!session) {
+  private async getNeonAccountInfoForToken(token: string): Promise<NeonAccountInfoResponse> {
+    if (!this.neonAuthUrl) {
       return null
     }
 
-    await this.sessionRepository.save({
-      ...session,
-      updatedAt: new Date().toISOString(),
+    const response = await fetch(`${this.neonAuthUrl}/account-info`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
 
+    if (!response.ok) {
+      return null
+    }
+
+    return (await response.json()) as NeonAccountInfoResponse
+  }
+
+  private async getNeonSessionForToken(token: string): Promise<NeonSessionResponse> {
+    if (!this.neonAuthUrl) {
+      return null
+    }
+
+    const response = await fetch(`${this.neonAuthUrl}/get-session`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return (await response.json()) as NeonSessionResponse
+  }
+
+  private async syncNeonUser(payload: NeonJwtPayload) {
+    const normalizedEmail = payload.email ? normalizeEmail(payload.email) : `${payload.sub}@neon.local`
+    const existingUserById = await this.userRepository.getById(payload.sub)
+    const existingUserByEmail = payload.email
+      ? await this.userRepository.getByEmail(normalizedEmail)
+      : null
+    const existingUser = existingUserById ?? existingUserByEmail
+    const timestamp = new Date().toISOString()
+    const nextUser: UserRecord = {
+      id: existingUser?.id ?? payload.sub,
+      email: normalizedEmail,
+      passwordHash: existingUser?.passwordHash ?? null,
+      googleId: existingUser?.googleId ?? null,
+      role: normalizedEmail === this.adminEmail ? 'admin' : 'user',
+      displayName:
+        typeof payload.name === 'string' && payload.name.trim()
+          ? payload.name.trim()
+          : deriveDisplayNameFromEmail(normalizedEmail),
+      createdAt: existingUser?.createdAt ?? timestamp,
+      updatedAt: timestamp,
+    }
+
+    await this.userRepository.save(nextUser)
+
+    return nextUser
+  }
+
+  private getFallbackJwtUser(token: string) {
+    const payload = decodeJwtPayload(token)
+
+    if (!payload?.sub) {
+      return null
+    }
+
+    if (this.neonAuthUrl && payload.iss) {
+      try {
+        if (new URL(payload.iss).host !== new URL(this.neonAuthUrl).host) {
+          return null
+        }
+      } catch {
+        return null
+      }
+    }
+
+    return payload
+  }
+
+  async getSessionByToken(token: string) {
+    const session = await this.sessionRepository.getByToken(token)
+
+    if (session) {
+      await this.sessionRepository.save({
+        ...session,
+        updatedAt: new Date().toISOString(),
+      })
+
+      return {
+        token: session.token,
+        actorKey: session.actorKey,
+        role: session.role,
+        email: session.email,
+        displayName: session.displayName,
+      }
+    }
+
+    const neonAccountInfo = await this.getNeonAccountInfoForToken(token)
+    const accountUser = neonAccountInfo?.user ?? neonAccountInfo?.data ?? null
+
+    if (accountUser?.id || accountUser?.sub) {
+      const user = await this.syncNeonUser({
+        sub: accountUser.id ?? accountUser.sub ?? '',
+        aud: 'neon-auth',
+        email: accountUser.email,
+        name: accountUser.name,
+      })
+
+      return {
+        token,
+        actorKey: `user:${user.id}`,
+        role: user.role,
+        email: user.email,
+        displayName: user.displayName,
+      }
+    }
+
+    const neonSession = await this.getNeonSessionForToken(token)
+
+    if (neonSession?.user?.id) {
+      const user = await this.syncNeonUser({
+        sub: neonSession.user.id,
+        aud: 'neon-auth',
+        email: neonSession.user.email,
+        name: neonSession.user.name,
+      })
+
+      return {
+        token,
+        actorKey: `user:${user.id}`,
+        role: user.role,
+        email: user.email,
+        displayName: user.displayName,
+      }
+    }
+
+    const fallbackJwtUser = this.getFallbackJwtUser(token)
+
+    if (!fallbackJwtUser) {
+      return null
+    }
+
+    const user = await this.syncNeonUser(fallbackJwtUser)
+
     return {
-      token: session.token,
-      actorKey: session.actorKey,
-      role: session.role,
-      email: session.email,
-      displayName: session.displayName,
+      token,
+      actorKey: `user:${user.id}`,
+      role: user.role,
+      email: user.email,
+      displayName: user.displayName,
     }
   }
 
   async logout(token: string) {
     await this.sessionRepository.deleteByToken(token)
-  }
-
-  async requestPasswordReset(input: RequestPasswordResetInput) {
-    await this.ensureAdminSeed()
-
-    const email = normalizeEmail(input.email)
-    const user = await this.userRepository.getByEmail(email)
-
-    if (!user) {
-      return { sent: true }
-    }
-
-    const timestamp = new Date()
-    const resetToken = randomBytes(24).toString('hex')
-
-    await this.passwordResetTokenRepository.save({
-      id: randomUUID(),
-      userId: user.id,
-      email: user.email,
-      token: resetToken,
-      createdAt: timestamp.toISOString(),
-      expiresAt: new Date(timestamp.getTime() + 1000 * 60 * 30).toISOString(),
-    })
-
-    console.info(`[auth] Password reset token for ${user.email}: ${resetToken}`)
-
-    return { sent: true }
-  }
-
-  async resetPassword(input: ResetPasswordInput) {
-    await this.ensureAdminSeed()
-
-    const record = await this.passwordResetTokenRepository.getByToken(input.token)
-
-    if (!record || new Date(record.expiresAt).getTime() < Date.now()) {
-      throw new HttpError(400, 'This password reset token is invalid or expired.')
-    }
-
-    const user = await this.userRepository.getById(record.userId)
-
-    if (!user) {
-      throw new HttpError(404, 'Account not found.')
-    }
-
-    const updatedUser: UserRecord = {
-      ...user,
-      passwordHash: await hashPassword(input.password),
-      updatedAt: new Date().toISOString(),
-    }
-
-    await this.userRepository.save(updatedUser)
-    await this.passwordResetTokenRepository.deleteById(record.id)
-
-    return { reset: true }
   }
 }

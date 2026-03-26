@@ -5,13 +5,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
-import { buildApiUrl } from '../../game/storage/apiBase'
+import { loginWithGoogle } from '../../game/storage'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function RegisterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const googleLoginUrl = buildApiUrl('/api/auth/google')
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,7 +33,11 @@ export function RegisterPage() {
       await auth.register(email, password)
       navigate('/', { replace: true })
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      if (error instanceof Error && error.message === 'EMAIL_VERIFICATION_REQUIRED') {
+        setMessage(t('Account created. Check your email to verify it before logging in.'))
+      } else {
+        setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -87,10 +90,15 @@ export function RegisterPage() {
           <button type="submit" className={`primary-button ${styles.authButton}`} disabled={isSubmitting}>
             {isSubmitting ? t('Loading...') : t('Create account')}
           </button>
-          <a href={googleLoginUrl} className={styles.googleButton}>
+          <button
+            type="button"
+            className={styles.googleButton}
+            onClick={() => void loginWithGoogle()}
+            disabled={isSubmitting}
+          >
             <GoogleMark />
             <span className={styles.googleButtonLabel}>{t('Continue with Google')}</span>
-          </a>
+          </button>
         </form>
 
         <p className={message ? `${styles.authMessage} ${styles.authMessageError}` : styles.authMessage}>

@@ -170,6 +170,27 @@ const uk = {
     'Bullpen — це спокійна логічна гра, де треба розмістити биків так, щоб кожен ряд, стовпець і кольоровий загін відповідав своєму ліміту, а бики не торкалися навіть по діагоналі.',
   'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.':
     'Використовуйте точки як нотатки, грайте без поспіху і проходьте рівні по одному на вручну створених дошках для рівного і розслабленого темпу.',
+  'Enter your email and we will send you a password reset link.':
+    'Введіть свою електронну пошту, і ми надішлемо вам посилання для скидання пароля.',
+  'If the account exists, a reset link has been sent to that email address.':
+    'Якщо акаунт існує, посилання для скидання вже надіслано на цю адресу.',
+  'I already have a reset link': 'У мене вже є посилання для скидання',
+  'Open the reset link from your email and choose a new password.':
+    'Відкрийте посилання з листа та виберіть новий пароль.',
+  'Account created. Check your email to verify it before logging in.':
+    'Акаунт створено. Перевірте пошту та підтвердьте адресу перед входом.',
+  'Verification email sent again.': 'Лист для підтвердження надіслано повторно.',
+  'Resend verification email': 'Надіслати лист для підтвердження ще раз',
+  'Verify email': 'Підтвердження пошти',
+  'Enter the verification code sent to your email to finish creating your account.':
+    'Введіть код підтвердження з листа, щоб завершити створення акаунта.',
+  'Verification code': 'Код підтвердження',
+  'Verify code': 'Підтвердити код',
+  'Verification code sent again.': 'Код підтвердження надіслано повторно.',
+  'Resend verification code': 'Надіслати код ще раз',
+  'Enter verification code': 'Ввести код підтвердження',
+  'Your email has been verified. You can log in now.':
+    'Пошту підтверджено. Тепер можна увійти.',
 } as const
 
 export default uk

@@ -43,7 +43,7 @@ export function ResetPasswordPage() {
           <p className={styles.authEyebrow}>{t('Reset password')}</p>
           <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
           <p className={styles.authDescription}>
-            {t('Paste your reset token from the email flow and choose a new password.')}
+            {t('Open the reset link from your email and choose a new password.')}
           </p>
         </div>
 

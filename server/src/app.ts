@@ -39,22 +39,8 @@ export function createApp() {
   const authService = new AuthService(
     repositories.userRepository,
     repositories.sessionRepository,
-    repositories.passwordResetTokenRepository,
     process.env.BULLPEN_ADMIN_EMAIL ?? 'vovanosa06@gmail.com',
-    process.env.GOOGLE_CLIENT_ID &&
-      process.env.GOOGLE_CLIENT_SECRET &&
-      process.env.GOOGLE_CALLBACK_URL
-      ? {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          callbackUrl: process.env.GOOGLE_CALLBACK_URL,
-          frontendCallbackUrl:
-            process.env.GOOGLE_FRONTEND_CALLBACK_URL ??
-            'http://localhost:5173/auth/google/callback',
-          stateSecret:
-            process.env.GOOGLE_STATE_SECRET ?? 'bullpen-google-state-secret',
-        }
-      : null,
+    process.env.NEON_AUTH_URL ?? process.env.VITE_NEON_AUTH_URL ?? null,
   )
   const playerStatisticsService = new PlayerStatisticsService(
     repositories.playerProgressRepository,

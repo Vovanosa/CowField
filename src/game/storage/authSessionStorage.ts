@@ -1,8 +1,20 @@
 import type { AuthSession } from '../types'
 import { buildApiUrl } from './apiBase'
+import {
+  exchangeNeonCodeForSession,
+  getNeonJwtToken,
+  getNeonSession,
+  resendNeonSignupVerification,
+  requestNeonPasswordReset,
+  resetNeonPassword,
+  signInWithNeonGoogle,
+  signInWithNeonPassword,
+  signOutNeon,
+  signUpWithNeonPassword,
+} from './neonAuthClient'
 
 const AUTH_API_BASE = buildApiUrl('/api/auth')
-const SESSION_TOKEN_STORAGE_KEY = 'cowfield.auth-session-token'
+const GUEST_SESSION_TOKEN_STORAGE_KEY = 'cowfield.guest-session-token'
 const SESSION_ROLE_STORAGE_KEY = 'cowfield.auth-session-role'
 
 type PasswordResetRequestResponse = {
@@ -51,7 +63,7 @@ export function getStoredSessionToken() {
     return null
   }
 
-  return window.localStorage.getItem(SESSION_TOKEN_STORAGE_KEY)
+  return window.localStorage.getItem(GUEST_SESSION_TOKEN_STORAGE_KEY)
 }
 
 export function setStoredSessionToken(token: string) {
@@ -59,7 +71,7 @@ export function setStoredSessionToken(token: string) {
     return
   }
 
-  window.localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, token)
+  window.localStorage.setItem(GUEST_SESSION_TOKEN_STORAGE_KEY, token)
 }
 
 export function clearStoredSessionToken() {
@@ -67,7 +79,7 @@ export function clearStoredSessionToken() {
     return
   }
 
-  window.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY)
+  window.localStorage.removeItem(GUEST_SESSION_TOKEN_STORAGE_KEY)
   window.localStorage.removeItem(SESSION_ROLE_STORAGE_KEY)
 }
 
@@ -89,8 +101,11 @@ function setStoredSessionRole(role: AuthSession['role']) {
   window.localStorage.setItem(SESSION_ROLE_STORAGE_KEY, role)
 }
 
-export function buildAuthenticatedHeaders(init?: HeadersInit) {
-  const token = getStoredSessionToken()
+export async function buildAuthenticatedHeaders(init?: HeadersInit) {
+  const token =
+    getStoredSessionRole() === 'guest'
+      ? getStoredSessionToken()
+      : await getNeonJwtToken()
 
   return buildHeaders({
     ...(init ?? {}),
@@ -98,26 +113,39 @@ export function buildAuthenticatedHeaders(init?: HeadersInit) {
   })
 }
 
-export async function login(email: string, password: string) {
-  const session = await requestJson<AuthSession>('/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  })
+async function resetAuthState() {
+  clearStoredSessionToken()
 
-  setStoredSessionToken(session.token)
-  setStoredSessionRole(session.role)
+  try {
+    await signOutNeon()
+  } catch {
+    // Ignore stale or missing Neon session state.
+  }
+}
+
+export async function login(email: string, password: string) {
+  await resetAuthState()
+  await signInWithNeonPassword(email, password)
+  const session = await getCurrentSession()
+
+  if (!session) {
+    throw new Error('Failed to restore session after login.')
+  }
+
   return session
 }
 
 export async function register(email: string, password: string) {
-  const session = await requestJson<AuthSession>('/register', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  })
+  await resetAuthState()
+  await signUpWithNeonPassword(email, password)
 
-  setStoredSessionToken(session.token)
-  setStoredSessionRole(session.role)
-  return session
+  const session = await getCurrentSession()
+
+  if (session) {
+    return session
+  }
+
+  throw new Error('EMAIL_VERIFICATION_REQUIRED')
 }
 
 export async function loginAsGuest() {
@@ -131,15 +159,36 @@ export async function loginAsGuest() {
 }
 
 export async function getCurrentSession() {
-  const token = getStoredSessionToken()
+  if (getStoredSessionRole() === 'guest') {
+    const token = getStoredSessionToken()
 
-  if (!token) {
-    return null
+    if (!token) {
+      return null
+    }
+
+    try {
+      const session = await requestJson<AuthSession>('/me', {
+        headers: await buildAuthenticatedHeaders(),
+      })
+
+      setStoredSessionRole(session.role)
+      return session
+    } catch {
+      clearStoredSessionToken()
+      return null
+    }
   }
 
   try {
+    const neonSession = await getNeonSession()
+
+    if (!neonSession) {
+      clearStoredSessionToken()
+      return null
+    }
+
     const session = await requestJson<AuthSession>('/me', {
-      headers: buildAuthenticatedHeaders(),
+      headers: await buildAuthenticatedHeaders(),
     })
 
     setStoredSessionRole(session.role)
@@ -152,25 +201,66 @@ export async function getCurrentSession() {
 
 export async function logout() {
   try {
-    await requestJson<void>('/logout', {
-      method: 'POST',
-      headers: buildAuthenticatedHeaders(),
-    })
+    if (getStoredSessionRole() === 'guest') {
+      await requestJson<void>('/logout', {
+        method: 'POST',
+        headers: await buildAuthenticatedHeaders(),
+      })
+    } else {
+      await signOutNeon()
+    }
   } finally {
     clearStoredSessionToken()
   }
 }
 
 export async function requestPasswordReset(email: string) {
-  return requestJson<PasswordResetRequestResponse>('/password-reset/request', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-  })
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  await requestNeonPasswordReset(email, `${origin}/reset-password`)
+  return { sent: true } satisfies PasswordResetRequestResponse
 }
 
 export async function resetPassword(token: string, password: string) {
-  return requestJson<PasswordResetResponse>('/password-reset/reset', {
-    method: 'POST',
-    body: JSON.stringify({ token, password }),
-  })
+  await resetNeonPassword(token, password)
+  return { reset: true } satisfies PasswordResetResponse
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+export async function completeGoogleLogin(code?: string) {
+  if (code) {
+    await exchangeNeonCodeForSession(code)
+  }
+
+  let session = await getCurrentSession()
+
+  // Neon OAuth can finalize the browser session asynchronously on the callback route.
+  if (!session) {
+    await delay(150)
+    session = await getCurrentSession()
+  }
+
+  if (!session) {
+    await delay(350)
+    session = await getCurrentSession()
+  }
+
+  if (!session) {
+    throw new Error('Google login failed.')
+  }
+
+  return session
+}
+
+export async function loginWithGoogle() {
+  await resetAuthState()
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  await signInWithNeonGoogle(`${origin}/auth/google/callback`)
+}
+
+export async function resendVerificationEmail(email: string) {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  await resendNeonSignupVerification(email, `${origin}/verify-email?email=${encodeURIComponent(email)}`)
 }

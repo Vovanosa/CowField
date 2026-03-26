@@ -5,30 +5,33 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
-import { buildApiUrl } from '../../game/storage/apiBase'
+import { loginWithGoogle, resendVerificationEmail } from '../../game/storage'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const googleLoginUrl = buildApiUrl('/api/auth/google')
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [needsVerification, setNeedsVerification] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSubmitting(true)
     setMessage('')
+    setNeedsVerification(false)
 
     try {
       await auth.login(email, password)
       navigate('/', { replace: true })
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      const nextMessage = error instanceof Error ? error.message : t('Request failed.')
+      setNeedsVerification(nextMessage === 'Email not verified')
+      setMessage(nextMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -37,10 +40,26 @@ export function LoginPage() {
   async function handleGuestLogin() {
     setIsSubmitting(true)
     setMessage('')
+    setNeedsVerification(false)
 
     try {
       await auth.loginAsGuest()
       navigate('/', { replace: true })
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleResendVerification() {
+    setIsSubmitting(true)
+    setMessage('')
+
+    try {
+      await resendVerificationEmail(email)
+      setMessage(t('Verification email sent again.'))
+      setNeedsVerification(false)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : t('Request failed.'))
     } finally {
@@ -89,10 +108,15 @@ export function LoginPage() {
             <button type="submit" className={`primary-button ${styles.authButton}`} disabled={isSubmitting}>
               {isSubmitting ? t('Loading...') : t('Log in')}
             </button>
-            <a href={googleLoginUrl} className={styles.googleButton}>
+            <button
+              type="button"
+              className={styles.googleButton}
+              onClick={() => void loginWithGoogle()}
+              disabled={isSubmitting}
+            >
               <GoogleMark />
               <span className={styles.googleButtonLabel}>{t('Continue with Google')}</span>
-            </a>
+            </button>
             <button
               type="button"
               className={`secondary-button ${styles.authButton}`}
@@ -115,6 +139,16 @@ export function LoginPage() {
           <Link className="text-link" to="/forgot-password">
             {t('Forgot password?')}
           </Link>
+          {needsVerification ? (
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => void handleResendVerification()}
+              disabled={isSubmitting || email.trim().length === 0}
+            >
+              {t('Resend verification email')}
+            </button>
+          ) : null}
         </div>
       </section>
     </div>
