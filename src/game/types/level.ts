@@ -10,16 +10,13 @@ export type LevelSummary = {
   updatedAt: string
 }
 
-export type LevelDefinition = {
-  id: string
-  levelNumber: number
-  title: string
-  difficulty: Difficulty
-  gridSize: number
+export type LevelDefinition = LevelSummary & {
   pensByCell: number[]
-  cowsByCell: boolean[]
-  createdAt: string
-  updatedAt: string
+  hasNextLevel: boolean
 }
 
-export type LevelDraft = Omit<LevelDefinition, 'id' | 'createdAt' | 'updatedAt'>
+export type LevelEditorDefinition = LevelDefinition & {
+  cowsByCell: boolean[]
+}
+
+export type LevelDraft = Omit<LevelEditorDefinition, 'id' | 'createdAt' | 'updatedAt' | 'hasNextLevel'>

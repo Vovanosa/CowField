@@ -1,6 +1,14 @@
 import type { Difficulty, LevelProgress } from '../types'
-import { buildAuthenticatedHeaders } from './authSessionStorage'
+import {
+  buildAuthenticatedHeaders,
+  getStoredSessionRole,
+} from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
+import {
+  completeGuestLevelProgress,
+  getGuestLevelProgress,
+  getGuestProgressByDifficulty,
+} from './guestProgressStorage'
 
 const API_BASE = buildApiUrl('/api/progress')
 
@@ -39,11 +47,19 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function getProgressByDifficulty(difficulty: Difficulty) {
+  if (getStoredSessionRole() === 'guest') {
+    return getGuestProgressByDifficulty(difficulty)
+  }
+
   const response = await requestJson<DifficultyProgressResponse>(`/${difficulty}`)
   return response.levels
 }
 
 export async function getLevelProgress(difficulty: Difficulty, levelNumber: number) {
+  if (getStoredSessionRole() === 'guest') {
+    return getGuestLevelProgress(difficulty, levelNumber)
+  }
+
   return requestJson<LevelProgress>(`/${difficulty}/${levelNumber}`)
 }
 
@@ -52,6 +68,10 @@ export async function completeLevelProgress(
   levelNumber: number,
   timeSeconds: number,
 ) {
+  if (getStoredSessionRole() === 'guest') {
+    return completeGuestLevelProgress(difficulty, levelNumber, timeSeconds)
+  }
+
   return requestJson<CompleteLevelResponse>(`/${difficulty}/${levelNumber}/complete`, {
     method: 'POST',
     body: JSON.stringify({ timeSeconds }),

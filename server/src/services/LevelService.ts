@@ -2,6 +2,7 @@ import { HttpError } from '../errors/HttpError'
 import type { LevelRecordInput } from '../schemas/levelSchemas'
 import { validateLevelRecord } from './levelValidation'
 import type { LevelRepository } from '../repositories/interfaces'
+import type { LevelAdminRecord, LevelPublicRecord } from '../types/level'
 
 export class LevelService {
   private readonly repository: LevelRepository
@@ -17,6 +18,7 @@ export class LevelService {
   async getByDifficultyAndNumber(
     difficulty: LevelRecordInput['difficulty'],
     levelNumber: number,
+    includeAuthoringData = false,
   ) {
     const level = await this.repository.getByDifficultyAndNumber(difficulty, levelNumber)
 
@@ -24,16 +26,22 @@ export class LevelService {
       throw new HttpError(404, 'Level not found.')
     }
 
-    return level
-  }
+    const hasNextLevel =
+      (await this.repository.getByDifficultyAndNumber(difficulty, levelNumber + 1)) !== null
 
-  async getNextLevelNumber(difficulty: LevelRecordInput['difficulty']) {
-    const nextLevelNumber = await this.repository.getNextLevelNumber(difficulty)
+    if (includeAuthoringData) {
+      return {
+        ...level,
+        hasNextLevel,
+      } satisfies LevelAdminRecord
+    }
+
+    const { cowsByCell: _cowsByCell, ...publicLevel } = level
 
     return {
-      difficulty,
-      nextLevelNumber,
-    }
+      ...publicLevel,
+      hasNextLevel,
+    } satisfies LevelPublicRecord
   }
 
   async save(input: LevelRecordInput) {

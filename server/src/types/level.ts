@@ -16,3 +16,9 @@ export type LevelRecord = {
 }
 
 export type LevelSummaryRecord = Omit<LevelRecord, 'colorsByCell' | 'cowsByCell'>
+export type LevelPublicRecord = Omit<LevelRecord, 'cowsByCell'> & {
+  hasNextLevel: boolean
+}
+export type LevelAdminRecord = LevelRecord & {
+  hasNextLevel: boolean
+}

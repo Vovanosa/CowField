@@ -143,6 +143,8 @@ const en = {
   'Continue with Google': 'Continue with Google',
   'Completing Google login...': 'Completing Google login...',
   'Play as guest': 'Play as guest',
+  'Statistics is available only for logged users.':
+    'Statistics is available only for logged users.',
   'Create account': 'Create account',
   'Forgot password?': 'Forgot password?',
   'Passwords do not match.': 'Passwords do not match.',

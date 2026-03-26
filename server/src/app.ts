@@ -7,16 +7,13 @@ import { AuthController } from './controllers/authController'
 import { createAuthRoutes } from './routes/authRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
 import { createPlayerProgressRoutes } from './routes/playerProgressRoutes'
-import { createPlayerSettingsRoutes } from './routes/playerSettingsRoutes'
 import { createPlayerStatisticsRoutes } from './routes/playerStatisticsRoutes'
 import { LevelController } from './controllers/levelController'
 import { PlayerProgressController } from './controllers/playerProgressController'
-import { PlayerSettingsController } from './controllers/playerSettingsController'
 import { PlayerStatisticsController } from './controllers/playerStatisticsController'
 import { AuthService } from './services/AuthService'
 import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
-import { PlayerSettingsService } from './services/PlayerSettingsService'
 import { PlayerStatisticsService } from './services/PlayerStatisticsService'
 import { createRepositories } from './repositories/createRepositories'
 import { getPrismaClient } from './db/prismaClient'
@@ -39,7 +36,6 @@ export function createApp() {
   const repositories = createRepositories()
   const levelService = new LevelService(repositories.levelRepository)
   const playerProgressService = new PlayerProgressService(repositories.playerProgressRepository)
-  const playerSettingsService = new PlayerSettingsService(repositories.playerSettingsRepository)
   const authService = new AuthService(
     repositories.userRepository,
     repositories.sessionRepository,
@@ -67,7 +63,6 @@ export function createApp() {
   const authController = new AuthController(authService)
   const levelController = new LevelController(levelService)
   const playerProgressController = new PlayerProgressController(playerProgressService)
-  const playerSettingsController = new PlayerSettingsController(playerSettingsService)
   const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
 
   app.use(
@@ -97,7 +92,6 @@ export function createApp() {
   app.use('/api/auth', createAuthRoutes(authController))
   app.use('/api/levels', createLevelRoutes(levelController, authService))
   app.use('/api/progress', createPlayerProgressRoutes(playerProgressController, authService))
-  app.use('/api/settings', createPlayerSettingsRoutes(playerSettingsController, authService))
   app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController, authService))
 
   app.use(

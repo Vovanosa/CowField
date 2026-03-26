@@ -1,7 +1,9 @@
 import { Grid3X3, Settings } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
+import { useGuestStatisticsToast } from '../../app/useGuestStatisticsToast'
 import './AppHeader.css'
 
 const navigationLinks = [
@@ -12,7 +14,9 @@ const navigationLinks = [
 ]
 
 export function AppHeader() {
-  const { isAdmin } = useRole()
+  const { isAdmin, isGuest } = useRole()
+  const { t } = useTranslation()
+  const { toastMessage, showToast } = useGuestStatisticsToast()
 
   return (
     <header className="app-header">
@@ -29,18 +33,30 @@ export function AppHeader() {
       </div>
 
       <nav className="top-nav" aria-label="Primary">
-        {navigationLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) =>
-              isActive ? 'nav-link nav-link-active' : 'nav-link'
-            }
-            end={link.to === '/'}
-          >
-            {link.label}
-          </NavLink>
-        ))}
+        {navigationLinks.map((link) =>
+          isGuest && link.to === '/statistics' ? (
+            <button
+              key={link.to}
+              type="button"
+              className="nav-link nav-link-disabled"
+              aria-disabled="true"
+              onClick={showToast}
+            >
+              {link.label}
+            </button>
+          ) : (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                isActive ? 'nav-link nav-link-active' : 'nav-link'
+              }
+              end={link.to === '/'}
+            >
+              {link.label}
+            </NavLink>
+          ),
+        )}
       </nav>
 
       <NavLink
@@ -49,9 +65,15 @@ export function AppHeader() {
         className={({ isActive }) =>
           isActive ? 'icon-link icon-link-active' : 'icon-link'
         }
-      >
+        >
         <Settings size={18} />
       </NavLink>
+
+      {toastMessage ? (
+        <div className="header-toast" role="status" aria-live="polite">
+          {t('Statistics is available only for logged users.')}
+        </div>
+      ) : null}
     </header>
   )
 }

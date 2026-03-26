@@ -10,7 +10,7 @@ import {
   createEmptyLevelDraft,
   deleteLevel,
   getLevelByDifficultyAndNumber,
-  getNextLevelNumber,
+  getLevelsByDifficulty,
   saveLevel,
 } from '../../game/storage'
 import {
@@ -100,7 +100,9 @@ function CreateLevelPageView({
     async function loadPageData() {
       try {
         if (routeLevelNumber) {
-          const existingLevel = await getLevelByDifficultyAndNumber(difficulty, routeLevelNumber)
+          const existingLevel = await getLevelByDifficultyAndNumber(difficulty, routeLevelNumber, {
+            includeAuthoringData: true,
+          })
 
           if (!isActive) {
             return
@@ -110,7 +112,11 @@ function CreateLevelPageView({
             existingLevel ?? createEmptyLevelDraft(difficulty, routeLevelNumber),
           )
         } else {
-          const nextLevelNumber = await getNextLevelNumber(difficulty)
+          const levels = await getLevelsByDifficulty(difficulty)
+          const nextLevelNumber =
+            levels.length > 0
+              ? Math.max(...levels.map((level) => level.levelNumber)) + 1
+              : 1
 
           if (!isActive) {
             return

@@ -3,11 +3,6 @@ import { ActorType, type PrismaClient } from '@prisma/client'
 type ActorReference = {
   actorType: ActorType
   userId: string | null
-  guestProfileId: string | null
-}
-
-type ResolveActorOptions = {
-  createGuestProfile?: boolean
 }
 
 function getUserIdFromActorKey(actorKey: string) {
@@ -23,9 +18,8 @@ function isGuestActorKey(actorKey: string) {
 }
 
 export async function resolveActorReference(
-  prisma: PrismaClient,
+  _prisma: PrismaClient,
   actorKey: string,
-  options?: ResolveActorOptions,
 ): Promise<ActorReference> {
   const userId = getUserIdFromActorKey(actorKey)
 
@@ -33,7 +27,6 @@ export async function resolveActorReference(
     return {
       actorType: ActorType.user,
       userId,
-      guestProfileId: null,
     }
   }
 
@@ -41,33 +34,8 @@ export async function resolveActorReference(
     throw new Error(`Unsupported actor key format: ${actorKey}`)
   }
 
-  if (options?.createGuestProfile) {
-    const guestProfile = await prisma.guestProfile.upsert({
-      where: {
-        actorKey,
-      },
-      update: {},
-      create: {
-        actorKey,
-      },
-    })
-
-    return {
-      actorType: ActorType.guest,
-      userId: null,
-      guestProfileId: guestProfile.id,
-    }
-  }
-
-  const guestProfile = await prisma.guestProfile.findUnique({
-    where: {
-      actorKey,
-    },
-  })
-
   return {
     actorType: ActorType.guest,
     userId: null,
-    guestProfileId: guestProfile?.id ?? null,
   }
 }

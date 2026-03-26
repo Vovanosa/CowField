@@ -10,7 +10,6 @@
     "postinstall": "prisma generate",
     "build": "tsc -b && vite build",
     "db:generate": "prisma generate",
-    "db:import": "tsx server/src/scripts/importFileDataToDatabase.ts",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",

@@ -130,19 +130,6 @@ export class PrismaLevelRepository implements LevelRepository {
     return deleted.count > 0
   }
 
-  async getNextLevelNumber(difficulty: AppDifficulty) {
-    const lastLevel = await this.prisma.level.findFirst({
-      where: {
-        difficulty: toPrismaDifficulty(difficulty),
-      },
-      orderBy: {
-        levelNumber: 'desc',
-      },
-    })
-
-    return (lastLevel?.levelNumber ?? 0) + 1
-  }
-
   async exists() {
     const level = await this.prisma.level.findFirst({
       select: {

@@ -2,13 +2,23 @@ import { BarChart3, BookOpenText, Play, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { useGuestStatisticsToast } from '../../app/useGuestStatisticsToast'
 import { useAuth } from '../../app/useAuth'
 import styles from './HomePage.module.css'
+
+type HomeMenuItem = {
+  to: string
+  label: string
+  icon: typeof Play
+  variant: 'primary' | 'secondary'
+  disabled?: boolean
+}
 
 export function HomePage() {
   const { t } = useTranslation()
   const { isGuest } = useAuth()
-  const menuItems = [
+  const { toastMessage, showToast } = useGuestStatisticsToast()
+  const menuItems: HomeMenuItem[] = [
     {
       to: '/levels',
       label: t('Play'),
@@ -26,7 +36,7 @@ export function HomePage() {
       label: t('Statistics'),
       icon: BarChart3,
       variant: 'secondary',
-      hidden: isGuest,
+      disabled: isGuest,
     },
     {
       to: '/settings',
@@ -34,7 +44,7 @@ export function HomePage() {
       icon: Settings,
       variant: 'secondary',
     },
-  ] as const
+  ]
 
   return (
     <div className={`${styles.homePage} page-shell page-shell-compact`}>
@@ -44,19 +54,29 @@ export function HomePage() {
         </div>
 
         <nav className={styles.homeMenu} aria-label={t('Home menu')}>
-          {menuItems.filter((item) => !('hidden' in item) || !item.hidden).map((item) => {
+          {menuItems.map((item) => {
             const Icon = item.icon
 
-            return (
-              <Link
+            const className =
+              item.variant === 'primary'
+                ? `${styles.homeMenuButton} ${styles.homeMenuButtonPrimary}`
+                : `${styles.homeMenuButton} ${styles.homeMenuButtonSecondary}`
+
+            return item.disabled ? (
+              <button
                 key={item.to}
-                className={
-                  item.variant === 'primary'
-                    ? `${styles.homeMenuButton} ${styles.homeMenuButtonPrimary}`
-                    : `${styles.homeMenuButton} ${styles.homeMenuButtonSecondary}`
-                }
-                to={item.to}
+                type="button"
+                className={`${className} ${styles.homeMenuButtonDisabled}`}
+                aria-disabled="true"
+                onClick={showToast}
               >
+                <span className={styles.homeMenuIcon}>
+                  <Icon size={18} />
+                </span>
+                <span>{item.label}</span>
+              </button>
+            ) : (
+              <Link key={item.to} className={className} to={item.to}>
                 <span className={styles.homeMenuIcon}>
                   <Icon size={18} />
                 </span>
@@ -65,6 +85,12 @@ export function HomePage() {
             )
           })}
         </nav>
+
+        {toastMessage ? (
+          <div className={styles.homeToast} role="status" aria-live="polite">
+            {toastMessage}
+          </div>
+        ) : null}
       </section>
     </div>
   )

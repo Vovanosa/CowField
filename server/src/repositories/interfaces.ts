@@ -5,7 +5,6 @@ import type {
 } from '../types/auth'
 import type { Difficulty, LevelRecord, LevelSummaryRecord } from '../types/level'
 import type { LevelProgressRecord } from '../types/progress'
-import type { PlayerSettingsRecord } from '../types/settings'
 import type { PlayerStatisticsRecord } from '../types/statistics'
 
 export interface UserRepository {
@@ -26,11 +25,6 @@ export interface PasswordResetTokenRepository {
   save(record: PasswordResetTokenRecord): Promise<PasswordResetTokenRecord>
   getByToken(token: string): Promise<PasswordResetTokenRecord | null>
   deleteById(id: string): Promise<void>
-}
-
-export interface PlayerSettingsRepository {
-  get(actorKey: string): Promise<PlayerSettingsRecord>
-  save(actorKey: string, record: PlayerSettingsRecord): Promise<PlayerSettingsRecord>
 }
 
 export interface PlayerProgressRepository {
@@ -54,7 +48,6 @@ export interface LevelRepository {
   getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number): Promise<LevelRecord | null>
   save(level: LevelRecord): Promise<LevelRecord>
   delete(difficulty: Difficulty, levelNumber: number): Promise<boolean>
-  getNextLevelNumber(difficulty: Difficulty): Promise<number>
   exists(): Promise<boolean>
 }
 
@@ -62,7 +55,6 @@ export type AppRepositories = {
   levelRepository: LevelRepository
   passwordResetTokenRepository: PasswordResetTokenRepository
   playerProgressRepository: PlayerProgressRepository
-  playerSettingsRepository: PlayerSettingsRepository
   playerStatisticsRepository: PlayerStatisticsRepository
   sessionRepository: SessionRepository
   userRepository: UserRepository

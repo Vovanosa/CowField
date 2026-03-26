@@ -43,14 +43,14 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
   async listByDifficulty(actorKey: string, difficulty: AppDifficulty) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
+    if (!actor.userId) {
+      return []
+    }
+
     const records = await this.prisma.levelProgress.findMany({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
-        ...(actor.userId
-          ? { userId: actor.userId }
-          : actor.guestProfileId
-            ? { guestProfileId: actor.guestProfileId }
-            : { id: '__missing__' }),
+        userId: actor.userId,
       },
       orderBy: {
         levelNumber: 'asc',
@@ -63,12 +63,12 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
   async listAll(actorKey: string) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
+    if (!actor.userId) {
+      return []
+    }
+
     const records = await this.prisma.levelProgress.findMany({
-      where: actor.userId
-        ? { userId: actor.userId }
-        : actor.guestProfileId
-          ? { guestProfileId: actor.guestProfileId }
-          : { id: '__missing__' },
+      where: { userId: actor.userId },
     })
 
     return records.map(toLevelProgressRecord).sort(sortProgress)
@@ -77,15 +77,15 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
   async getByDifficultyAndNumber(actorKey: string, difficulty: AppDifficulty, levelNumber: number) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
+    if (!actor.userId) {
+      return null
+    }
+
     const record = await this.prisma.levelProgress.findFirst({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
         levelNumber,
-        ...(actor.userId
-          ? { userId: actor.userId }
-          : actor.guestProfileId
-            ? { guestProfileId: actor.guestProfileId }
-            : { id: '__missing__' }),
+        userId: actor.userId,
       },
     })
 
@@ -93,30 +93,23 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
   }
 
   async save(actorKey: string, progress: LevelProgressRecord) {
-    const actor = await resolveActorReference(this.prisma, actorKey, {
-      createGuestProfile: true,
-    })
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return progress
+    }
 
     const savedRecord = await this.prisma.levelProgress.upsert({
-      where: actor.userId
-        ? {
-            userId_difficulty_levelNumber: {
-              userId: actor.userId,
-              difficulty: toPrismaDifficulty(progress.difficulty),
-              levelNumber: progress.levelNumber,
-            },
-          }
-        : {
-            guestProfileId_difficulty_levelNumber: {
-              guestProfileId: actor.guestProfileId ?? '__missing__',
-              difficulty: toPrismaDifficulty(progress.difficulty),
-              levelNumber: progress.levelNumber,
-            },
-          },
+      where: {
+        userId_difficulty_levelNumber: {
+          userId: actor.userId,
+          difficulty: toPrismaDifficulty(progress.difficulty),
+          levelNumber: progress.levelNumber,
+        },
+      },
       update: {
         actorType: actor.actorType,
         userId: actor.userId,
-        guestProfileId: actor.guestProfileId,
         bestTimeSeconds: progress.bestTimeSeconds,
         completedAt: progress.completedAt ? new Date(progress.completedAt) : null,
         updatedAt: new Date(progress.updatedAt),
@@ -124,7 +117,6 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
       create: {
         actorType: actor.actorType,
         userId: actor.userId,
-        guestProfileId: actor.guestProfileId,
         difficulty: toPrismaDifficulty(progress.difficulty),
         levelNumber: progress.levelNumber,
         bestTimeSeconds: progress.bestTimeSeconds,

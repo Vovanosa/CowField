@@ -1,6 +1,12 @@
-import type { Difficulty, LevelDefinition, LevelDraft, LevelSummary } from '../types'
+import type {
+  Difficulty,
+  LevelDefinition,
+  LevelDraft,
+  LevelEditorDefinition,
+  LevelSummary,
+} from '../types'
 import { getGridSizeForDifficulty } from '../validation'
-import { buildAuthenticatedHeaders } from './authSessionStorage'
+import { buildAuthenticatedHeaders, getStoredSessionRole } from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
 
 const API_BASE = buildApiUrl('/api/levels')
@@ -17,17 +23,13 @@ type LevelApiRecord = {
 
 type LevelDetailApiRecord = LevelApiRecord & {
   colorsByCell: number[]
-  cowsByCell: boolean[]
+  cowsByCell?: boolean[]
+  hasNextLevel: boolean
 }
 
 type DifficultyListResponse = {
   difficulty: Difficulty
   levels: LevelApiRecord[]
-}
-
-type NextLevelNumberResponse = {
-  difficulty: Difficulty
-  nextLevelNumber: number
 }
 
 function fromSummaryApiRecord(record: LevelApiRecord): LevelSummary {
@@ -46,7 +48,16 @@ function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
   return {
     ...fromSummaryApiRecord(record),
     pensByCell: record.colorsByCell,
-    cowsByCell: record.cowsByCell,
+    hasNextLevel: record.hasNextLevel,
+  }
+}
+
+function fromEditorApiRecord(record: LevelDetailApiRecord): LevelEditorDefinition {
+  return {
+    ...fromApiRecord(record),
+    cowsByCell:
+      record.cowsByCell ??
+      Array.from({ length: record.gridSize * record.gridSize }, () => false),
   }
 }
 
@@ -115,10 +126,30 @@ export async function getLevelsByDifficulty(difficulty: Difficulty) {
 export async function getLevelByDifficultyAndNumber(
   difficulty: Difficulty,
   levelNumber: number,
+  options: {
+    includeAuthoringData: true
+  },
+): Promise<LevelEditorDefinition | null>
+export async function getLevelByDifficultyAndNumber(
+  difficulty: Difficulty,
+  levelNumber: number,
+  options?: {
+    includeAuthoringData?: false
+  },
+): Promise<LevelDefinition | null>
+export async function getLevelByDifficultyAndNumber(
+  difficulty: Difficulty,
+  levelNumber: number,
+  options?: {
+    includeAuthoringData?: boolean
+  },
 ) {
   try {
     const record = await requestJson<LevelDetailApiRecord>(`/${difficulty}/${levelNumber}`)
-    return fromApiRecord(record)
+    const includeAuthoringData =
+      options?.includeAuthoringData ?? getStoredSessionRole() === 'admin'
+
+    return includeAuthoringData ? fromEditorApiRecord(record) : fromApiRecord(record)
   } catch (error) {
     if (error instanceof Error && error.message === 'NOT_FOUND') {
       return null
@@ -126,14 +157,6 @@ export async function getLevelByDifficultyAndNumber(
 
     throw error
   }
-}
-
-export async function getNextLevelNumber(difficulty: Difficulty) {
-  const response = await requestJson<NextLevelNumberResponse>(
-    `/${difficulty}/next-level-number`,
-  )
-
-  return response.nextLevelNumber
 }
 
 export async function saveLevel(draft: LevelDraft) {
@@ -146,7 +169,7 @@ export async function saveLevel(draft: LevelDraft) {
     },
   )
 
-  return fromApiRecord(record)
+  return fromEditorApiRecord(record)
 }
 
 export async function deleteLevel(difficulty: Difficulty, levelNumber: number) {

@@ -31,37 +31,35 @@ export class PrismaPlayerStatisticsRepository implements PlayerStatisticsReposit
   async get(actorKey: string) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
+    if (!actor.userId) {
+      return createEmptyStatisticsRecord()
+    }
+
     const record = await this.prisma.playerStatisticsTotal.findFirst({
-      where: actor.userId
-        ? { userId: actor.userId }
-        : actor.guestProfileId
-          ? { guestProfileId: actor.guestProfileId }
-          : { id: '__missing__' },
+      where: { userId: actor.userId },
     })
 
     return record ? toPlayerStatisticsRecord(record) : createEmptyStatisticsRecord()
   }
 
   async save(actorKey: string, record: PlayerStatisticsRecord) {
-    const actor = await resolveActorReference(this.prisma, actorKey, {
-      createGuestProfile: true,
-    })
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return record
+    }
 
     const savedRecord = await this.prisma.playerStatisticsTotal.upsert({
-      where: actor.userId
-        ? { userId: actor.userId }
-        : { guestProfileId: actor.guestProfileId ?? '__missing__' },
+      where: { userId: actor.userId },
       update: {
         actorType: actor.actorType,
         userId: actor.userId,
-        guestProfileId: actor.guestProfileId,
         totalBullPlacements: record.totalBullPlacements,
         updatedAt: new Date(record.updatedAt),
       },
       create: {
         actorType: actor.actorType,
         userId: actor.userId,
-        guestProfileId: actor.guestProfileId,
         totalCompletedLevels: 0,
         totalBullPlacements: record.totalBullPlacements,
         totalCompletionTimeSeconds: 0,

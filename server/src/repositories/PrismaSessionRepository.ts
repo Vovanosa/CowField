@@ -44,24 +44,6 @@ export class PrismaSessionRepository implements SessionRepository {
 
   async save(session: SessionRecord) {
     const actorType = session.role === 'guest' ? ActorType.guest : ActorType.user
-    const guestProfile =
-      actorType === ActorType.guest
-        ? await this.prisma.guestProfile.upsert({
-            where: {
-              actorKey: session.actorKey,
-            },
-            update: {
-              displayName: session.displayName,
-              updatedAt: new Date(session.updatedAt),
-            },
-            create: {
-              actorKey: session.actorKey,
-              displayName: session.displayName,
-              createdAt: new Date(session.createdAt),
-              updatedAt: new Date(session.updatedAt),
-            },
-          })
-        : null
 
     const savedSession = await this.prisma.session.upsert({
       where: {
@@ -72,7 +54,6 @@ export class PrismaSessionRepository implements SessionRepository {
         actorType,
         role: session.role,
         userId: actorType === ActorType.user ? session.accountUserId : null,
-        guestProfileId: guestProfile?.id ?? null,
         email: session.email,
         displayName: session.displayName,
         createdAt: new Date(session.createdAt),
@@ -84,7 +65,6 @@ export class PrismaSessionRepository implements SessionRepository {
         actorType,
         role: session.role,
         userId: actorType === ActorType.user ? session.accountUserId : null,
-        guestProfileId: guestProfile?.id ?? null,
         email: session.email,
         displayName: session.displayName,
         createdAt: new Date(session.createdAt),

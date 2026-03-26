@@ -10,7 +10,6 @@ export function createLevelRoutes(levelController: LevelController, authService:
   const requireAuth = createRequireAuthMiddleware(authService)
 
   router.use(requireAuth)
-  router.get('/:difficulty/next-level-number', asyncHandler(levelController.getNextLevelNumber))
   router.get('/:difficulty', asyncHandler(levelController.listByDifficulty))
   router.get('/:difficulty/:levelNumber', asyncHandler(levelController.getByDifficultyAndNumber))
   router.post('/:difficulty/:levelNumber', (request, _response, next) => {

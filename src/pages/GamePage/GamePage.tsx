@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
   type MutableRefObject,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
@@ -11,9 +10,9 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
+import { GameBoard } from '../../components/GameBoard'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
-import { getColorForId, getGapColorForId } from '../../game/levels'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import {
   clearMoveHistory,
@@ -21,7 +20,6 @@ import {
   getLevelByDifficultyAndNumber,
   getLevelProgress,
   getMoveHistoryCount,
-  getNextLevelNumber,
   popMoveHistoryEntry,
   pushMoveHistoryEntry,
   recordBullPlacements,
@@ -138,36 +136,6 @@ function isDifficulty(value: string | undefined): value is Difficulty {
   return value === 'light' || value === 'easy' || value === 'medium' || value === 'hard'
 }
 
-function CowMarker() {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      className="play-cow-marker"
-      focusable="false"
-    >
-      <path
-        d="M8 10 5.5 5.8l5 2.4L12.6 7h6.8l2.1 1.2 5-2.4L24 10v8.2A4.8 4.8 0 0 1 19.2 23H12.8A4.8 4.8 0 0 1 8 18.2Z"
-        fill="var(--color-cow-fill)"
-        stroke="var(--color-cow-stroke)"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <circle cx="12.2" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
-      <circle cx="19.8" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
-      <path
-        d="M12.2 18.4h7.6a2.8 2.8 0 0 1-2.8 3h-2a2.8 2.8 0 0 1-2.8-3Z"
-        fill="var(--color-cow-accent)"
-        stroke="var(--color-cow-stroke)"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <circle cx="14.4" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
-      <circle cx="17.6" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
-    </svg>
-  )
-}
-
 function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGroup: number) {
   const bullIndexes = marks
     .map((mark, index) => ({ mark, index }))
@@ -240,86 +208,6 @@ function getSolutionState(level: LevelDefinition, marks: CellMark[], bullsPerGro
   }
 }
 
-function getCellBorderStyle(level: LevelDefinition, cellIndex: number) {
-  const { gridSize, pensByCell } = level
-  const colorId = pensByCell[cellIndex]
-  const row = Math.floor(cellIndex / gridSize)
-  const column = cellIndex % gridSize
-  const internalBorderColor = 'var(--color-board-region-divider)'
-  const sameColorGapColor = getGapColorForId(colorId)
-
-  const rightNeighbor = column < gridSize - 1 ? pensByCell[cellIndex + 1] : null
-  const bottomNeighbor = row < gridSize - 1 ? pensByCell[cellIndex + gridSize] : null
-
-  return {
-    boxShadow: [
-      rightNeighbor !== null && rightNeighbor !== colorId
-        ? `2px 0 0 ${internalBorderColor}`
-        : rightNeighbor !== null
-          ? `2px 0 0 ${sameColorGapColor}`
-          : null,
-      bottomNeighbor !== null && bottomNeighbor !== colorId
-        ? `0 2px 0 ${internalBorderColor}`
-        : bottomNeighbor !== null
-          ? `0 2px 0 ${sameColorGapColor}`
-          : null,
-    ]
-      .filter(Boolean)
-      .join(', '),
-  }
-}
-
-function getCellStyle(level: LevelDefinition, cellIndex: number, isInvalid: boolean) {
-  const borderStyle = getCellBorderStyle(level, cellIndex)
-
-  return {
-    backgroundColor: getColorForId(level.pensByCell[cellIndex]),
-    boxShadow: [
-      isInvalid ? 'inset 0 0 0 3px var(--color-board-invalid-ring)' : null,
-      isInvalid ? 'inset 0 0 0 999px var(--color-board-invalid-overlay)' : null,
-      borderStyle.boxShadow || null,
-    ]
-      .filter(Boolean)
-      .join(', '),
-  }
-}
-
-function getIntersectionColor(level: LevelDefinition, row: number, column: number) {
-  const { gridSize, pensByCell } = level
-  const topLeft = pensByCell[(row - 1) * gridSize + (column - 1)]
-  const topRight = pensByCell[(row - 1) * gridSize + column]
-  const bottomLeft = pensByCell[row * gridSize + (column - 1)]
-  const bottomRight = pensByCell[row * gridSize + column]
-
-  const hasDarkGap =
-    topLeft !== topRight ||
-    topLeft !== bottomLeft ||
-    topRight !== bottomRight ||
-    bottomLeft !== bottomRight
-
-  return hasDarkGap
-    ? 'var(--color-board-region-divider)'
-    : getGapColorForId(topLeft)
-}
-
-function getIntersectionStyle(
-  level: LevelDefinition,
-  row: number,
-  column: number,
-): CSSProperties {
-  const gapSizePx = 2
-  const totalGapPx = (level.gridSize - 1) * gapSizePx
-  const cellTrack = `(100% - ${totalGapPx}px) / ${level.gridSize}`
-  const left = `calc(${column} * (${cellTrack}) + ${(column - 1) * gapSizePx}px)`
-  const top = `calc(${row} * (${cellTrack}) + ${(row - 1) * gapSizePx}px)`
-
-  return {
-    left,
-    top,
-    backgroundColor: getIntersectionColor(level, row, column),
-  }
-}
-
 function createEmptyBoard(level: LevelDefinition) {
   return Array.from({ length: level.gridSize * level.gridSize }, () => 'empty' as const)
 }
@@ -360,6 +248,7 @@ function GamePageScreen() {
   const [hasNextLevel, setHasNextLevel] = useState(false)
   const [isUnlocked, setIsUnlocked] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
+  const [activeCellIndex, setActiveCellIndex] = useState<number | null>(null)
   const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
@@ -427,11 +316,10 @@ function GamePageScreen() {
           ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
           : Promise.resolve(null)
 
-      const [nextLevel, nextProgress, previousLevelProgress, nextLevelNumber] = await Promise.all([
+      const [nextLevel, nextProgress, previousLevelProgress] = await Promise.all([
         getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
         getLevelProgress(difficultyKey, currentLevelNumber),
         previousLevelProgressPromise,
-        getNextLevelNumber(difficultyKey),
       ])
 
       if (!isActive) {
@@ -440,12 +328,13 @@ function GamePageScreen() {
 
       setLevel(nextLevel)
       setLevelProgress(nextProgress)
-      setHasNextLevel(currentLevelNumber + 1 < nextLevelNumber)
+      setHasNextLevel(nextLevel?.hasNextLevel ?? false)
       setIsUnlocked(
         currentLevelNumber === 1 ||
           previousLevelProgress?.bestTimeSeconds !== null,
       )
       setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
+      setActiveCellIndex(null)
       setIsLoading(false)
     }
 
@@ -671,6 +560,8 @@ function GamePageScreen() {
       return
     }
 
+    setActiveCellIndex(cellIndex)
+
     const nextMarks = cellMarksRef.current.map((mark, index) => {
       if (index !== cellIndex) {
         return mark
@@ -706,6 +597,8 @@ function GamePageScreen() {
     if (isBoardLocked) {
       return
     }
+
+    setActiveCellIndex(cellIndex)
 
     const nextMarks = cellMarksRef.current.map((mark, index) => {
       if (index !== cellIndex || mark === 'bull') {
@@ -811,6 +704,7 @@ function GamePageScreen() {
     setCellMarks(emptyBoard)
     setElapsedSeconds(0)
     setRunStartedAt(null)
+    setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)
     completionHandledRef.current = false
@@ -834,6 +728,7 @@ function GamePageScreen() {
     completionHandledRef.current = false
     cellMarksRef.current = restoredMarks
     setCellMarks(restoredMarks)
+    setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)
     resetDragState(dragStateRef)
@@ -950,44 +845,16 @@ function GamePageScreen() {
             )}
           </div>
 
-          <div className="board-preview" aria-label="Puzzle board">
-            <div
-              className="board-preview-grid"
-              style={{ gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))` }}
-            >
-              {level.pensByCell.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className={
-                    invalidBullIndexes.has(index)
-                      ? 'board-cell board-cell-invalid'
-                      : 'board-cell'
-                  }
-                  style={getCellStyle(level, index, invalidBullIndexes.has(index))}
-                  onPointerDown={(event) => handleCellPointerDown(event, index)}
-                  onPointerEnter={(event) => handleCellPointerEnter(event, index)}
-                  onPointerUp={(event) => handleCellPointerUp(event, index)}
-                  onDragStart={(event) => event.preventDefault()}
-                  disabled={isBoardLocked}
-                >
-                  {cellMarks[index] === 'dot' ? <span className="board-cell-dot" /> : null}
-                  {cellMarks[index] === 'bull' ? <CowMarker /> : null}
-                </button>
-              ))}
-
-              {Array.from({ length: Math.max(level.gridSize - 1, 0) }, (_, rowIndex) =>
-                Array.from({ length: Math.max(level.gridSize - 1, 0) }, (_, columnIndex) => (
-                  <span
-                    key={`intersection-${rowIndex + 1}-${columnIndex + 1}`}
-                    className="board-grid-intersection"
-                    style={getIntersectionStyle(level, rowIndex + 1, columnIndex + 1)}
-                    aria-hidden="true"
-                  />
-                )),
-              )}
-            </div>
-          </div>
+          <GameBoard
+            level={level}
+            cellMarks={cellMarks}
+            invalidBullIndexes={invalidBullIndexes}
+            isBoardLocked={isBoardLocked}
+            activeCellIndex={activeCellIndex}
+            onCellPointerDown={handleCellPointerDown}
+            onCellPointerEnter={handleCellPointerEnter}
+            onCellPointerUp={handleCellPointerUp}
+          />
         </div>
       </section>
 

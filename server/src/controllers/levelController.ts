@@ -5,6 +5,7 @@ import {
   levelParamsSchema,
   levelRecordInputSchema,
 } from '../schemas/levelSchemas'
+import { getAuthenticatedActor } from '../middleware/authMiddleware'
 import { LevelService } from '../services/LevelService'
 
 export class LevelController {
@@ -26,19 +27,14 @@ export class LevelController {
 
   getByDifficultyAndNumber = async (request: Request, response: Response) => {
     const params = levelParamsSchema.parse(request.params)
+    const actor = getAuthenticatedActor(request)
     const level = await this.levelService.getByDifficultyAndNumber(
       params.difficulty,
       params.levelNumber,
+      actor.role === 'admin',
     )
 
     response.json(level)
-  }
-
-  getNextLevelNumber = async (request: Request, response: Response) => {
-    const params = difficultyParamsSchema.parse(request.params)
-    const payload = await this.levelService.getNextLevelNumber(params.difficulty)
-
-    response.json(payload)
   }
 
   save = async (request: Request, response: Response) => {

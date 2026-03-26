@@ -3,6 +3,7 @@ import { buildApiUrl } from './apiBase'
 
 const AUTH_API_BASE = buildApiUrl('/api/auth')
 const SESSION_TOKEN_STORAGE_KEY = 'cowfield.auth-session-token'
+const SESSION_ROLE_STORAGE_KEY = 'cowfield.auth-session-role'
 
 type PasswordResetRequestResponse = {
   sent: boolean
@@ -67,6 +68,25 @@ export function clearStoredSessionToken() {
   }
 
   window.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY)
+  window.localStorage.removeItem(SESSION_ROLE_STORAGE_KEY)
+}
+
+export function getStoredSessionRole() {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const role = window.localStorage.getItem(SESSION_ROLE_STORAGE_KEY)
+
+  return role === 'admin' || role === 'user' || role === 'guest' ? role : null
+}
+
+function setStoredSessionRole(role: AuthSession['role']) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(SESSION_ROLE_STORAGE_KEY, role)
 }
 
 export function buildAuthenticatedHeaders(init?: HeadersInit) {
@@ -85,6 +105,7 @@ export async function login(email: string, password: string) {
   })
 
   setStoredSessionToken(session.token)
+  setStoredSessionRole(session.role)
   return session
 }
 
@@ -95,6 +116,7 @@ export async function register(email: string, password: string) {
   })
 
   setStoredSessionToken(session.token)
+  setStoredSessionRole(session.role)
   return session
 }
 
@@ -104,6 +126,7 @@ export async function loginAsGuest() {
   })
 
   setStoredSessionToken(session.token)
+  setStoredSessionRole(session.role)
   return session
 }
 
@@ -115,9 +138,12 @@ export async function getCurrentSession() {
   }
 
   try {
-    return await requestJson<AuthSession>('/me', {
+    const session = await requestJson<AuthSession>('/me', {
       headers: buildAuthenticatedHeaders(),
     })
+
+    setStoredSessionRole(session.role)
+    return session
   } catch {
     clearStoredSessionToken()
     return null
