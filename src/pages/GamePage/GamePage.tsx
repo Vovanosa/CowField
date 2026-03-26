@@ -11,6 +11,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { GameBoard } from '../../components/GameBoard'
+import { playSoundEffect, startMusic, stopMusic } from '../../game/audio/audioManager'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
@@ -348,7 +349,7 @@ function GamePageScreen() {
         void recordBullPlacements(pendingBullPlacementsRef.current, true)
       }
     }
-  }, [difficulty, levelNumber])
+  }, [difficulty, levelNumber, isGuest])
 
   useEffect(() => {
     function stopDragging() {
@@ -397,6 +398,14 @@ function GamePageScreen() {
       window.clearInterval(intervalId)
     }
   }, [runStartedAt])
+
+  useEffect(() => {
+    startMusic('gameLoop')
+
+    return () => {
+      stopMusic()
+    }
+  }, [])
 
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
@@ -470,6 +479,7 @@ function GamePageScreen() {
 
   function handleLevelSolved(completionTimeSeconds: number) {
     completionHandledRef.current = true
+    playSoundEffect('levelComplete')
     clearMoveHistory()
     setCanUndo(false)
     elapsedSecondsRef.current = completionTimeSeconds
@@ -560,7 +570,10 @@ function GamePageScreen() {
       return
     }
 
+    startMusic('gameLoop')
     setActiveCellIndex(cellIndex)
+
+    let nextAction: 'placeDot' | 'placeBull' | 'clearCell' | null = null
 
     const nextMarks = cellMarksRef.current.map((mark, index) => {
       if (index !== cellIndex) {
@@ -568,6 +581,7 @@ function GamePageScreen() {
       }
 
       if (mark === 'empty') {
+        nextAction = 'placeDot'
         return 'dot'
       }
 
@@ -575,9 +589,11 @@ function GamePageScreen() {
         if (!isGuest) {
           pendingBullPlacementsRef.current += 1
         }
+        nextAction = 'placeBull'
         return 'bull'
       }
 
+      nextAction = 'clearCell'
       return 'empty'
     })
 
@@ -587,6 +603,10 @@ function GamePageScreen() {
 
     recordUndoSnapshot()
     applyCellMarks(nextMarks, interactionTimestampMs)
+
+    if (nextAction) {
+      playSoundEffect(nextAction)
+    }
   }
 
   function applyDragMode(
@@ -598,6 +618,7 @@ function GamePageScreen() {
       return
     }
 
+    startMusic('gameLoop')
     setActiveCellIndex(cellIndex)
 
     const nextMarks = cellMarksRef.current.map((mark, index) => {
@@ -618,6 +639,7 @@ function GamePageScreen() {
     }
 
     applyCellMarks(nextMarks, interactionTimestampMs)
+    playSoundEffect(dragMode === 'add-dot' ? 'placeDot' : 'clearCell')
   }
 
   function handleCellPointerDown(
@@ -709,6 +731,7 @@ function GamePageScreen() {
     setCompletionModal(null)
     completionHandledRef.current = false
     resetDragState(dragStateRef)
+    playSoundEffect('restart')
   }
 
   function handleUndoMove() {
@@ -733,6 +756,7 @@ function GamePageScreen() {
     setCompletionModal(null)
     resetDragState(dragStateRef)
     setCanUndo(getMoveHistoryCount() > 0)
+    playSoundEffect('undo')
   }
 
   function handleCloseCompletionModal() {

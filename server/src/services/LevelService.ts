@@ -36,7 +36,7 @@ export class LevelService {
       } satisfies LevelAdminRecord
     }
 
-    const { cowsByCell: _cowsByCell, ...publicLevel } = level
+    const {  ...publicLevel } = level
 
     return {
       ...publicLevel,

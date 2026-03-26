@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
+import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { completeGoogleLogin } from '../../game/storage'
 import styles from '../AuthPage/AuthPage.module.css'
 
@@ -17,12 +18,12 @@ export function GoogleAuthCallbackPage() {
 
     async function finishLogin() {
       if (error) {
-        navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true })
+        navigate(`/login?error=${encodeURIComponent(translateAuthMessage(t, error))}`, { replace: true })
         return
       }
 
       if (!code && !sessionVerifier) {
-        navigate('/login?error=Google%20login%20failed.', { replace: true })
+        navigate(`/login?error=${encodeURIComponent(t('Google login failed.'))}`, { replace: true })
         return
       }
 
@@ -32,14 +33,14 @@ export function GoogleAuthCallbackPage() {
       } catch (completionError) {
         const message =
           completionError instanceof Error
-            ? completionError.message
-            : 'Google login failed.'
+            ? translateAuthMessage(t, completionError.message)
+            : t('Google login failed.')
         navigate(`/login?error=${encodeURIComponent(message)}`, { replace: true })
       }
     }
 
     void finishLogin()
-  }, [navigate, searchParams])
+  }, [navigate, searchParams, t])
 
   return (
     <div className={styles.authPage}>

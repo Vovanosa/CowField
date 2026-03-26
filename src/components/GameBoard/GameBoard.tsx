@@ -2,6 +2,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { getColorForId, getGapColorForId } from '../../game/levels'
 import type { LevelDefinition } from '../../game/types'
@@ -156,8 +157,10 @@ export function GameBoard({
   onCellPointerEnter,
   onCellPointerUp,
 }: GameBoardProps) {
+  const { t } = useTranslation()
+
   return (
-    <div className="board-preview" aria-label="Puzzle board">
+    <div className="board-preview" aria-label={t('Puzzle board')}>
       <div
         className="board-preview-grid"
         style={{ gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))` }}

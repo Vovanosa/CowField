@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { requestPasswordReset } from '../../game/storage'
 import styles from '../AuthPage/AuthPage.module.css'
 
@@ -20,7 +21,11 @@ export function ForgotPasswordPage() {
       await requestPasswordReset(email)
       setMessage(t('If the account exists, a reset link has been sent to that email address.'))
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      setMessage(
+        error instanceof Error
+          ? translateAuthMessage(t, error.message)
+          : t('Request failed.'),
+      )
     } finally {
       setIsSubmitting(false)
     }

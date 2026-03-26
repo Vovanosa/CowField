@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
+import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
@@ -31,7 +32,7 @@ export function LoginPage() {
     } catch (error) {
       const nextMessage = error instanceof Error ? error.message : t('Request failed.')
       setNeedsVerification(nextMessage === 'Email not verified')
-      setMessage(nextMessage)
+      setMessage(translateAuthMessage(t, nextMessage))
     } finally {
       setIsSubmitting(false)
     }
@@ -46,7 +47,11 @@ export function LoginPage() {
       await auth.loginAsGuest()
       navigate('/', { replace: true })
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      setMessage(
+        error instanceof Error
+          ? translateAuthMessage(t, error.message)
+          : t('Request failed.'),
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -61,14 +66,18 @@ export function LoginPage() {
       setMessage(t('Verification email sent again.'))
       setNeedsVerification(false)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      setMessage(
+        error instanceof Error
+          ? translateAuthMessage(t, error.message)
+          : t('Request failed.'),
+      )
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const routeError = searchParams.get('error') ?? ''
-  const visibleMessage = message || routeError
+  const visibleMessage = message || (routeError ? translateAuthMessage(t, routeError) : '')
 
   return (
     <div className={styles.authPage}>

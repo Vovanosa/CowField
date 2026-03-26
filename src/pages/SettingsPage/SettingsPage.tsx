@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
 import { PageIntro } from '../../components/PageIntro'
+import { playSoundEffect } from '../../game/audio/audioManager'
 import { savePlayerSettings } from '../../game/storage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import styles from './SettingsPage.module.css'
@@ -50,6 +51,8 @@ export function SettingsPage() {
       return
     }
 
+    playSoundEffect('uiClick')
+
     const nextSettings = {
       ...settings,
       [key]: !settings[key],
@@ -59,6 +62,8 @@ export function SettingsPage() {
   }
 
   function handleVolumeChange(key: VolumeSettingKey, value: number) {
+    playSoundEffect('uiClick')
+
     void savePlayerSettings({
       ...settings,
       [key]: value,

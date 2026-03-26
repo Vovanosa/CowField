@@ -16,12 +16,16 @@ const uk = {
   Volume: 'Гучність',
   Language: 'Мова',
   Undo: 'Скасувати хід',
+  Home: 'Головна',
   'Level {{levelNumber}}': 'Рівень {{levelNumber}}',
   Light: 'Легка',
   Easy: 'Проста',
   Medium: 'Середня',
   Hard: 'Складна',
   'Home menu': 'Головне меню',
+  'Primary navigation': 'Основна навігація',
+  'Open settings': 'Відкрити налаштування',
+  'Puzzle board': 'Ігрове поле',
   Play: 'Грати',
   About: 'Про гру',
   Statistics: 'Статистика',
@@ -44,6 +48,33 @@ const uk = {
   'This level is locked. Complete the previous level first to open it.':
     'Цей рівень заблокований. Спочатку пройдіть попередній рівень, щоб його відкрити.',
   'About the game': 'Про гру',
+  'A quick guide for new players before the first level.':
+    'Короткий вступ для нових гравців перед першим рівнем.',
+  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.':
+    'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без хаотичних здогадок, лише поступове розуміння того, де бик може стояти, а де ні.',
+  'How cell marks work': 'Як працюють позначки в клітинках',
+  'Each cell changes like this:': 'Кожна клітинка змінюється так:',
+  empty: 'порожньо',
+  'dot note': 'точка-нотатка',
+  bull: 'бик',
+  'The purpose of the game is simple: place the correct number of bulls so the whole board works at once. Every row must contain the required number of bulls, every column must contain the required number of bulls, and every colored pen must also contain the required number of bulls.':
+    'Мета гри проста: розставити правильну кількість биків так, щоб усе поле працювало одночасно. У кожному рядку має бути потрібна кількість биків, у кожному стовпці теж, і в кожному кольоровому загоні також.',
+  'There is one more important rule: bulls may not touch each other in any direction. That means not from the side, not from above or below, and not even diagonally at the corners. If two bulls are neighboring cells, the placement is wrong.':
+    'Є ще одне важливе правило: бики не можуть торкатися один одного в жодному напрямку. Тобто не збоку, не зверху чи знизу і навіть не по діагоналі через кут. Якщо два бики стоять у сусідніх клітинках, таке розміщення неправильне.',
+  'Light, easy, and medium use 1 bull per row, column, and pen.':
+    'На light, easy та medium потрібно по 1 бику в кожному рядку, стовпці й загоні.',
+  'Hard uses 2 bulls per row, column, and pen.':
+    'На hard потрібно по 2 бики в кожному рядку, стовпці й загоні.',
+  'Dots are just notes and never count as bulls.':
+    'Точки — це лише нотатки, вони ніколи не рахуються як бики.',
+  'You win with correct bull placement only.':
+    'Перемога залежить тільки від правильного розташування биків.',
+  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong, and once you have placed the required number of bulls, the game can show which ones break the rules. You do not need to clean up every unused cell before finishing a level.':
+    'Зручний спосіб грати — ставити точки як підказки для себе, поки ви перевіряєте ідеї. Биків можна ставити навіть у неправильні місця, а коли потрібну кількість уже розміщено, гра покаже, які з них порушують правила. Перед завершенням рівня не потрібно зачищати всі невикористані клітинки.',
+  'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
+    'У налаштуваннях можна зробити гру комфортнішою: увімкнути режим без поспіху, щоб сховати таймер, скористатися автопозначками точками, перейти на темну тему та ввімкнути звукові ефекти або музику з регулюванням гучності. Якщо ви граєте як гість, режим без поспіху вмикається автоматично.',
+  'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
+    'Найприємніший момент у Bullpen — це коли заплутане поле раптом починає складатися в зрозумну картину. Починайте з малого, довіряйте правилам і дозвольте візерунку з’являтися по одному бику за раз.',
   'Adjust player preferences here. These switches are remembered by the backend.':
     'Налаштовуйте параметри гравця тут. Ці перемикачі зберігаються на бекенді.',
   'Loading settings...': 'Завантаження налаштувань...',
@@ -125,6 +156,7 @@ const uk = {
   Profile: 'Профіль',
   Guest: 'Гість',
   User: 'Користувач',
+  'Admin view': 'Режим адміністратора',
   'Preview role': 'Режим перегляду',
   'Log out': 'Вийти',
   Login: 'Вхід',
@@ -191,6 +223,12 @@ const uk = {
   'Enter verification code': 'Ввести код підтвердження',
   'Your email has been verified. You can log in now.':
     'Пошту підтверджено. Тепер можна увійти.',
+  'Incorrect email or password.': 'Неправильна електронна пошта або пароль.',
+  'Email not verified': 'Електронну пошту ще не підтверджено.',
+  'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
+  'Google login failed.': 'Не вдалося завершити вхід через Google.',
+  'Neon Auth is not configured.': 'Neon Auth не налаштовано.',
+  'Invalid request payload.': 'Некоректні дані запиту.',
 } as const
 
 export default uk

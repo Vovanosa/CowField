@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 
+import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { resetPassword } from '../../game/storage'
 import styles from '../AuthPage/AuthPage.module.css'
@@ -30,7 +31,11 @@ export function ResetPasswordPage() {
       await resetPassword(token, password)
       setMessage(t('Your password has been updated.'))
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t('Request failed.'))
+      setMessage(
+        error instanceof Error
+          ? translateAuthMessage(t, error.message)
+          : t('Request failed.'),
+      )
     } finally {
       setIsSubmitting(false)
     }

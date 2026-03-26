@@ -1,30 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const TOAST_DURATION_MS = 2600
 
 export function useGuestStatisticsToast() {
   const { t } = useTranslation()
-  const [toastSequence, setToastSequence] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
+  const hideTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (toastSequence === 0) {
-      return
+    return () => {
+      if (hideTimeoutRef.current !== null) {
+        window.clearTimeout(hideTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  function showToast() {
+    if (hideTimeoutRef.current !== null) {
+      window.clearTimeout(hideTimeoutRef.current)
     }
 
     setIsVisible(true)
-    const timeoutId = window.setTimeout(() => {
+    hideTimeoutRef.current = window.setTimeout(() => {
       setIsVisible(false)
+      hideTimeoutRef.current = null
     }, TOAST_DURATION_MS)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-    }
-  }, [toastSequence])
+  }
 
   return {
     toastMessage: isVisible ? t('Statistics is available only for logged users.') : null,
-    showToast: () => setToastSequence((currentValue) => currentValue + 1),
+    showToast,
   }
 }

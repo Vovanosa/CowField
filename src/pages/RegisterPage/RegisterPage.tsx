@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
@@ -36,7 +37,11 @@ export function RegisterPage() {
       if (error instanceof Error && error.message === 'EMAIL_VERIFICATION_REQUIRED') {
         setMessage(t('Account created. Check your email to verify it before logging in.'))
       } else {
-        setMessage(error instanceof Error ? error.message : t('Request failed.'))
+        setMessage(
+          error instanceof Error
+            ? translateAuthMessage(t, error.message)
+            : t('Request failed.'),
+        )
       }
     } finally {
       setIsSubmitting(false)

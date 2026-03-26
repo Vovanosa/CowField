@@ -26,13 +26,13 @@ export function AppHeader() {
             <Grid3X3 size={18} />
           </span>
           <span className="brand-copy">
-            <strong>Bullpen</strong>
-            <span>{isAdmin ? 'Admin view' : ''}</span>
+            <strong>{t('Bullpen')}</strong>
+            <span>{isAdmin ? t('Admin view') : ''}</span>
           </span>
         </NavLink>
       </div>
 
-      <nav className="top-nav" aria-label="Primary">
+      <nav className="top-nav" aria-label={t('Primary navigation')}>
         {navigationLinks.map((link) =>
           isGuest && link.to === '/statistics' ? (
             <button
@@ -42,7 +42,7 @@ export function AppHeader() {
               aria-disabled="true"
               onClick={showToast}
             >
-              {link.label}
+              {t(link.label)}
             </button>
           ) : (
             <NavLink
@@ -53,7 +53,7 @@ export function AppHeader() {
               }
               end={link.to === '/'}
             >
-              {link.label}
+              {t(link.label)}
             </NavLink>
           ),
         )}
@@ -61,7 +61,7 @@ export function AppHeader() {
 
       <NavLink
         to="/settings"
-        aria-label="Open settings"
+        aria-label={t('Open settings')}
         className={({ isActive }) =>
           isActive ? 'icon-link icon-link-active' : 'icon-link'
         }

@@ -18,17 +18,115 @@
 .aboutPanel {
   display: flex;
   flex-direction: column;
+  gap: var(--space-5);
+}
+
+.aboutArticle {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
 }
 
-.aboutPanel p {
+.lead {
+  font-size: 1.04rem;
+  color: var(--color-heading);
+}
+
+.aboutArticle p {
   color: var(--color-text);
   line-height: 1.8;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-icon);
+  background:
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
+    var(--color-surface);
+}
+
+.legendIntro {
+  font-weight: 600;
+  color: var(--color-heading);
+  margin-right: var(--space-2);
+}
+
+.legendStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-heading);
+  font-weight: 600;
+}
+
+.legendArrow {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.legendCell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--color-board-empty-cell);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-board-dot);
+}
+
+.bullMarker {
+  width: 24px;
+  height: 24px;
+}
+
+.ruleStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.ruleStrip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-glass-soft);
+  color: var(--color-heading);
+  line-height: 1.4;
+}
+
+.closing {
+  color: var(--color-heading);
+  font-style: italic;
 }
 
 @media (max-width: 768px) {
   .pageIntroRow {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .legend {
+    align-items: flex-start;
+  }
+
+  .legendArrow {
+    display: none;
   }
 }
