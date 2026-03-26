@@ -34,6 +34,11 @@
   --color-border-highlight: rgba(148, 112, 38, 0.08);
   --color-border-icon: rgba(148, 112, 38, 0.12);
   --color-border-hover: rgba(148, 112, 38, 0.22);
+  --color-input-surface: rgba(255, 255, 255, 0.82);
+  --color-input-surface-hover: rgba(255, 255, 255, 0.9);
+  --color-input-surface-disabled: rgba(247, 235, 216, 0.72);
+  --color-input-placeholder: rgba(122, 101, 69, 0.68);
+  --color-input-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
 
   --color-heading: #5e4622;
   --color-text: #7a6545;
@@ -142,6 +147,11 @@
   --color-border-highlight: rgba(214, 176, 111, 0.1);
   --color-border-icon: rgba(214, 176, 111, 0.14);
   --color-border-hover: rgba(214, 176, 111, 0.24);
+  --color-input-surface: rgba(236, 226, 210, 0.12);
+  --color-input-surface-hover: rgba(236, 226, 210, 0.16);
+  --color-input-surface-disabled: rgba(236, 226, 210, 0.08);
+  --color-input-placeholder: rgba(220, 200, 167, 0.56);
+  --color-input-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   --color-heading: #f3e1c1;
   --color-text: #dcc8a7;

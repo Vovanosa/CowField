@@ -1,4 +1,4 @@
-import type { Difficulty, LevelDefinition, LevelDraft } from '../types'
+import type { Difficulty, LevelDefinition, LevelDraft, LevelSummary } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
 import { buildAuthenticatedHeaders } from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
@@ -11,10 +11,13 @@ type LevelApiRecord = {
   levelNumber: number
   title: string
   gridSize: number
-  colorsByCell: number[]
-  cowsByCell: boolean[]
   createdAt: string
   updatedAt: string
+}
+
+type LevelDetailApiRecord = LevelApiRecord & {
+  colorsByCell: number[]
+  cowsByCell: boolean[]
 }
 
 type DifficultyListResponse = {
@@ -27,17 +30,23 @@ type NextLevelNumberResponse = {
   nextLevelNumber: number
 }
 
-function fromApiRecord(record: LevelApiRecord): LevelDefinition {
+function fromSummaryApiRecord(record: LevelApiRecord): LevelSummary {
   return {
     id: `${record.difficulty}-${record.levelNumber}`,
     levelNumber: record.levelNumber,
     title: record.title,
     difficulty: record.difficulty,
     gridSize: record.gridSize,
-    pensByCell: record.colorsByCell,
-    cowsByCell: record.cowsByCell,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+  }
+}
+
+function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
+  return {
+    ...fromSummaryApiRecord(record),
+    pensByCell: record.colorsByCell,
+    cowsByCell: record.cowsByCell,
   }
 }
 
@@ -99,7 +108,7 @@ export function createEmptyLevelDraft(
 export async function getLevelsByDifficulty(difficulty: Difficulty) {
   const response = await requestJson<DifficultyListResponse>(`/${difficulty}`)
   return response.levels
-    .map(fromApiRecord)
+    .map(fromSummaryApiRecord)
     .sort((left, right) => left.levelNumber - right.levelNumber)
 }
 
@@ -108,7 +117,7 @@ export async function getLevelByDifficultyAndNumber(
   levelNumber: number,
 ) {
   try {
-    const record = await requestJson<LevelApiRecord>(`/${difficulty}/${levelNumber}`)
+    const record = await requestJson<LevelDetailApiRecord>(`/${difficulty}/${levelNumber}`)
     return fromApiRecord(record)
   } catch (error) {
     if (error instanceof Error && error.message === 'NOT_FOUND') {
@@ -129,7 +138,7 @@ export async function getNextLevelNumber(difficulty: Difficulty) {
 
 export async function saveLevel(draft: LevelDraft) {
   const payload = toApiPayload(draft)
-  const record = await requestJson<LevelApiRecord>(
+  const record = await requestJson<LevelDetailApiRecord>(
     `/${draft.difficulty}/${draft.levelNumber}`,
     {
       method: 'POST',

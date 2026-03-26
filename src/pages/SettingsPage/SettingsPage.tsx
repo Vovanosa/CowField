@@ -1,17 +1,15 @@
-import { ArrowLeft, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
 import { PageIntro } from '../../components/PageIntro'
-import { applyThemeMode, getPlayerSettings, savePlayerSettings } from '../../game/storage'
-import type { PlayerSettings } from '../../game/types'
+import { savePlayerSettings } from '../../game/storage'
+import { usePlayerSettings } from '../../game/usePlayerSettings'
 import styles from './SettingsPage.module.css'
 
 type ToggleSettingKey =
   | 'soundEffectsEnabled'
   | 'musicEnabled'
-  | 'darkModeEnabled'
   | 'takeYourTimeEnabled'
   | 'autoPlaceDotsEnabled'
 
@@ -33,10 +31,6 @@ const settingsConfig: Array<{
     volumeKey: 'musicVolume',
   },
   {
-    key: 'darkModeEnabled',
-    icon: MoonStar,
-  },
-  {
     key: 'takeYourTimeEnabled',
     icon: TimerOff,
   },
@@ -48,77 +42,10 @@ const settingsConfig: Array<{
 
 export function SettingsPage() {
   const { isGuest } = useAuth()
-  const [settings, setSettings] = useState<PlayerSettings | null>(null)
-  const hasLoadedSettingsRef = useRef(false)
-  const previousSettingsRef = useRef<PlayerSettings | null>(null)
+  const settings = usePlayerSettings()
   const { t } = useTranslation()
 
-  useEffect(() => {
-    let isActive = true
-
-    async function loadSettings() {
-      const nextSettings = await getPlayerSettings()
-
-      if (!isActive) {
-        return
-      }
-
-      setSettings(nextSettings)
-      applyThemeMode(nextSettings.darkModeEnabled)
-      hasLoadedSettingsRef.current = true
-      previousSettingsRef.current = nextSettings
-    }
-
-    void loadSettings()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!settings || !hasLoadedSettingsRef.current) {
-      return
-    }
-
-    const previousSettings = previousSettingsRef.current
-
-    if (!previousSettings) {
-      previousSettingsRef.current = settings
-      return
-    }
-
-    const didVolumeChange =
-      previousSettings.soundEffectsVolume !== settings.soundEffectsVolume ||
-      previousSettings.musicVolume !== settings.musicVolume
-
-    const didNonVolumeSettingChange =
-      previousSettings.soundEffectsEnabled !== settings.soundEffectsEnabled ||
-      previousSettings.musicEnabled !== settings.musicEnabled ||
-      previousSettings.darkModeEnabled !== settings.darkModeEnabled ||
-      previousSettings.takeYourTimeEnabled !== settings.takeYourTimeEnabled ||
-      previousSettings.autoPlaceDotsEnabled !== settings.autoPlaceDotsEnabled
-
-    previousSettingsRef.current = settings
-
-    if (!didVolumeChange || didNonVolumeSettingChange) {
-      return
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      void savePlayerSettings(settings)
-    }, 1000)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-    }
-  }, [settings])
-
   function handleToggle(key: ToggleSettingKey) {
-    if (!settings) {
-      return
-    }
-
     if (isGuest && key === 'takeYourTimeEnabled') {
       return
     }
@@ -128,24 +55,14 @@ export function SettingsPage() {
       [key]: !settings[key],
     }
 
-    if (key === 'darkModeEnabled') {
-      applyThemeMode(nextSettings.darkModeEnabled)
-    }
-
-    setSettings(nextSettings)
-    previousSettingsRef.current = nextSettings
     void savePlayerSettings(nextSettings)
   }
 
   function handleVolumeChange(key: VolumeSettingKey, value: number) {
-    if (!settings) {
-      return
-    }
-
-    setSettings((currentSettings) => ({
-      ...(currentSettings as PlayerSettings),
+    void savePlayerSettings({
+      ...settings,
       [key]: value,
-    }))
+    })
   }
 
   function getSettingTitle(key: ToggleSettingKey) {
@@ -155,10 +72,6 @@ export function SettingsPage() {
 
     if (key === 'musicEnabled') {
       return t('Music')
-    }
-
-    if (key === 'darkModeEnabled') {
-      return t('Dark mode')
     }
 
     if (key === 'takeYourTimeEnabled') {
@@ -177,10 +90,6 @@ export function SettingsPage() {
       return t('Enable background music during play.')
     }
 
-    if (key === 'darkModeEnabled') {
-      return t('Use a darker visual theme for low-light play.')
-    }
-
     if (key === 'takeYourTimeEnabled') {
       return t('Hide visible timers so play can stay fully relaxed.')
     }
@@ -197,71 +106,69 @@ export function SettingsPage() {
         <PageIntro
           eyebrow={t('Settings')}
           title={t('Settings')}
-          description={t('Adjust player preferences here. These switches are remembered by the backend.')}
+          description={t('Adjust player preferences here. These switches stay on this device for every account.')}
         />
       </div>
 
       <section className={`${styles.settingsPanel} panel-surface`}>
-        {!settings ? <p className={styles.loadingMessage}>{t('Loading settings...')}</p> : null}
-        {settings && isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
+        {isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
         <div className={styles.settingsList}>
-          {settings ? (
-            <>
-              {settingsConfig.map((setting) => {
-                const Icon = setting.icon
-                const isEnabled = settings[setting.key]
-                const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
+          <>
+            {settingsConfig.map((setting) => {
+              const Icon = setting.icon
+              const isEnabled =
+                isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
+              const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
 
-                return (
-                  <article key={setting.key} className={styles.settingCard}>
-                    <div className={styles.settingMainRow}>
-                      <div className={styles.settingInfo}>
-                        <span className={styles.settingIcon}>
-                          <Icon size={18} />
-                        </span>
-                        <div className={styles.settingCopy}>
-                          <h2 className={styles.settingTitle}>{getSettingTitle(setting.key)}</h2>
-                          <p className={styles.settingDescription}>
-                            {getSettingDescription(setting.key)}
-                          </p>
-                        </div>
+              return (
+                <article key={setting.key} className={styles.settingCard}>
+                  <div className={styles.settingMainRow}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingIcon}>
+                        <Icon size={18} />
+                      </span>
+                      <div className={styles.settingCopy}>
+                        <h2 className={styles.settingTitle}>{getSettingTitle(setting.key)}</h2>
+                        <p className={styles.settingDescription}>
+                          {getSettingDescription(setting.key)}
+                        </p>
                       </div>
-
-                      <button
-                        type="button"
-                        className={isEnabled ? `${styles.toggle} ${styles.toggleActive}` : styles.toggle}
-                        onClick={() => handleToggle(setting.key)}
-                        aria-pressed={isEnabled}
-                        disabled={isDisabled}
-                      >
-                        <span className={styles.toggleThumb} />
-                      </button>
                     </div>
 
-                    {setting.volumeKey && isEnabled ? (
-                      <div className={styles.sliderRow}>
-                        <div className={styles.sliderHeader}>
-                          <p className={styles.sliderLabel}>{t('Volume')}</p>
-                          <span className={styles.sliderValue}>{settings[setting.volumeKey]}%</span>
-                        </div>
-                        <input
-                          className={styles.slider}
-                          type="range"
-                          min="0"
-                          max="100"
-                          step="1"
-                          value={settings[setting.volumeKey]}
-                          onChange={(event) =>
-                            handleVolumeChange(setting.volumeKey!, Number(event.target.value))
-                          }
-                        />
+                    <button
+                      type="button"
+                      className={isEnabled ? `${styles.toggle} ${styles.toggleActive}` : styles.toggle}
+                      onClick={() => handleToggle(setting.key)}
+                      aria-pressed={isEnabled}
+                      disabled={isDisabled}
+                    >
+                      <span className={styles.toggleThumb} />
+                    </button>
+                  </div>
+
+                  {setting.volumeKey && isEnabled ? (
+                    <div className={styles.sliderRow}>
+                      <div className={styles.sliderHeader}>
+                        <p className={styles.sliderLabel}>{t('Volume')}</p>
+                        <span className={styles.sliderValue}>{settings[setting.volumeKey]}%</span>
                       </div>
-                    ) : null}
-                  </article>
-                )
-              })}
-            </>
-          ) : null}
+                      <input
+                        className={styles.slider}
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={settings[setting.volumeKey]}
+                        onChange={(event) =>
+                          handleVolumeChange(setting.volumeKey!, Number(event.target.value))
+                        }
+                      />
+                    </div>
+                  ) : null}
+                </article>
+              )
+            })}
+          </>
         </div>
       </section>
     </div>

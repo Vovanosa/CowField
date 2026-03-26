@@ -236,8 +236,9 @@ textarea:focus-visible {
   padding: 0 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-strong);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-input-surface);
   color: var(--color-heading);
+  box-shadow: var(--color-input-shadow);
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base),
@@ -246,12 +247,57 @@ textarea:focus-visible {
 
 .form-control:hover {
   border-color: var(--color-border-stronger);
+  background: var(--color-input-surface-hover);
+}
+
+.form-control::placeholder {
+  color: var(--color-input-placeholder);
+}
+
+.form-control:focus,
+.form-control:focus-visible {
+  border-color: var(--color-border-stronger);
+  background: var(--color-input-surface-hover);
+  box-shadow:
+    var(--color-input-shadow),
+    0 0 0 4px var(--color-accent-soft);
+  outline: none;
 }
 
 .form-control:disabled,
 .form-control[readonly] {
-  background: rgba(247, 235, 216, 0.72);
+  background: var(--color-input-surface-disabled);
   color: var(--color-muted);
+}
+
+select.form-control {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3 5.25L7 9.25L11 5.25' stroke='%23d8b574' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
+
+:root[data-theme='dark'] .form-control,
+:root[data-theme='dark'] select.form-control,
+:root[data-theme='dark'] input.form-control,
+:root[data-theme='dark'] textarea.form-control {
+  color-scheme: dark;
+}
+
+input.form-control:-webkit-autofill,
+input.form-control:-webkit-autofill:hover,
+input.form-control:-webkit-autofill:focus,
+textarea.form-control:-webkit-autofill,
+textarea.form-control:-webkit-autofill:hover,
+textarea.form-control:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-heading);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-input-surface) inset;
+  box-shadow:
+    0 0 0 1000px var(--color-input-surface) inset,
+    var(--color-input-shadow);
+  transition: background-color 9999s ease-out 0s;
 }
 
 @media (max-width: 768px) {

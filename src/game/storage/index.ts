@@ -7,7 +7,6 @@ export {
   getNextLevelNumber,
   saveLevel,
 } from './levelStorage'
-export { getContentByKey, saveContentByKey, type AppContentKey } from './contentStorage'
 export {
   clearMoveHistory,
   getMoveHistoryCount,
@@ -18,7 +17,9 @@ export {
   applyThemeMode,
   getDefaultPlayerSettings,
   getPlayerSettings,
+  getPlayerSettingsSnapshot,
   savePlayerSettings,
+  subscribeToPlayerSettings,
 } from './playerSettingsStorage'
 export {
   buildAuthenticatedHeaders,
@@ -34,4 +35,4 @@ export {
   setStoredSessionToken,
 } from './authSessionStorage'
 export { completeLevelProgress, getLevelProgress, getProgressByDifficulty } from './progressStorage'
-export { getPlayerStatistics, recordBullPlacement } from './statisticsStorage'
+export { getPlayerStatistics, recordBullPlacements } from './statisticsStorage'

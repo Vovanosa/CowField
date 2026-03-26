@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AuthProvider } from './app/AuthContext'
@@ -17,6 +18,8 @@ import { RegisterPage } from './pages/RegisterPage/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage/ResetPasswordPage'
 import { StatisticsPage } from './pages/StatisticsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { applyThemeMode } from './game/storage'
+import { usePlayerSettings } from './game/usePlayerSettings'
 import './App.css'
 
 function RequireSession() {
@@ -46,6 +49,12 @@ function PublicOnlyRoute() {
 }
 
 function PublicShell() {
+  const settings = usePlayerSettings()
+
+  useEffect(() => {
+    applyThemeMode(settings.darkModeEnabled)
+  }, [settings.darkModeEnabled])
+
   return (
     <div className="app-shell">
       <div className="app-frame">

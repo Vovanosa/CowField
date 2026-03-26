@@ -14,19 +14,17 @@ import { useRole } from '../../app/role'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getColorForId, getGapColorForId } from '../../game/levels'
-import { getUnlockedLevelNumbers } from '../../game/progression'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import {
   clearMoveHistory,
   completeLevelProgress,
-  getMoveHistoryCount,
   getLevelByDifficultyAndNumber,
   getLevelProgress,
-  getProgressByDifficulty,
-  getLevelsByDifficulty,
+  getMoveHistoryCount,
+  getNextLevelNumber,
   popMoveHistoryEntry,
   pushMoveHistoryEntry,
-  recordBullPlacement,
+  recordBullPlacements,
 } from '../../game/storage'
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
 import type { Difficulty, LevelDefinition, LevelProgress } from '../../game/types'
@@ -372,6 +370,8 @@ function GamePageScreen() {
   const runStartedAtRef = useRef<number | null>(null)
   const elapsedSecondsRef = useRef(0)
   const levelProgressRef = useRef<LevelProgress | null>(null)
+  const pendingBullPlacementsRef = useRef(0)
+  const hasFlushedBullPlacementsRef = useRef(false)
   const dragStateRef = useRef<{
     isMouseDown: boolean
     startIndex: number | null
@@ -417,15 +417,21 @@ function GamePageScreen() {
 
     clearMoveHistory()
     completionHandledRef.current = false
+    pendingBullPlacementsRef.current = 0
+    hasFlushedBullPlacementsRef.current = false
     resetDragState(dragStateRef)
 
     async function loadLevel() {
-      const [nextLevel, nextProgress, nextLevelInSequence, difficultyLevels, difficultyProgress] = await Promise.all([
+      const previousLevelProgressPromise =
+        currentLevelNumber > 1
+          ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
+          : Promise.resolve(null)
+
+      const [nextLevel, nextProgress, previousLevelProgress, nextLevelNumber] = await Promise.all([
         getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
         getLevelProgress(difficultyKey, currentLevelNumber),
-        getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber + 1),
-        getLevelsByDifficulty(difficultyKey),
-        getProgressByDifficulty(difficultyKey),
+        previousLevelProgressPromise,
+        getNextLevelNumber(difficultyKey),
       ])
 
       if (!isActive) {
@@ -434,15 +440,10 @@ function GamePageScreen() {
 
       setLevel(nextLevel)
       setLevelProgress(nextProgress)
-      setHasNextLevel(nextLevelInSequence !== null)
+      setHasNextLevel(currentLevelNumber + 1 < nextLevelNumber)
       setIsUnlocked(
-        getUnlockedLevelNumbers(
-          difficultyLevels,
-          difficultyProgress.reduce<Record<number, LevelProgress>>((allProgress, progress) => {
-            allProgress[progress.levelNumber] = progress
-            return allProgress
-          }, {}),
-        ).has(currentLevelNumber),
+        currentLevelNumber === 1 ||
+          previousLevelProgress?.bestTimeSeconds !== null,
       )
       setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
       setIsLoading(false)
@@ -453,6 +454,10 @@ function GamePageScreen() {
     return () => {
       isActive = false
       clearMoveHistory()
+      if (!isGuest && !hasFlushedBullPlacementsRef.current && pendingBullPlacementsRef.current > 0) {
+        hasFlushedBullPlacementsRef.current = true
+        void recordBullPlacements(pendingBullPlacementsRef.current, true)
+      }
     }
   }, [difficulty, levelNumber])
 
@@ -585,12 +590,21 @@ function GamePageScreen() {
     setRunStartedAt(null)
 
     async function saveCompletion() {
+      const pendingBullPlacements = pendingBullPlacementsRef.current
+      pendingBullPlacementsRef.current = 0
+      hasFlushedBullPlacementsRef.current = true
+
       try {
-        const response = await completeLevelProgress(
-          currentLevel.difficulty,
-          currentLevel.levelNumber,
-          completionTimeSeconds,
-        )
+        const [response] = await Promise.all([
+          completeLevelProgress(
+            currentLevel.difficulty,
+            currentLevel.levelNumber,
+            completionTimeSeconds,
+          ),
+          !isGuest && pendingBullPlacements > 0
+            ? recordBullPlacements(pendingBullPlacements)
+            : Promise.resolve(null),
+        ])
 
         setLevelProgress(response.progress)
         setCompletionModal({
@@ -668,7 +682,7 @@ function GamePageScreen() {
 
       if (mark === 'dot') {
         if (!isGuest) {
-          void recordBullPlacement()
+          pendingBullPlacementsRef.current += 1
         }
         return 'bull'
       }

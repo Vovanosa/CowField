@@ -1,18 +1,21 @@
+import { MoonStar, SunMedium } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import gbFlag from '../../assets/flags/gb.svg'
 import uaFlag from '../../assets/flags/ua.svg'
+import { savePlayerSettings } from '../../game/storage'
+import { usePlayerSettings } from '../../game/usePlayerSettings'
 import i18n, {
   getStoredLanguage,
   normalizeLanguage,
-  setStoredLanguage,
   type SupportedLanguage,
 } from '../../i18n'
 import './LanguageSwitcher.css'
 
 export function LanguageSwitcher() {
   const { t } = useTranslation()
+  const settings = usePlayerSettings()
   const [language, setLanguage] = useState<SupportedLanguage>(getStoredLanguage())
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -53,53 +56,79 @@ export function LanguageSwitcher() {
   async function handleLanguageSelect(nextLanguage: SupportedLanguage) {
     setLanguage(nextLanguage)
     setIsMenuOpen(false)
-    setStoredLanguage(nextLanguage)
+    void savePlayerSettings({
+      ...settings,
+      language: nextLanguage,
+    })
     void i18n.changeLanguage(nextLanguage)
   }
 
+  function handleThemeToggle() {
+    void savePlayerSettings({
+      ...settings,
+      darkModeEnabled: !settings.darkModeEnabled,
+    })
+  }
+
   return (
-    <div className="language-switcher" ref={menuRef}>
+    <div className="language-switcher">
       <button
         type="button"
-        className="language-trigger"
-        aria-haspopup="menu"
-        aria-expanded={isMenuOpen}
-        aria-label={t('Language')}
-        onClick={() => setIsMenuOpen((current) => !current)}
+        className={settings.darkModeEnabled ? 'theme-trigger theme-trigger-active' : 'theme-trigger'}
+        aria-label={settings.darkModeEnabled ? t('Switch to light mode') : t('Switch to dark mode')}
+        aria-pressed={settings.darkModeEnabled}
+        onClick={handleThemeToggle}
       >
-        <img
-          className="language-trigger-flag"
-          src={currentFlag}
-          alt=""
-          aria-hidden="true"
-        />
-        <span className="language-trigger-code">{language === 'uk' ? 'UA' : 'EN'}</span>
+        <span className="theme-trigger-track">
+          <span className="theme-trigger-thumb">
+            {settings.darkModeEnabled ? <MoonStar size={14} /> : <SunMedium size={14} />}
+          </span>
+        </span>
       </button>
 
-      {isMenuOpen ? (
-        <div className="language-menu" role="menu" aria-label={t('Language')}>
-          <button
-            type="button"
-            className={language === 'en' ? 'language-option language-option-active' : 'language-option'}
-            onClick={() => void handleLanguageSelect('en')}
-            role="menuitemradio"
-            aria-checked={language === 'en'}
-          >
-            <img className="language-option-flag" src={gbFlag} alt="" aria-hidden="true" />
-            <span className="language-option-code">EN</span>
-          </button>
-          <button
-            type="button"
-            className={language === 'uk' ? 'language-option language-option-active' : 'language-option'}
-            onClick={() => void handleLanguageSelect('uk')}
-            role="menuitemradio"
-            aria-checked={language === 'uk'}
-          >
-            <img className="language-option-flag" src={uaFlag} alt="" aria-hidden="true" />
-            <span className="language-option-code">UA</span>
-          </button>
-        </div>
-      ) : null}
+      <div className="language-picker" ref={menuRef}>
+        <button
+          type="button"
+          className="language-trigger"
+          aria-haspopup="menu"
+          aria-expanded={isMenuOpen}
+          aria-label={t('Language')}
+          onClick={() => setIsMenuOpen((current) => !current)}
+        >
+          <img
+            className="language-trigger-flag"
+            src={currentFlag}
+            alt=""
+            aria-hidden="true"
+          />
+          <span className="language-trigger-code">{language === 'uk' ? 'UA' : 'EN'}</span>
+        </button>
+
+        {isMenuOpen ? (
+          <div className="language-menu" role="menu" aria-label={t('Language')}>
+            <button
+              type="button"
+              className={language === 'en' ? 'language-option language-option-active' : 'language-option'}
+              onClick={() => void handleLanguageSelect('en')}
+              role="menuitemradio"
+              aria-checked={language === 'en'}
+            >
+              <img className="language-option-flag" src={gbFlag} alt="" aria-hidden="true" />
+              <span className="language-option-code">EN</span>
+            </button>
+            <button
+              type="button"
+              className={language === 'uk' ? 'language-option language-option-active' : 'language-option'}
+              onClick={() => void handleLanguageSelect('uk')}
+              role="menuitemradio"
+              aria-checked={language === 'uk'}
+            >
+              <img className="language-option-flag" src={uaFlag} alt="" aria-hidden="true" />
+              <span className="language-option-code">UA</span>
+            </button>
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }

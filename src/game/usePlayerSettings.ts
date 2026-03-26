@@ -1,30 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
-import { getPlayerSettings } from './storage'
-import type { PlayerSettings } from './types'
+import { getDefaultPlayerSettings, getPlayerSettingsSnapshot, subscribeToPlayerSettings } from './storage'
 
 export function usePlayerSettings() {
-  const [settings, setSettings] = useState<PlayerSettings | null>(null)
-
-  useEffect(() => {
-    let isActive = true
-
-    async function loadSettings() {
-      const nextSettings = await getPlayerSettings()
-
-      if (!isActive) {
-        return
-      }
-
-      setSettings(nextSettings)
-    }
-
-    void loadSettings()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
-
-  return settings
+  return useSyncExternalStore(
+    subscribeToPlayerSettings,
+    getPlayerSettingsSnapshot,
+    getDefaultPlayerSettings,
+  )
 }

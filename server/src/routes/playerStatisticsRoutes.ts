@@ -22,7 +22,7 @@ export function createPlayerStatisticsRoutes(
     }
   })
   router.get('/', asyncHandler(playerStatisticsController.getSummary))
-  router.post('/bull-placement', asyncHandler(playerStatisticsController.recordBullPlacement))
+  router.post('/bull-placement', asyncHandler(playerStatisticsController.recordBullPlacements))
 
   return router
 }

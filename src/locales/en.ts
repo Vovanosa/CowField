@@ -44,8 +44,12 @@ const en = {
   'This level is locked. Complete the previous level first to open it.':
     'This level is locked. Complete the previous level first to open it.',
   'About the game': 'About the game',
-  'Adjust player preferences here. These switches are remembered by the backend.':
-    'Adjust player preferences here. These switches are remembered by the backend.',
+  'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.':
+    'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.',
+  'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.':
+    'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.',
+  'Adjust player preferences here. These switches stay on this device for every account.':
+    'Adjust player preferences here. These switches stay on this device for every account.',
   'Loading settings...': 'Loading settings...',
   'Sound effects': 'Sound effects',
   'Enable interface and gameplay sound effects.':
@@ -55,6 +59,8 @@ const en = {
   'Dark mode': 'Dark mode',
   'Use a darker visual theme for low-light play.':
     'Use a darker visual theme for low-light play.',
+  'Switch to dark mode': 'Switch to dark mode',
+  'Switch to light mode': 'Switch to light mode',
   'Take your time': 'Take your time',
   'Hide visible timers so play can stay fully relaxed.':
     'Hide visible timers so play can stay fully relaxed.',

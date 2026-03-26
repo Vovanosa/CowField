@@ -79,10 +79,10 @@ export class PlayerStatisticsService {
     }
   }
 
-  async recordBullPlacement(actorKey: string) {
+  async recordBullPlacements(actorKey: string, count: number) {
     const currentStatistics = await this.statisticsRepository.get(actorKey)
     const nextStatistics = {
-      totalBullPlacements: currentStatistics.totalBullPlacements + 1,
+      totalBullPlacements: currentStatistics.totalBullPlacements + count,
       updatedAt: new Date().toISOString(),
     }
 

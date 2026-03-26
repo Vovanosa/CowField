@@ -32,8 +32,14 @@ export async function getPlayerStatistics() {
   return requestJson<PlayerStatisticsSummary>('/')
 }
 
-export async function recordBullPlacement() {
+export async function recordBullPlacements(count: number, keepalive = false) {
+  if (count <= 0) {
+    return { totalBullPlacements: 0 }
+  }
+
   return requestJson<{ totalBullPlacements: number }>('/bull-placement', {
     method: 'POST',
+    keepalive,
+    body: JSON.stringify({ count }),
   })
 }

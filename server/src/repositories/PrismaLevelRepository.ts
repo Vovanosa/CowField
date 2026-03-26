@@ -1,6 +1,6 @@
 import { Difficulty, type PrismaClient } from '@prisma/client'
 
-import type { Difficulty as AppDifficulty, LevelRecord } from '../types/level'
+import type { Difficulty as AppDifficulty, LevelRecord, LevelSummaryRecord } from '../types/level'
 import type { LevelRepository } from './interfaces'
 
 function toPrismaDifficulty(difficulty: AppDifficulty): Difficulty {
@@ -29,6 +29,24 @@ function toLevelRecord(level: {
   }
 }
 
+function toLevelSummaryRecord(level: {
+  difficulty: Difficulty
+  levelNumber: number
+  title: string
+  gridSize: number
+  createdAt: Date
+  updatedAt: Date
+}): LevelSummaryRecord {
+  return {
+    difficulty: level.difficulty,
+    levelNumber: level.levelNumber,
+    title: level.title,
+    gridSize: level.gridSize,
+    createdAt: level.createdAt.toISOString(),
+    updatedAt: level.updatedAt.toISOString(),
+  }
+}
+
 export class PrismaLevelRepository implements LevelRepository {
   private readonly prisma: PrismaClient
 
@@ -41,12 +59,20 @@ export class PrismaLevelRepository implements LevelRepository {
       where: {
         difficulty: toPrismaDifficulty(difficulty),
       },
+      select: {
+        difficulty: true,
+        levelNumber: true,
+        title: true,
+        gridSize: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: {
         levelNumber: 'asc',
       },
     })
 
-    return levels.map(toLevelRecord)
+    return levels.map(toLevelSummaryRecord)
   }
 
   async getByDifficultyAndNumber(difficulty: AppDifficulty, levelNumber: number) {

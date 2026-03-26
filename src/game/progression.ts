@@ -1,7 +1,7 @@
-import type { LevelDefinition, LevelProgress } from './types'
+import type { LevelProgress, LevelSummary } from './types'
 
 export function getUnlockedLevelNumbers(
-  levels: LevelDefinition[],
+  levels: LevelSummary[],
   progressByLevelNumber: Record<number, LevelProgress>,
 ) {
   const unlockedLevelNumbers = new Set<number>()

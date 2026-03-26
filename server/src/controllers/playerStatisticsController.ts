@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 
 import { getAuthenticatedActor } from '../middleware/authMiddleware'
+import { bullPlacementsInputSchema } from '../schemas/statisticsSchemas'
 import { PlayerStatisticsService } from '../services/PlayerStatisticsService'
 
 export class PlayerStatisticsController {
@@ -16,9 +17,10 @@ export class PlayerStatisticsController {
     response.json(summary)
   }
 
-  recordBullPlacement = async (request: Request, response: Response) => {
+  recordBullPlacements = async (request: Request, response: Response) => {
     const actor = getAuthenticatedActor(request)
-    const payload = await this.playerStatisticsService.recordBullPlacement(actor.actorKey)
+    const input = bullPlacementsInputSchema.parse(request.body)
+    const payload = await this.playerStatisticsService.recordBullPlacements(actor.actorKey, input.count)
     response.status(201).json(payload)
   }
 }

@@ -1,8 +1,8 @@
 export type {
   Difficulty,
-  DifficultyLevelSummary,
   LevelDefinition,
   LevelDraft,
+  LevelSummary,
 } from './level'
 export type { LevelProgress } from './progress'
 export type { AuthRole, AuthSession } from './auth'

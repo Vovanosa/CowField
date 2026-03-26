@@ -3,32 +3,18 @@ import { Outlet, useLocation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ProfileMenu } from '../components/ProfileMenu/ProfileMenu'
-import { applyThemeMode, getPlayerSettings } from '../game/storage'
+import { applyThemeMode } from '../game/storage'
+import { usePlayerSettings } from '../game/usePlayerSettings'
 import { useAuth } from './useAuth'
 
 export function AppShell() {
   const location = useLocation()
   const { session } = useAuth()
+  const settings = usePlayerSettings()
 
   useEffect(() => {
-    let isActive = true
-
-    async function loadThemePreference() {
-      const settings = await getPlayerSettings()
-
-      if (!isActive) {
-        return
-      }
-
-      applyThemeMode(settings.darkModeEnabled)
-    }
-
-    void loadThemePreference()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
+    applyThemeMode(settings.darkModeEnabled)
+  }, [settings.darkModeEnabled])
 
   return (
     <div className="app-shell">

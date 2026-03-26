@@ -1,9 +1,9 @@
-import { getStoredLanguage, normalizeLanguage } from '../../i18n'
+import { getStoredLanguage, normalizeLanguage, setStoredLanguage } from '../../i18n'
 import type { PlayerSettings } from '../types'
-import { buildAuthenticatedHeaders } from './authSessionStorage'
-import { buildApiUrl } from './apiBase'
 
-const SETTINGS_API_BASE = buildApiUrl('/api/settings')
+const PLAYER_SETTINGS_STORAGE_KEY = 'cowfield.player-settings'
+
+const listeners = new Set<() => void>()
 
 const defaultPlayerSettings: PlayerSettings = {
   language: getStoredLanguage(),
@@ -14,6 +14,10 @@ const defaultPlayerSettings: PlayerSettings = {
   darkModeEnabled: false,
   takeYourTimeEnabled: false,
   autoPlaceDotsEnabled: false,
+}
+
+let currentPlayerSettings: PlayerSettings = {
+  ...defaultPlayerSettings,
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -30,7 +34,7 @@ function clampVolume(value: unknown) {
 
 function normalizePlayerSettings(value: unknown): PlayerSettings {
   if (!isObject(value)) {
-    return defaultPlayerSettings
+    return getDefaultPlayerSettings()
   }
 
   return {
@@ -45,8 +49,68 @@ function normalizePlayerSettings(value: unknown): PlayerSettings {
   }
 }
 
-export function getDefaultPlayerSettings() {
-  return { ...defaultPlayerSettings }
+function emitSettingsChanged() {
+  listeners.forEach((listener) => listener())
+}
+
+function readStoredPlayerSettings() {
+  if (typeof window === 'undefined') {
+    return getDefaultPlayerSettings()
+  }
+
+  const rawValue = window.localStorage.getItem(PLAYER_SETTINGS_STORAGE_KEY)
+
+  if (!rawValue) {
+    return getDefaultPlayerSettings()
+  }
+
+  try {
+    return normalizePlayerSettings(JSON.parse(rawValue) as unknown)
+  } catch {
+    return getDefaultPlayerSettings()
+  }
+}
+
+function setCurrentPlayerSettings(settings: PlayerSettings) {
+  currentPlayerSettings = settings
+}
+
+function persistPlayerSettings(settings: PlayerSettings) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(PLAYER_SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+}
+
+export function getDefaultPlayerSettings(): PlayerSettings {
+  return defaultPlayerSettings
+}
+
+export function getPlayerSettingsSnapshot(): PlayerSettings {
+  return currentPlayerSettings
+}
+
+export function subscribeToPlayerSettings(listener: () => void) {
+  listeners.add(listener)
+
+  function handleStorage(event: StorageEvent) {
+    if (event.key === PLAYER_SETTINGS_STORAGE_KEY || event.key === null) {
+      listener()
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', handleStorage)
+  }
+
+  return () => {
+    listeners.delete(listener)
+
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', handleStorage)
+    }
+  }
 }
 
 export function applyThemeMode(isDarkModeEnabled: boolean) {
@@ -57,41 +121,20 @@ export function applyThemeMode(isDarkModeEnabled: boolean) {
   document.documentElement.dataset.theme = isDarkModeEnabled ? 'dark' : 'light'
 }
 
-async function requestJson<T>(init?: RequestInit): Promise<T> {
-  const response = await fetch(SETTINGS_API_BASE, {
-    headers: {
-      ...buildAuthenticatedHeaders(),
-    },
-    ...init,
-  })
-
-  if (!response.ok) {
-    let message = 'Request failed.'
-
-    try {
-      const payload = (await response.json()) as { message?: string }
-      message = payload.message ?? message
-    } catch {
-      // ignore parse error
-    }
-
-    throw new Error(message)
-  }
-
-  return normalizePlayerSettings((await response.json()) as unknown) as T
-}
-
 export async function getPlayerSettings() {
-  try {
-    return await requestJson<PlayerSettings>()
-  } catch {
-    return getDefaultPlayerSettings()
-  }
+  const settings = readStoredPlayerSettings()
+  setCurrentPlayerSettings(settings)
+  return settings
 }
 
 export async function savePlayerSettings(settings: PlayerSettings) {
-  return requestJson<PlayerSettings>({
-    method: 'PUT',
-    body: JSON.stringify(settings),
-  })
+  const normalizedSettings = normalizePlayerSettings(settings)
+  setStoredLanguage(normalizedSettings.language)
+  persistPlayerSettings(normalizedSettings)
+  setCurrentPlayerSettings(normalizedSettings)
+  applyThemeMode(normalizedSettings.darkModeEnabled)
+  emitSettingsChanged()
+  return normalizedSettings
 }
+
+setCurrentPlayerSettings(readStoredPlayerSettings())

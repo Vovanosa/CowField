@@ -10,7 +10,7 @@ import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getUnlockedLevelNumbers } from '../../game/progression'
 import { getLevelsByDifficulty, getProgressByDifficulty } from '../../game/storage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
-import type { Difficulty, LevelDefinition, LevelProgress } from '../../game/types'
+import type { Difficulty, LevelProgress, LevelSummary } from '../../game/types'
 import './DifficultyLevelsPage.css'
 
 function isDifficulty(value: string | undefined): value is Difficulty {
@@ -19,7 +19,7 @@ function isDifficulty(value: string | undefined): value is Difficulty {
 
 function DifficultyLevelsPageScreen() {
   const { difficulty } = useParams()
-  const [levels, setLevels] = useState<LevelDefinition[]>([])
+  const [levels, setLevels] = useState<LevelSummary[]>([])
   const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
   const [isLoading, setIsLoading] = useState(true)
   const { isAdmin, isGuest } = useRole()

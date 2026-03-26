@@ -5,18 +5,15 @@ import { ZodError } from 'zod'
 import { HttpError } from './errors/HttpError'
 import { AuthController } from './controllers/authController'
 import { createAuthRoutes } from './routes/authRoutes'
-import { createContentRoutes } from './routes/contentRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
 import { createPlayerProgressRoutes } from './routes/playerProgressRoutes'
 import { createPlayerSettingsRoutes } from './routes/playerSettingsRoutes'
 import { createPlayerStatisticsRoutes } from './routes/playerStatisticsRoutes'
-import { ContentController } from './controllers/contentController'
 import { LevelController } from './controllers/levelController'
 import { PlayerProgressController } from './controllers/playerProgressController'
 import { PlayerSettingsController } from './controllers/playerSettingsController'
 import { PlayerStatisticsController } from './controllers/playerStatisticsController'
 import { AuthService } from './services/AuthService'
-import { ContentService } from './services/ContentService'
 import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
 import { PlayerSettingsService } from './services/PlayerSettingsService'
@@ -41,7 +38,6 @@ export function createApp() {
   const allowedOrigins = new Set(getAllowedOrigins())
   const repositories = createRepositories()
   const levelService = new LevelService(repositories.levelRepository)
-  const contentService = new ContentService(repositories.contentRepository)
   const playerProgressService = new PlayerProgressService(repositories.playerProgressRepository)
   const playerSettingsService = new PlayerSettingsService(repositories.playerSettingsRepository)
   const authService = new AuthService(
@@ -70,7 +66,6 @@ export function createApp() {
   )
   const authController = new AuthController(authService)
   const levelController = new LevelController(levelService)
-  const contentController = new ContentController(contentService)
   const playerProgressController = new PlayerProgressController(playerProgressService)
   const playerSettingsController = new PlayerSettingsController(playerSettingsService)
   const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
@@ -101,7 +96,6 @@ export function createApp() {
 
   app.use('/api/auth', createAuthRoutes(authController))
   app.use('/api/levels', createLevelRoutes(levelController, authService))
-  app.use('/api/content', createContentRoutes(contentController, authService))
   app.use('/api/progress', createPlayerProgressRoutes(playerProgressController, authService))
   app.use('/api/settings', createPlayerSettingsRoutes(playerSettingsController, authService))
   app.use('/api/statistics', createPlayerStatisticsRoutes(playerStatisticsController, authService))

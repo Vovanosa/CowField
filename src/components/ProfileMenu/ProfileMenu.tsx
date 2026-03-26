@@ -9,12 +9,14 @@ export function ProfileMenu() {
   const { t } = useTranslation()
   const { session, canPreviewUser, previewRole, setPreviewRole, logout, isGuest } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const [isPreviewRoleOpen, setIsPreviewRoleOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
       if (!menuRef.current?.contains(event.target as Node)) {
         setIsOpen(false)
+        setIsPreviewRoleOpen(false)
       }
     }
 
@@ -37,7 +39,17 @@ export function ProfileMenu() {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={t('Profile')}
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() =>
+          setIsOpen((current) => {
+            const nextIsOpen = !current
+
+            if (!nextIsOpen) {
+              setIsPreviewRoleOpen(false)
+            }
+
+            return nextIsOpen
+          })
+        }
       >
         <span className="profile-trigger-icon">
           <UserRound size={16} />
@@ -56,14 +68,47 @@ export function ProfileMenu() {
           {canPreviewUser ? (
             <label className="profile-field">
               <span>{t('Preview role')}</span>
-              <select
-                className="form-control"
-                value={previewRole}
-                onChange={(event) => setPreviewRole(event.target.value as 'admin' | 'user')}
-              >
-                <option value="admin">{t('Admin')}</option>
-                <option value="user">{t('User')}</option>
-              </select>
+              <div className="profile-select">
+                <button
+                  type="button"
+                  className="form-control profile-select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded={isPreviewRoleOpen}
+                  onClick={() => setIsPreviewRoleOpen((current) => !current)}
+                >
+                  <span>{previewRole === 'admin' ? t('Admin') : t('User')}</span>
+                  <ChevronDown
+                    size={16}
+                    className={isPreviewRoleOpen ? 'profile-select-chevron profile-select-chevron-open' : 'profile-select-chevron'}
+                  />
+                </button>
+
+                <div
+                  className={isPreviewRoleOpen ? 'profile-select-menu profile-select-menu-open' : 'profile-select-menu'}
+                  role="listbox"
+                  aria-label={t('Preview role')}
+                >
+                  {(['admin', 'user'] as const).map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      className={
+                        previewRole === role
+                          ? 'profile-select-option profile-select-option-active'
+                          : 'profile-select-option'
+                      }
+                      role="option"
+                      aria-selected={previewRole === role}
+                      onClick={() => {
+                        setPreviewRole(role)
+                        setIsPreviewRoleOpen(false)
+                      }}
+                    >
+                      {role === 'admin' ? t('Admin') : t('User')}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </label>
           ) : null}
 

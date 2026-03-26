@@ -14,3 +14,5 @@ export type LevelRecord = {
   createdAt: string
   updatedAt: string
 }
+
+export type LevelSummaryRecord = Omit<LevelRecord, 'colorsByCell' | 'cowsByCell'>

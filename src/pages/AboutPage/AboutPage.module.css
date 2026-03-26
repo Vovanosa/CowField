@@ -15,6 +15,17 @@
   margin-bottom: 0;
 }
 
+.aboutPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.aboutPanel p {
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
 @media (max-width: 768px) {
   .pageIntroRow {
     flex-direction: column;
