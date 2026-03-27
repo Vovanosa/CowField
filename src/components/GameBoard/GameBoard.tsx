@@ -12,6 +12,7 @@ type GameBoardProps = {
   cellMarks: readonly CellMark[]
   invalidBullIndexes: ReadonlySet<number>
   isBoardLocked: boolean
+  isSolvedHighlightVisible?: boolean
   activeCellIndex?: number | null
   onCellPointerDown: (
     event: ReactPointerEvent<HTMLButtonElement>,
@@ -32,6 +33,7 @@ export function GameBoard({
   cellMarks,
   invalidBullIndexes,
   isBoardLocked,
+  isSolvedHighlightVisible = false,
   activeCellIndex = null,
   onCellPointerDown,
   onCellPointerEnter,
@@ -40,7 +42,12 @@ export function GameBoard({
   const { t } = useTranslation()
 
   return (
-    <div className={styles.boardPreview} aria-label={t('Puzzle board')}>
+    <div
+      className={[styles.boardPreview, isSolvedHighlightVisible ? styles.boardPreviewSolved : '']
+        .filter(Boolean)
+        .join(' ')}
+      aria-label={t('Puzzle board')}
+    >
       <div
         className={styles.boardPreviewGrid}
         style={{ gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))` }}
@@ -61,6 +68,7 @@ export function GameBoard({
                 isActive ? styles.boardCellActive : '',
                 hasDot ? styles.boardCellHasDot : '',
                 hasBull ? styles.boardCellHasBull : '',
+                isSolvedHighlightVisible && hasBull ? styles.boardCellSolvedBull : '',
               ]
                 .filter(Boolean)
                 .join(' ')}

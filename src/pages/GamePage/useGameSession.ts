@@ -31,7 +31,10 @@ import {
 export type CompletionModalState = {
   isOpen: boolean
   isNewBest: boolean
+  isFirstClear: boolean
   timeSeconds: number
+  bestTimeSeconds: number | null
+  previousBestTimeSeconds: number | null
 }
 
 type UseGameSessionArgs = {
@@ -213,11 +216,17 @@ export function useGameSession({
 
     setCompletionModal({
       isOpen: true,
+      isFirstClear: previousBestTime === null || previousBestTime === undefined,
       isNewBest:
         previousBestTime === null ||
         previousBestTime === undefined ||
         completionTimeSeconds < previousBestTime,
       timeSeconds: completionTimeSeconds,
+      bestTimeSeconds:
+        previousBestTime === null || previousBestTime === undefined
+          ? completionTimeSeconds
+          : Math.min(previousBestTime, completionTimeSeconds),
+      previousBestTimeSeconds: previousBestTime ?? null,
     })
 
     async function saveCompletion() {
@@ -243,7 +252,10 @@ export function useGameSession({
             ? {
                 ...currentModal,
                 isNewBest: response.isNewBest,
+                isFirstClear: currentModal.isFirstClear,
                 timeSeconds: completionTimeSeconds,
+                bestTimeSeconds: response.progress.bestTimeSeconds ?? currentModal.bestTimeSeconds,
+                previousBestTimeSeconds: currentModal.previousBestTimeSeconds,
               }
             : currentModal,
         )

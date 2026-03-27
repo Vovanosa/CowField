@@ -222,16 +222,35 @@
 }
 
 .completionDialog {
+  position: relative;
+  isolation: isolate;
   width: min(100%, 840px);
   align-items: center;
   gap: var(--space-5);
   text-align: center;
   padding: clamp(28px, 4vw, 48px);
+  animation: completion-dialog-in 420ms var(--ease-emphasized);
+}
+
+.completionDialog::before {
+  content: "";
+  position: absolute;
+  inset: -18% 20% auto;
+  height: 180px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(236, 209, 144, 0.34), rgba(236, 209, 144, 0));
+  filter: blur(6px);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: -1;
+  animation: completion-bloom-in 620ms var(--ease-emphasized);
 }
 
 .completionDialog h2 {
   width: 100%;
   margin: 0;
+  animation: completion-copy-in 360ms var(--ease-emphasized);
 }
 
 .completionDescription {
@@ -239,8 +258,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: 100%;
+}
+
+.completionStatus {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  animation: completion-copy-in 420ms var(--ease-emphasized);
 }
 
 .completionTime {
@@ -249,19 +277,86 @@
   font-size: clamp(2rem, 5vw, 2.8rem);
   color: var(--color-heading);
   line-height: 1;
+  animation: completion-time-in 380ms var(--ease-emphasized);
 }
 
 .completionBest {
   margin: 0;
   font-weight: 600;
   color: var(--color-success);
+  animation: completion-copy-in 500ms var(--ease-emphasized);
+}
+
+.completionMeta {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.98rem;
+  animation: completion-copy-in 500ms var(--ease-emphasized);
+}
+
+.completionHint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-heading);
+  font-weight: 600;
+  animation: completion-copy-in 560ms var(--ease-emphasized);
 }
 
 .completionActions {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
   justify-content: center;
   align-items: center;
   gap: var(--space-4);
+  animation: completion-copy-in 620ms var(--ease-emphasized);
+}
+
+@keyframes completion-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes completion-time-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes completion-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes completion-bloom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  to {
+    opacity: 0.75;
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 960px) {

@@ -5,9 +5,13 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-5);
-  background: rgba(35, 24, 10, 0.24);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(214, 182, 112, 0.22), transparent 26%),
+    radial-gradient(circle at 50% 50%, rgba(255, 243, 215, 0.08), transparent 42%),
+    rgba(35, 24, 10, 0.42);
+  backdrop-filter: blur(6px);
   z-index: 20;
-  animation: fade-up-in 180ms var(--ease-emphasized);
+  animation: dialog-backdrop-in 260ms var(--ease-emphasized);
 }
 
 .dialog {
@@ -16,7 +20,8 @@
   flex-direction: column;
   gap: var(--space-4);
   transform-origin: center;
-  animation: fade-scale-in 220ms var(--ease-emphasized);
+  overflow: hidden;
+  animation: dialog-panel-in 320ms var(--ease-emphasized);
 }
 
 .actions {
@@ -24,4 +29,33 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+@keyframes dialog-backdrop-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+
+  to {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+  }
+}
+
+@keyframes dialog-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

@@ -175,6 +175,7 @@ function GamePageScreen() {
         activeCellIndex={activeCellIndex}
         canUndo={canUndo}
         hasNextLevel={hasNextLevel}
+        isCompletionModalOpen={completionModal?.isOpen === true}
         isAdmin={isAdmin}
         isTakeYourTimeEnabled={isTakeYourTimeEnabled}
         elapsedSeconds={elapsedSeconds}
@@ -192,7 +193,10 @@ function GamePageScreen() {
         <GameCompletionDialog
           isTakeYourTimeEnabled={isTakeYourTimeEnabled}
           isNewBest={completionModal.isNewBest}
+          isFirstClear={completionModal.isFirstClear}
           timeSeconds={completionModal.timeSeconds}
+          bestTimeSeconds={completionModal.bestTimeSeconds}
+          previousBestTimeSeconds={completionModal.previousBestTimeSeconds}
           hasNextLevel={hasNextLevel}
           onBackdropPointerDown={handleCompletionBackdropClick}
           onBackToLevels={handleBackToLevels}

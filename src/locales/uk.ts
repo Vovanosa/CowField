@@ -250,6 +250,17 @@
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
   'Neon Auth is not configured.': 'Neon Auth не налаштовано.',
   'Invalid request payload.': 'Некоректні дані запиту.',
+  'Level complete': 'Рівень пройдено',
+  'First clear': 'Перше проходження',
+  'Completed again': 'Пройдено знову',
+  'Progress saved.': 'Прогрес збережено.',
+  'Best time set at {{time}}.': 'Найкращий час встановлено: {{time}}.',
+  'Best time: {{time}}': 'Найкращий час: {{time}}',
+  '{{delta}} faster than your previous best.': 'На {{delta}} швидше за ваш попередній рекорд.',
+  '{{delta}} slower than your best.': 'На {{delta}} повільніше за ваш рекорд.',
+  'Next level is ready.': 'Наступний рівень уже готовий.',
+  'You completed the last available level.': 'Ви пройшли останній доступний рівень.',
+  'Your progress has been saved.': 'Ваш прогрес збережено.',
 } as const
 
 export default uk

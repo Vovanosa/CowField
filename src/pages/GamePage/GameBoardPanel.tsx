@@ -13,6 +13,7 @@ type GameBoardPanelProps = {
   cellMarks: Array<'empty' | 'dot' | 'bull'>
   invalidBullIndexes: Set<number>
   isBoardLocked: boolean
+  isCompletionModalOpen: boolean
   activeCellIndex: number | null
   canUndo: boolean
   hasNextLevel: boolean
@@ -35,6 +36,7 @@ export function GameBoardPanel({
   cellMarks,
   invalidBullIndexes,
   isBoardLocked,
+  isCompletionModalOpen,
   activeCellIndex,
   canUndo,
   hasNextLevel,
@@ -82,7 +84,7 @@ export function GameBoardPanel({
           </div>
 
           <div className={styles.boardToolbar}>
-            {isBoardLocked && hasNextLevel ? (
+            {isBoardLocked && hasNextLevel && !isCompletionModalOpen ? (
               <Button variant="primary" className={styles.boardNextButton} onClick={onNextLevel}>
                 {t('Next Level')}
               </Button>
@@ -112,6 +114,7 @@ export function GameBoardPanel({
           cellMarks={cellMarks}
           invalidBullIndexes={invalidBullIndexes}
           isBoardLocked={isBoardLocked}
+          isSolvedHighlightVisible={isBoardLocked}
           activeCellIndex={activeCellIndex}
           onCellPointerDown={onCellPointerDown}
           onCellPointerEnter={onCellPointerEnter}

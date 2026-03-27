@@ -245,6 +245,17 @@ const en = {
   'Google login failed.': 'Google login failed.',
   'Neon Auth is not configured.': 'Neon Auth is not configured.',
   'Invalid request payload.': 'Invalid request payload.',
+  'Level complete': 'Level complete',
+  'First clear': 'First clear',
+  'Completed again': 'Completed again',
+  'Progress saved.': 'Progress saved.',
+  'Best time set at {{time}}.': 'Best time set at {{time}}.',
+  'Best time: {{time}}': 'Best time: {{time}}',
+  '{{delta}} faster than your previous best.': '{{delta}} faster than your previous best.',
+  '{{delta}} slower than your best.': '{{delta}} slower than your best.',
+  'Next level is ready.': 'Next level is ready.',
+  'You completed the last available level.': 'You completed the last available level.',
+  'Your progress has been saved.': 'Your progress has been saved.',
 } as const
 
 export default en
