@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
-import { completeGoogleLogin } from '../../game/storage'
-import styles from '../AuthPage/AuthPage.module.css'
+import { AuthLayout } from '../../components/AuthLayout'
+import { completeGoogleLogin } from '../../game/storage/authSessionStorage'
 
 export function GoogleAuthCallbackPage() {
   const { t } = useTranslation()
@@ -43,14 +43,12 @@ export function GoogleAuthCallbackPage() {
   }, [navigate, searchParams, t])
 
   return (
-    <div className={styles.authPage}>
-      <section className={`${styles.authPanel} panel-surface`}>
-        <div className={styles.authHeader}>
-          <p className={styles.authEyebrow}>{t('Login')}</p>
-          <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
-          <p className={styles.authDescription}>{t('Completing Google login...')}</p>
-        </div>
-      </section>
-    </div>
+    <AuthLayout
+      eyebrow={t('Login')}
+      title={t('Bullpen')}
+      description={t('Completing Google login...')}
+    >
+      <></>
+    </AuthLayout>
   )
 }

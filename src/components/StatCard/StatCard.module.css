@@ -1,0 +1,48 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 128px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  color: var(--color-accent-strong);
+  background: linear-gradient(180deg, var(--color-accent-glow-start), var(--color-accent-glow-end));
+  border: 1px solid var(--color-border-icon);
+}
+
+.label {
+  color: var(--color-muted);
+}
+
+.value {
+  margin-top: auto;
+  font-family: var(--font-heading);
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+  line-height: 0.95;
+  color: var(--color-heading);
+}
+
+.inlineValueRow {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.detail {
+  color: var(--color-muted);
+  line-height: 1.5;
+}

@@ -1,0 +1,20 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+.error {
+  color: var(--color-danger-text);
+  font-size: 0.92rem;
+}

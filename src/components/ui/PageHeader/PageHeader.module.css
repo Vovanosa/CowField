@@ -1,0 +1,55 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.intro {
+  flex: 1;
+  min-width: 0;
+}
+
+.pageIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-2);
+}
+
+.pageIntroCopy {
+  max-width: 680px;
+}
+
+.pageIntroEyebrow {
+  margin-bottom: 12px;
+  color: var(--color-accent-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.pageIntroDescription {
+  max-width: 60ch;
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.pageIntroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 720px) {
+  .header {
+    gap: var(--space-3);
+  }
+
+  .pageIntro {
+    flex-direction: column;
+    margin-bottom: var(--space-5);
+  }
+}

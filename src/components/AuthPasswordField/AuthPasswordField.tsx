@@ -2,7 +2,8 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import styles from '../../pages/AuthPage/AuthPage.module.css'
+import { Field, Input } from '../ui'
+import styles from './AuthPasswordField.module.css'
 
 type AuthPasswordFieldProps = {
   label: string
@@ -26,12 +27,11 @@ export function AuthPasswordField({
   const [isVisible, setIsVisible] = useState(false)
 
   return (
-    <label className={styles.authField} htmlFor={inputId}>
-      <span>{label}</span>
+    <Field label={label} htmlFor={inputId}>
       <div className={styles.passwordField}>
-        <input
+        <Input
           id={inputId}
-          className={`form-control ${styles.passwordInput}`}
+          className={styles.passwordInput}
           type={isVisible ? 'text' : 'password'}
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -50,6 +50,6 @@ export function AuthPasswordField({
           {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
-    </label>
+    </Field>
   )
 }

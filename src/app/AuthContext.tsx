@@ -12,7 +12,7 @@ import {
   loginAsGuest as loginAsGuestRequest,
   logout as logoutRequest,
   register as registerRequest,
-} from '../game/storage'
+} from '../game/storage/authSessionStorage'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
 

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { useGuestStatisticsToast } from '../../app/useGuestStatisticsToast'
 import { useAuth } from '../../app/useAuth'
+import { Toast } from '../../components/ui'
 import styles from './HomePage.module.css'
 
 type HomeMenuItem = {
@@ -87,9 +88,7 @@ export function HomePage() {
         </nav>
 
         {toastMessage ? (
-          <div className={styles.homeToast} role="status" aria-live="polite">
-            {toastMessage}
-          </div>
+          <Toast title={toastMessage} />
         ) : null}
       </section>
     </div>

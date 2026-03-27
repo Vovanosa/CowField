@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
+import { AuthLayout } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
-import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
-import { loginWithGoogle, resendVerificationEmail } from '../../game/storage'
+import { GoogleButton } from '../../components/GoogleButton'
+import { Button, Field, Input, TextLink } from '../../components/ui'
+import { loginWithGoogle, resendVerificationEmail } from '../../game/storage/authSessionStorage'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function LoginPage() {
@@ -80,21 +82,35 @@ export function LoginPage() {
   const visibleMessage = message || (routeError ? translateAuthMessage(t, routeError) : '')
 
   return (
-    <div className={styles.authPage}>
-      <section className={`${styles.authPanel} panel-surface`}>
-        <div className={styles.authHeader}>
-          <p className={styles.authEyebrow}>{t('Login')}</p>
-          <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
-          <p className={styles.authDescription}>
-            {t('Sign in with your email and password, create an account, or continue as a guest.')}
-          </p>
-        </div>
-
+    <AuthLayout
+      eyebrow={t('Login')}
+      title={t('Bullpen')}
+      description={t('Sign in with your email and password, create an account, or continue as a guest.')}
+      message={visibleMessage}
+      isErrorMessage={Boolean(visibleMessage)}
+      links={
+        <>
+          <TextLink to="/register">
+            {t('Create account')}
+          </TextLink>
+          <TextLink to="/forgot-password">
+            {t('Forgot password?')}
+          </TextLink>
+          {needsVerification ? (
+            <Button
+              onClick={() => void handleResendVerification()}
+              variant="ghost"
+              disabled={isSubmitting || email.trim().length === 0}
+            >
+              {t('Resend verification email')}
+            </Button>
+          ) : null}
+        </>
+      }
+    >
         <form className={styles.authForm} onSubmit={handleSubmit} autoComplete="on">
-          <label className={styles.authField}>
-            <span>{t('Email')}</span>
-            <input
-              className="form-control"
+          <Field label={t('Email')}>
+            <Input
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -103,7 +119,7 @@ export function LoginPage() {
               inputMode="email"
               required
             />
-          </label>
+          </Field>
 
           <AuthPasswordField
             label={t('Password')}
@@ -114,52 +130,20 @@ export function LoginPage() {
           />
 
           <div className={styles.authActions}>
-            <button type="submit" className={`primary-button ${styles.authButton}`} disabled={isSubmitting}>
+            <Button type="submit" variant="primary" className={styles.authButton} fullWidth disabled={isSubmitting}>
               {isSubmitting ? t('Loading...') : t('Log in')}
-            </button>
-            <button
-              type="button"
-              className={styles.googleButton}
-              onClick={() => void loginWithGoogle()}
-              disabled={isSubmitting}
-            >
-              <GoogleMark />
-              <span className={styles.googleButtonLabel}>{t('Continue with Google')}</span>
-            </button>
-            <button
-              type="button"
-              className={`secondary-button ${styles.authButton}`}
+            </Button>
+            <GoogleButton onClick={() => void loginWithGoogle()} disabled={isSubmitting} />
+            <Button
               onClick={() => void handleGuestLogin()}
+              className={styles.authButton}
+              fullWidth
               disabled={isSubmitting}
             >
               {t('Play as guest')}
-            </button>
+            </Button>
           </div>
         </form>
-
-        <p className={visibleMessage ? `${styles.authMessage} ${styles.authMessageError}` : styles.authMessage}>
-          {visibleMessage}
-        </p>
-
-        <div className={styles.authLinks}>
-          <Link className="text-link" to="/register">
-            {t('Create account')}
-          </Link>
-          <Link className="text-link" to="/forgot-password">
-            {t('Forgot password?')}
-          </Link>
-          {needsVerification ? (
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => void handleResendVerification()}
-              disabled={isSubmitting || email.trim().length === 0}
-            >
-              {t('Resend verification email')}
-            </button>
-          ) : null}
-        </div>
-      </section>
-    </div>
+    </AuthLayout>
   )
 }

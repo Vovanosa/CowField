@@ -1,11 +1,10 @@
-import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
-import { PageIntro } from '../../components/PageIntro'
+import { PageHeader } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
-import { DIFFICULTIES } from '../../game/storage'
+import { DIFFICULTIES } from '../../game/storage/levelStorage'
 import type { Difficulty } from '../../game/types'
 import styles from './LevelsPage.module.css'
 
@@ -22,20 +21,17 @@ export function LevelsPage() {
 
   return (
     <div className={`${styles.levelsPage} page-shell`}>
-      <div className={styles.levelsIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
-          <ArrowLeft size={16} />
-        </Link>
-        <PageIntro
-          eyebrow={t('Level Select')}
-          title={isAdmin ? t('Choose a difficulty.') : t('Choose a difficulty to play.')}
-          description={
-            isAdmin
-              ? t('Each difficulty has its own sequence of levels and its own create flow.')
-              : t('Each difficulty has its own level list.')
-          }
-        />
-      </div>
+      <PageHeader
+        backTo="/"
+        backLabel={t('Back to home')}
+        eyebrow={t('Level Select')}
+        title={isAdmin ? t('Choose a difficulty.') : t('Choose a difficulty to play.')}
+        description={
+          isAdmin
+            ? t('Each difficulty has its own sequence of levels and its own create flow.')
+            : t('Each difficulty has its own level list.')
+        }
+      />
 
       <section className={styles.levelsGrid} aria-label={t('Available levels')}>
         {DIFFICULTIES.map((difficulty) => (

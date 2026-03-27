@@ -1,0 +1,23 @@
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.copy {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.neutral {
+  color: var(--color-muted);
+}
+
+.warning {
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+  background:
+    linear-gradient(180deg, var(--color-danger-surface), var(--color-danger-surface-hover)),
+    var(--color-surface);
+}

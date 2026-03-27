@@ -1,0 +1,198 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.topbarTitle {
+  margin: 0;
+  color: var(--color-accent-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.emptyState {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.layout {
+  display: block;
+}
+
+.boardPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.boardPanelHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.boardPanelHeaderRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.boardStat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0 18px;
+  min-height: 44px;
+  width: auto;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, var(--color-surface-stat-start), var(--color-surface-stat-end));
+  border: 1px solid var(--color-border-highlight);
+}
+
+.boardStatCompact {
+  min-width: 160px;
+}
+
+.boardToolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.boardUndoButton {
+  position: relative;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+.boardUndoButton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(94, 70, 34, 0.92);
+  color: var(--color-button-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.boardUndoButton:hover::after,
+.boardUndoButton:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.boardUndoButton:disabled::after {
+  opacity: 0;
+}
+
+.boardPanelLabel {
+  margin: 0;
+  color: var(--color-muted);
+  white-space: nowrap;
+  font-size: 0.96rem;
+}
+
+.boardPanelValue {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-heading);
+  line-height: 1;
+}
+
+.boardResetButton {
+  min-height: 44px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.boardNextButton {
+  min-height: 44px;
+}
+
+.completionTime {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  color: var(--color-heading);
+  line-height: 1;
+}
+
+.completionBest {
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+@media (max-width: 960px) {
+  .emptyState {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .boardPanelHeader {
+    flex-direction: column;
+  }
+
+  .boardPanelHeaderRight {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+  }
+
+  .boardStatCompact {
+    min-width: 0;
+  }
+
+  .boardToolbar {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .boardStat {
+    flex-wrap: wrap;
+    min-height: auto;
+  }
+}

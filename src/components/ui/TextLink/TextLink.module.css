@@ -1,0 +1,18 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--transition-base);
+}
+
+.link:hover {
+  transform: translateY(-1px);
+}
+
+.link:focus-visible {
+  outline: 2px solid rgba(158, 116, 49, 0.34);
+  outline-offset: 3px;
+}

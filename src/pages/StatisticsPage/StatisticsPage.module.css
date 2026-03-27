@@ -10,79 +10,10 @@
   gap: var(--space-5);
 }
 
-.pageIntroRow {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.pageIntroRow :global(.page-intro) {
-  flex: 1;
-  margin-bottom: 0;
-}
-
 .overviewGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-}
-
-.overviewCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-height: 128px;
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-icon);
-  background:
-    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
-    var(--color-surface);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.48),
-    0 12px 24px rgba(120, 88, 30, 0.05);
-}
-
-.overviewCardHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.overviewIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  color: var(--color-accent-strong);
-  background: linear-gradient(180deg, var(--color-accent-glow-start), var(--color-accent-glow-end));
-  border: 1px solid var(--color-border-icon);
-}
-
-.overviewLabel {
-  color: var(--color-muted);
-}
-
-.overviewValue {
-  margin-top: auto;
-  font-family: var(--font-heading);
-  font-size: clamp(1.45rem, 2vw, 1.9rem);
-  line-height: 0.95;
-  color: var(--color-heading);
-}
-
-.overviewInlineValueRow {
-  margin-top: auto;
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-}
-
-.overviewDetail {
-  color: var(--color-muted);
-  line-height: 1.5;
 }
 
 .loadingPanel {
@@ -244,7 +175,6 @@
 }
 
 @media (max-width: 768px) {
-  .pageIntroRow,
   .difficultyCardTop {
     flex-direction: column;
     align-items: stretch;

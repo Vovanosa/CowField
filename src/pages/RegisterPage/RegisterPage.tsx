@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
+import { AuthLayout } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
-import { GoogleMark } from '../../components/GoogleMark/GoogleMark'
-import { loginWithGoogle } from '../../game/storage'
+import { GoogleButton } from '../../components/GoogleButton'
+import { Button, Field, Input, TextLink } from '../../components/ui'
+import { loginWithGoogle } from '../../game/storage/authSessionStorage'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function RegisterPage() {
@@ -49,21 +51,21 @@ export function RegisterPage() {
   }
 
   return (
-    <div className={styles.authPage}>
-      <section className={`${styles.authPanel} panel-surface`}>
-        <div className={styles.authHeader}>
-          <p className={styles.authEyebrow}>{t('Create account')}</p>
-          <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
-          <p className={styles.authDescription}>
-            {t('Create a user account with your email and password.')}
-          </p>
-        </div>
-
+    <AuthLayout
+      eyebrow={t('Create account')}
+      title={t('Bullpen')}
+      description={t('Create a user account with your email and password.')}
+      message={message}
+      isErrorMessage={Boolean(message)}
+      links={
+        <TextLink to="/login">
+          {t('Back to login')}
+        </TextLink>
+      }
+    >
         <form className={styles.authForm} onSubmit={handleSubmit} autoComplete="on">
-          <label className={styles.authField}>
-            <span>{t('Email')}</span>
-            <input
-              className="form-control"
+          <Field label={t('Email')}>
+            <Input
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -72,7 +74,7 @@ export function RegisterPage() {
               inputMode="email"
               required
             />
-          </label>
+          </Field>
 
           <AuthPasswordField
             label={t('Password')}
@@ -92,30 +94,11 @@ export function RegisterPage() {
             minLength={8}
           />
 
-          <button type="submit" className={`primary-button ${styles.authButton}`} disabled={isSubmitting}>
+          <Button type="submit" variant="primary" className={styles.authButton} fullWidth disabled={isSubmitting}>
             {isSubmitting ? t('Loading...') : t('Create account')}
-          </button>
-          <button
-            type="button"
-            className={styles.googleButton}
-            onClick={() => void loginWithGoogle()}
-            disabled={isSubmitting}
-          >
-            <GoogleMark />
-            <span className={styles.googleButtonLabel}>{t('Continue with Google')}</span>
-          </button>
+          </Button>
+          <GoogleButton onClick={() => void loginWithGoogle()} disabled={isSubmitting} />
         </form>
-
-        <p className={message ? `${styles.authMessage} ${styles.authMessageError}` : styles.authMessage}>
-          {message}
-        </p>
-
-        <div className={styles.authLinks}>
-          <Link className="text-link" to="/login">
-            {t('Back to login')}
-          </Link>
-        </div>
-      </section>
-    </div>
+    </AuthLayout>
   )
 }

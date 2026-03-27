@@ -1,56 +1,23 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
-import { PageIntro } from '../../components/PageIntro'
+import { CowIcon } from '../../components/icons'
+import { PageHeader, Panel } from '../../components/ui'
 import styles from './AboutPage.module.css'
-
-function BullMarker() {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      className={styles.bullMarker}
-      focusable="false"
-    >
-      <path
-        d="M8 10 5.5 5.8l5 2.4L12.6 7h6.8l2.1 1.2 5-2.4L24 10v8.2A4.8 4.8 0 0 1 19.2 23H12.8A4.8 4.8 0 0 1 8 18.2Z"
-        fill="var(--color-cow-fill)"
-        stroke="var(--color-cow-stroke)"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <circle cx="12.2" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
-      <circle cx="19.8" cy="15.2" r="1" fill="var(--color-cow-stroke)" />
-      <path
-        d="M12.2 18.4h7.6a2.8 2.8 0 0 1-2.8 3h-2a2.8 2.8 0 0 1-2.8-3Z"
-        fill="var(--color-cow-accent)"
-        stroke="var(--color-cow-stroke)"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <circle cx="14.4" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
-      <circle cx="17.6" cy="19.7" r="0.6" fill="var(--color-cow-stroke)" />
-    </svg>
-  )
-}
 
 export function AboutPage() {
   const { t } = useTranslation()
 
   return (
     <div className={`${styles.simplePage} page-shell`}>
-      <div className={styles.pageIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
-          <ArrowLeft size={16} />
-        </Link>
-        <PageIntro
-          eyebrow={t('About')}
-          title={t('About the game')}
-          description={t('A quick guide for new players before the first level.')}
-        />
-      </div>
-      <section className={`${styles.aboutPanel} panel-surface`}>
+      <PageHeader
+        backTo="/"
+        backLabel={t('Back to home')}
+        eyebrow={t('About')}
+        title={t('About the game')}
+        description={t('A quick guide for new players before the first level.')}
+      />
+      <Panel className={styles.aboutPanel}>
         <article className={styles.aboutArticle}>
           <p className={styles.lead}>
             {t(
@@ -74,7 +41,7 @@ export function AboutPage() {
             <ArrowRight className={styles.legendArrow} size={16} aria-hidden="true" />
             <div className={styles.legendStep}>
               <span className={styles.legendCell} aria-hidden="true">
-                <BullMarker />
+                <CowIcon className={styles.bullMarker} />
               </span>
               <span>{t('bull')}</span>
             </div>
@@ -117,7 +84,7 @@ export function AboutPage() {
             )}
           </p>
         </article>
-      </section>
+      </Panel>
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ProfileMenu } from '../components/ProfileMenu/ProfileMenu'
 import { initializeAudio, syncAudioSettings } from '../game/audio/audioManager'
-import { applyThemeMode } from '../game/storage'
+import { applyThemeMode } from '../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../game/usePlayerSettings'
 import { useAuth } from './useAuth'
 

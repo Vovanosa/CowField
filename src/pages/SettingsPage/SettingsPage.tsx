@@ -1,10 +1,10 @@
-import { ArrowLeft, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
+import { Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../../app/useAuth'
-import { PageIntro } from '../../components/PageIntro'
+import { SettingsItem } from '../../components/SettingsItem'
+import { PageHeader, Panel } from '../../components/ui'
 import { playSoundEffect } from '../../game/audio/audioManager'
-import { savePlayerSettings } from '../../game/storage'
+import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import styles from './SettingsPage.module.css'
 
@@ -104,78 +104,44 @@ export function SettingsPage() {
 
   return (
     <div className={`${styles.simplePage} page-shell`}>
-      <div className={styles.pageIntroRow}>
-        <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
-          <ArrowLeft size={16} />
-        </Link>
-        <PageIntro
-          eyebrow={t('Settings')}
-          title={t('Settings')}
-          description={t('Adjust player preferences here. These switches stay on this device for every account.')}
-        />
-      </div>
+      <PageHeader
+        backTo="/"
+        backLabel={t('Back to home')}
+        eyebrow={t('Settings')}
+        title={t('Settings')}
+        description={t('Adjust player preferences here. These switches stay on this device for every account.')}
+      />
 
-      <section className={`${styles.settingsPanel} panel-surface`}>
+      <Panel className={styles.settingsPanel}>
         {isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
         <div className={styles.settingsList}>
-          <>
-            {settingsConfig.map((setting) => {
-              const Icon = setting.icon
-              const isEnabled =
-                isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
-              const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
+          {settingsConfig.map((setting, index) => {
+            const isEnabled =
+              isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
+            const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
 
-              return (
-                <article key={setting.key} className={styles.settingCard}>
-                  <div className={styles.settingMainRow}>
-                    <div className={styles.settingInfo}>
-                      <span className={styles.settingIcon}>
-                        <Icon size={18} />
-                      </span>
-                      <div className={styles.settingCopy}>
-                        <h2 className={styles.settingTitle}>{getSettingTitle(setting.key)}</h2>
-                        <p className={styles.settingDescription}>
-                          {getSettingDescription(setting.key)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className={isEnabled ? `${styles.toggle} ${styles.toggleActive}` : styles.toggle}
-                      onClick={() => handleToggle(setting.key)}
-                      aria-pressed={isEnabled}
-                      disabled={isDisabled}
-                    >
-                      <span className={styles.toggleThumb} />
-                    </button>
-                  </div>
-
-                  {setting.volumeKey && isEnabled ? (
-                    <div className={styles.sliderRow}>
-                      <div className={styles.sliderHeader}>
-                        <p className={styles.sliderLabel}>{t('Volume')}</p>
-                        <span className={styles.sliderValue}>{settings[setting.volumeKey]}%</span>
-                      </div>
-                      <input
-                        className={styles.slider}
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={settings[setting.volumeKey]}
-                        onChange={(event) =>
-                          handleVolumeChange(setting.volumeKey!, Number(event.target.value))
-                        }
-                      />
-                    </div>
-                  ) : null}
-                </article>
-              )
-            })}
-          </>
+            return (
+              <SettingsItem
+                key={setting.key}
+                icon={setting.icon}
+                title={getSettingTitle(setting.key)}
+                description={getSettingDescription(setting.key)}
+                checked={isEnabled}
+                disabled={isDisabled}
+                onToggle={() => handleToggle(setting.key)}
+                volume={setting.volumeKey && isEnabled ? settings[setting.volumeKey] : undefined}
+                volumeLabel={t('Volume')}
+                onVolumeChange={
+                  setting.volumeKey && isEnabled
+                    ? (value) => handleVolumeChange(setting.volumeKey!, value)
+                    : undefined
+                }
+                showDivider={index > 0}
+              />
+            )
+          })}
         </div>
-      </section>
+      </Panel>
     </div>
   )
 }

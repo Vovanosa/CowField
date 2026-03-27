@@ -4,17 +4,6 @@
   gap: var(--space-6);
 }
 
-.pageIntroRow {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.pageIntroRow :global(.page-intro) {
-  flex: 1;
-  margin-bottom: 0;
-}
-
 .aboutPanel {
   display: flex;
   flex-direction: column;
@@ -117,11 +106,6 @@
 }
 
 @media (max-width: 768px) {
-  .pageIntroRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .legend {
     align-items: flex-start;
   }

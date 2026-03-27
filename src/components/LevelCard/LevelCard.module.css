@@ -1,0 +1,119 @@
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+}
+
+.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+}
+
+.locked {
+  background:
+    linear-gradient(180deg, var(--color-surface-glass-base), var(--color-surface-panel-end)),
+    var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.locked:hover {
+  transform: none;
+  box-shadow: var(--shadow-soft);
+}
+
+.linkOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(-4px);
+}
+
+.number {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 600;
+  color: var(--color-heading);
+  line-height: 1;
+}
+
+.time {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.locked .number,
+.locked .time {
+  opacity: 0.58;
+}
+
+.lock {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  background: var(--color-surface-glass-soft);
+  border: 1px solid var(--color-border-icon);
+}
+
+.actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.editLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-strong);
+  background: var(--color-surface-glass-base);
+  border: 1px solid var(--color-border-icon);
+  text-decoration: none;
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.editLink:hover {
+  transform: translateY(-1px);
+  background: var(--color-surface-strong);
+  border-color: var(--color-border-hover);
+}
+
+.createCard {
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.createCard svg {
+  opacity: 0.88;
+}

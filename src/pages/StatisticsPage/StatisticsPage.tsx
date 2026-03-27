@@ -1,13 +1,13 @@
-import { ArrowLeft, Clock3, Flag, Trophy } from 'lucide-react'
+import { Clock3, Flag, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
-import { PageIntro } from '../../components/PageIntro'
 import { useRole } from '../../app/role'
+import { StatCard } from '../../components/StatCard'
+import { PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
-import { getPlayerStatistics } from '../../game/storage'
+import { getPlayerStatistics } from '../../game/storage/statisticsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, PlayerStatisticsSummary } from '../../game/types'
 import styles from './StatisticsPage.module.css'
@@ -75,7 +75,7 @@ export function StatisticsPage() {
         suffix: leadingDifficulty.completedLevels > 0
           ? t('{{count}} completed levels', { count: leadingDifficulty.completedLevels })
           : '',
-        inlineValue: true,
+        inlineDetail: true,
         icon: Flag,
       },
       {
@@ -101,53 +101,33 @@ export function StatisticsPage() {
   return (
     <div className={`${styles.statisticsPage} page-shell page-shell-wide`}>
       <section className={styles.topSection}>
-        <div className={styles.pageIntroRow}>
-          <Link className="round-icon-link" to="/" aria-label={t('Back to home')}>
-            <ArrowLeft size={16} />
-          </Link>
-          <PageIntro
-            eyebrow={t('Statistics')}
-            title={t('Player statistics')}
-          />
-        </div>
+        <PageHeader
+          backTo="/"
+          backLabel={t('Back to home')}
+          eyebrow={t('Statistics')}
+          title={t('Player statistics')}
+        />
 
         {statistics ? (
           <div className={styles.overviewGrid}>
-            {overviewItems.map((item) => {
-              const Icon = item.icon
-
-              return (
-                <article key={item.title} className={styles.overviewCard}>
-                  <div className={styles.overviewCardHeader}>
-                    <span className={styles.overviewIcon}>
-                      <Icon size={18} />
-                    </span>
-                    <p className={styles.overviewLabel}>{item.title}</p>
-                  </div>
-                  {'inlineValue' in item && item.inlineValue && 'suffix' in item && item.suffix ? (
-                    <div className={styles.overviewInlineValueRow}>
-                      <strong className={styles.overviewValue}>{item.value}</strong>
-                      <p className={styles.overviewDetail}>{item.suffix}</p>
-                    </div>
-                  ) : (
-                    <>
-                      <strong className={styles.overviewValue}>{item.value}</strong>
-                      {'suffix' in item && item.suffix ? (
-                        <p className={styles.overviewDetail}>{item.suffix}</p>
-                      ) : null}
-                    </>
-                  )}
-                </article>
-              )
-            })}
+            {overviewItems.map((item) => (
+              <StatCard
+                key={item.title}
+                title={item.title}
+                value={item.value}
+                icon={item.icon}
+                detail={'suffix' in item ? item.suffix : undefined}
+                inlineDetail={'inlineDetail' in item ? item.inlineDetail : false}
+              />
+            ))}
           </div>
         ) : null}
       </section>
 
       {!statistics ? (
-        <section className={`${styles.loadingPanel} panel-surface`}>
+        <Panel className={styles.loadingPanel}>
           <p className={styles.loadingMessage}>{t('Loading statistics...')}</p>
-        </section>
+        </Panel>
       ) : null}
 
       {statistics ? (
@@ -158,9 +138,10 @@ export function StatisticsPage() {
 
           <div className={styles.difficultyGrid}>
             {statistics.byDifficulty.map((difficultyStatistics) => (
-              <article
+              <Panel
                 key={difficultyStatistics.difficulty}
-                className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]} panel-surface`}
+                as="article"
+                className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]}`}
               >
                 <div className={styles.difficultyCardTop}>
                   <div className={styles.inlinePair}>
@@ -198,7 +179,7 @@ export function StatisticsPage() {
                     </div>
                   </div>
                 </div>
-              </article>
+              </Panel>
             ))}
           </div>
         </section>

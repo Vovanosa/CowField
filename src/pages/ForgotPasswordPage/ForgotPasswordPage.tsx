@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
-import { requestPasswordReset } from '../../game/storage'
+import { AuthLayout } from '../../components/AuthLayout'
+import { Button, Field, Input, TextLink } from '../../components/ui'
+import { requestPasswordReset } from '../../game/storage/authSessionStorage'
 import styles from '../AuthPage/AuthPage.module.css'
 
 export function ForgotPasswordPage() {
@@ -32,21 +33,25 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className={styles.authPage}>
-      <section className={`${styles.authPanel} panel-surface`}>
-        <div className={styles.authHeader}>
-          <p className={styles.authEyebrow}>{t('Reset password')}</p>
-          <h1 className={styles.authTitle}>{t('Bullpen')}</h1>
-          <p className={styles.authDescription}>
-            {t('Enter your email and we will send you a password reset link.')}
-          </p>
-        </div>
-
+    <AuthLayout
+      eyebrow={t('Reset password')}
+      title={t('Bullpen')}
+      description={t('Enter your email and we will send you a password reset link.')}
+      message={message}
+      links={
+        <>
+          <TextLink to="/reset-password">
+            {t('I already have a reset link')}
+          </TextLink>
+          <TextLink to="/login">
+            {t('Back to login')}
+          </TextLink>
+        </>
+      }
+    >
         <form className={styles.authForm} onSubmit={handleSubmit} autoComplete="on">
-          <label className={styles.authField}>
-            <span>{t('Email')}</span>
-            <input
-              className="form-control"
+          <Field label={t('Email')}>
+            <Input
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -55,24 +60,12 @@ export function ForgotPasswordPage() {
               inputMode="email"
               required
             />
-          </label>
+          </Field>
 
-          <button type="submit" className={`primary-button ${styles.authButton}`} disabled={isSubmitting}>
+          <Button type="submit" variant="primary" className={styles.authButton} fullWidth disabled={isSubmitting}>
             {isSubmitting ? t('Loading...') : t('Send reset link')}
-          </button>
+          </Button>
         </form>
-
-        <p className={styles.authMessage}>{message}</p>
-
-        <div className={styles.authLinks}>
-          <Link className="text-link" to="/reset-password">
-            {t('I already have a reset link')}
-          </Link>
-          <Link className="text-link" to="/login">
-            {t('Back to login')}
-          </Link>
-        </div>
-      </section>
-    </div>
+    </AuthLayout>
   )
 }
