@@ -4,6 +4,7 @@ import {
   getGridSizeForDifficulty,
   validateLevelDraft,
 } from '../validation'
+import { generateHardLevelDraft } from './hardGenerator'
 
 function shuffle<T>(items: T[]) {
   const nextItems = [...items]
@@ -231,6 +232,10 @@ export function generateLevelDraft(
   difficulty: LevelDraft['difficulty'],
 ) {
   const bullsPerGroup = getBullsPerGroupForDifficulty(difficulty)
+
+  if (difficulty === 'hard') {
+    return generateHardLevelDraft(levelNumber, title)
+  }
 
   if (bullsPerGroup !== 1) {
     return null

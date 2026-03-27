@@ -1,4 +1,7 @@
 import type { Difficulty, LevelDraft } from '../types'
+import {
+  getHardValidationIssues,
+} from './hardValidation'
 
 export type LevelValidationResult = {
   isValid: boolean
@@ -101,7 +104,98 @@ function buildRowPatterns(gridSize: number, bullsPerGroup: number): number[][] {
   return patterns
 }
 
-function countLevelSolutions(draft: LevelDraft, bullsPerGroup: number) {
+function getBullIndexes(cowsByCell: boolean[]) {
+  return cowsByCell
+    .map((hasBull, index) => ({ hasBull, index }))
+    .filter((entry) => entry.hasBull)
+    .map((entry) => entry.index)
+}
+
+function getCowLayoutIssues(draft: LevelDraft, bullsPerGroup: number) {
+  const issues: string[] = []
+
+  if (draft.cowsByCell.length !== draft.gridSize * draft.gridSize) {
+    issues.push('The authored bull layout is incomplete.')
+    return issues
+  }
+
+  const bullIndexes = getBullIndexes(draft.cowsByCell)
+  const expectedBullCount = draft.gridSize * bullsPerGroup
+
+  if (bullIndexes.length !== expectedBullCount) {
+    issues.push(
+      `The authored bull layout must place exactly ${expectedBullCount} bulls for ${draft.difficulty}.`,
+    )
+    return issues
+  }
+
+  const rowCounts = Array.from({ length: draft.gridSize }, () => 0)
+  const columnCounts = Array.from({ length: draft.gridSize }, () => 0)
+  const penCounts = new Map<number, number>()
+  const bullSet = new Set(bullIndexes)
+
+  for (const bullIndex of bullIndexes) {
+    const row = Math.floor(bullIndex / draft.gridSize)
+    const column = bullIndex % draft.gridSize
+    const penId = draft.pensByCell[bullIndex]
+
+    rowCounts[row] += 1
+    columnCounts[column] += 1
+    penCounts.set(penId, (penCounts.get(penId) ?? 0) + 1)
+  }
+
+  if (rowCounts.some((count) => count !== bullsPerGroup)) {
+    issues.push(`Each row in the authored bull layout must contain exactly ${bullsPerGroup} bulls.`)
+  }
+
+  if (columnCounts.some((count) => count !== bullsPerGroup)) {
+    issues.push(
+      `Each column in the authored bull layout must contain exactly ${bullsPerGroup} bulls.`,
+    )
+  }
+
+  const distinctPenIds = Array.from(new Set(draft.pensByCell)).filter((penId) => penId > 0)
+
+  if (distinctPenIds.some((penId) => (penCounts.get(penId) ?? 0) !== bullsPerGroup)) {
+    issues.push(`Each pen in the authored bull layout must contain exactly ${bullsPerGroup} bulls.`)
+  }
+
+  for (const bullIndex of bullIndexes) {
+    const row = Math.floor(bullIndex / draft.gridSize)
+    const column = bullIndex % draft.gridSize
+
+    for (let rowOffset = -1; rowOffset <= 1; rowOffset += 1) {
+      for (let columnOffset = -1; columnOffset <= 1; columnOffset += 1) {
+        if (rowOffset === 0 && columnOffset === 0) {
+          continue
+        }
+
+        const nextRow = row + rowOffset
+        const nextColumn = column + columnOffset
+
+        if (
+          nextRow < 0 ||
+          nextRow >= draft.gridSize ||
+          nextColumn < 0 ||
+          nextColumn >= draft.gridSize
+        ) {
+          continue
+        }
+
+        const neighborIndex = nextRow * draft.gridSize + nextColumn
+
+        if (bullSet.has(neighborIndex)) {
+          issues.push('Bulls in the authored layout may not touch, even diagonally.')
+          return issues
+        }
+      }
+    }
+  }
+
+  return issues
+}
+
+function countSingleBullLevelSolutions(draft: LevelDraft, bullsPerGroup: number) {
   const { gridSize, pensByCell } = draft
   const patterns = buildRowPatterns(gridSize, bullsPerGroup)
   const columnCounts = Array.from({ length: gridSize }, () => 0)
@@ -243,6 +337,8 @@ export function validateLevelDraft(draft: LevelDraft): LevelValidationResult {
     }
   }
 
+  issues.push(...getCowLayoutIssues(draft, bullsPerGroup))
+
   if (issues.length > 0) {
     return {
       isValid: false,
@@ -253,7 +349,24 @@ export function validateLevelDraft(draft: LevelDraft): LevelValidationResult {
     }
   }
 
-  const solutionCount = countLevelSolutions(draft, bullsPerGroup)
+  if (draft.difficulty === 'hard') {
+    issues.push(...getHardValidationIssues(draft))
+  }
+
+  if (issues.length > 0) {
+    return {
+      isValid: false,
+      issues,
+      solutionCount: null,
+      bullsPerGroup,
+      distinctPenCount: distinctPenIds.length,
+    }
+  }
+
+  const solutionCount =
+    draft.difficulty === 'hard'
+      ? 1
+      : countSingleBullLevelSolutions(draft, bullsPerGroup)
 
   if (solutionCount === 0) {
     issues.push('This level has no valid solution.')

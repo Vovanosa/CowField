@@ -143,6 +143,14 @@
     'Перемкніться на light, easy або medium, щоб використати автоматичну генерацію.',
   'Automatic generation is currently implemented for light, easy, and medium only.':
     'Автоматична генерація зараз реалізована лише для light, easy та medium.',
+  'Automatic hard generation could not find a valid draft. Try again.':
+    'Автоматична генерація для hard не змогла знайти коректний чернетковий рівень. Спробуйте ще раз.',
+  'Hard generation now searches for a legal 20-bull layout first, then grows 10 connected pens around those row seed pairs.':
+    'Генерація hard спочатку шукає легальне розміщення 20 биків, а потім нарощує 10 зв’язаних загонів навколо цих пар насіння по рядках.',
+  'Because hard needs 2 bulls in every row, column, and pen, generation can take longer and some attempts will be discarded by the validator.':
+    'Оскільки для hard потрібно по 2 бики в кожному рядку, стовпці й загоні, генерація може тривати довше, а частина спроб буде відхилена валідатором.',
+  'If a generated hard draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.':
+    'Якщо згенерований чернетковий hard-рівень не проходить перевірку, генератор автоматично повторює спроби, доки не знайде коректний результат або не зупиниться.',
   'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.':
     'Генератор створює повний чернетковий рівень, розміщуючи по одній легальній корові в кожному рядку та стовпці, а потім нарощуючи навколо них зв’язні кольорові регіони.',
   'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.':

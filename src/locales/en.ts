@@ -155,6 +155,14 @@ const en = {
     'Switch to light, easy, or medium to use automatic generation.',
   'Automatic generation is currently implemented for light, easy, and medium only.':
     'Automatic generation is currently implemented for light, easy, and medium only.',
+  'Automatic hard generation could not find a valid draft. Try again.':
+    'Automatic hard generation could not find a valid draft. Try again.',
+  'Hard generation now searches for a legal 20-bull layout first, then grows 10 connected pens around those row seed pairs.':
+    'Hard generation now searches for a legal 20-bull layout first, then grows 10 connected pens around those row seed pairs.',
+  'Because hard needs 2 bulls in every row, column, and pen, generation can take longer and some attempts will be discarded by the validator.':
+    'Because hard needs 2 bulls in every row, column, and pen, generation can take longer and some attempts will be discarded by the validator.',
+  'If a generated hard draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.':
+    'If a generated hard draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.',
   'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.':
     'The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.',
   'If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.':

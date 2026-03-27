@@ -84,6 +84,10 @@ export function applyAutoPlacedDots(
   previousMarks: CellMark[],
   draftNextMarks: CellMark[],
 ) {
+  if (level.difficulty === 'hard') {
+    return draftNextMarks
+  }
+
   const previousAutoDots = getAutoDotIndexes(level, getBullIndexes(previousMarks))
   const nextBullIndexes = getBullIndexes(draftNextMarks)
   const nextAutoDots = getAutoDotIndexes(level, nextBullIndexes)

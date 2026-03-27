@@ -23,7 +23,7 @@
 
 .eyebrow {
   letter-spacing: 0.14em;
-  text-transform: uppercase;
+   
   color: var(--color-accent-strong);
   font-weight: 700;
 }
