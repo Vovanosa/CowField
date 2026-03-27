@@ -25,6 +25,7 @@
   justify-content: center;
   width: 100%;
   padding: clamp(16px, 3vw, 28px) 0;
+  animation: fade-up-in 360ms var(--ease-emphasized);
 }
 
 .homeWordmark::before {
@@ -76,6 +77,7 @@
     box-shadow var(--transition-base),
     border-color var(--transition-base),
     background-color var(--transition-base);
+  animation: fade-up-in 320ms var(--ease-emphasized) both;
 }
 
 .homeMenuButton:hover {
@@ -115,6 +117,22 @@
 .homeMenuButtonPrimary .homeMenuIcon {
   background: rgba(255, 255, 255, 0.18);
   color: var(--color-button-text);
+}
+
+.homeMenu > *:nth-child(1) {
+  animation-delay: 80ms;
+}
+
+.homeMenu > *:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.homeMenu > *:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.homeMenu > *:nth-child(4) {
+  animation-delay: 260ms;
 }
 
 @media (max-width: 768px) {

@@ -29,6 +29,9 @@ export function GameCompletionDialog({
       title={t('Level completed!')}
       labelledById="game-completion-title"
       onBackdropPointerDown={onBackdropPointerDown}
+      className={styles.completionDialog}
+      descriptionClassName={styles.completionDescription}
+      actionsClassName={styles.completionActions}
       description={
         <>
           {!isTakeYourTimeEnabled ? (

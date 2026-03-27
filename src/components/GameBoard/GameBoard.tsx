@@ -48,6 +48,8 @@ export function GameBoard({
         {level.pensByCell.map((_, index) => {
           const isInvalid = invalidBullIndexes.has(index)
           const isActive = activeCellIndex === index
+          const hasDot = cellMarks[index] === 'dot'
+          const hasBull = cellMarks[index] === 'bull'
 
           return (
             <button
@@ -57,6 +59,8 @@ export function GameBoard({
                 styles.boardCell,
                 isInvalid ? styles.boardCellInvalid : '',
                 isActive ? styles.boardCellActive : '',
+                hasDot ? styles.boardCellHasDot : '',
+                hasBull ? styles.boardCellHasBull : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -67,8 +71,8 @@ export function GameBoard({
               onDragStart={(event) => event.preventDefault()}
               disabled={isBoardLocked}
             >
-              {cellMarks[index] === 'dot' ? <span className={styles.boardCellDot} /> : null}
-              {cellMarks[index] === 'bull' ? <CowIcon className={styles.playCowMarker} /> : null}
+              {hasDot ? <span className={styles.boardCellDot} /> : null}
+              {hasBull ? <CowIcon className={styles.playCowMarker} /> : null}
             </button>
           )
         })}

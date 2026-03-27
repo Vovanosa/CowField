@@ -1,6 +1,13 @@
 import { Difficulty, type PrismaClient } from '@prisma/client'
 
-import type { Difficulty as AppDifficulty, LevelRecord, LevelSummaryRecord } from '../types/level'
+import type {
+  Difficulty as AppDifficulty,
+  LevelDifficultySummaryRecord,
+  LevelListPageRecord,
+  LevelRecord,
+  LevelSummaryRecord,
+  LevelsOverviewRecord,
+} from '../types/level'
 import type { LevelRepository } from './interfaces'
 
 function toPrismaDifficulty(difficulty: AppDifficulty): Difficulty {
@@ -47,6 +54,14 @@ function toLevelSummaryRecord(level: {
   }
 }
 
+function createEmptyLevelDifficultySummary(difficulty: AppDifficulty): LevelDifficultySummaryRecord {
+  return {
+    difficulty,
+    totalCount: 0,
+    highestLevelNumber: null,
+  }
+}
+
 export class PrismaLevelRepository implements LevelRepository {
   private readonly prisma: PrismaClient
 
@@ -54,7 +69,82 @@ export class PrismaLevelRepository implements LevelRepository {
     this.prisma = prisma
   }
 
-  async listByDifficulty(difficulty: AppDifficulty) {
+  async getDifficultySummary(difficulty: AppDifficulty): Promise<LevelDifficultySummaryRecord> {
+    const [totalCount, highestLevel] = await Promise.all([
+      this.prisma.level.count({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+        },
+      }),
+      this.prisma.level.findFirst({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+        },
+        orderBy: {
+          levelNumber: 'desc',
+        },
+        select: {
+          levelNumber: true,
+        },
+      }),
+    ])
+
+    return {
+      difficulty,
+      totalCount,
+      highestLevelNumber: highestLevel?.levelNumber ?? null,
+    }
+  }
+
+  async getOverview(): Promise<LevelsOverviewRecord> {
+    const groups = await this.prisma.level.groupBy({
+      by: ['difficulty'],
+      _count: {
+        _all: true,
+      },
+      _max: {
+        levelNumber: true,
+      },
+    })
+
+    const difficulties: AppDifficulty[] = ['light', 'easy', 'medium', 'hard']
+    const groupedByDifficulty = new Map(
+      groups.map((group) => [
+        group.difficulty as AppDifficulty,
+        {
+          difficulty: group.difficulty as AppDifficulty,
+          totalCount: group._count._all,
+          highestLevelNumber: group._max.levelNumber ?? null,
+        } satisfies LevelDifficultySummaryRecord,
+      ]),
+    )
+
+    return {
+      difficulties: difficulties.map(
+        (difficulty) => groupedByDifficulty.get(difficulty) ?? createEmptyLevelDifficultySummary(difficulty),
+      ),
+    }
+  }
+
+  async listByDifficulty(
+    difficulty: AppDifficulty,
+    options?: {
+      page?: number
+      limit?: number
+    },
+  ): Promise<LevelListPageRecord> {
+    const totalCount = await this.prisma.level.count({
+      where: {
+        difficulty: toPrismaDifficulty(difficulty),
+      },
+    })
+
+    const hasPagination = options?.page !== undefined && options?.limit !== undefined
+    const page = hasPagination ? Math.max(options?.page ?? 1, 1) : 1
+    const limit = hasPagination ? Math.max(options?.limit ?? 1, 1) : Math.max(totalCount, 1)
+    const totalPages = hasPagination ? Math.max(Math.ceil(totalCount / limit), 1) : 1
+    const normalizedPage = hasPagination ? Math.min(page, totalPages) : 1
+
     const levels = await this.prisma.level.findMany({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
@@ -70,9 +160,18 @@ export class PrismaLevelRepository implements LevelRepository {
       orderBy: {
         levelNumber: 'asc',
       },
+      skip: hasPagination ? (normalizedPage - 1) * limit : undefined,
+      take: hasPagination ? limit : undefined,
     })
 
-    return levels.map(toLevelSummaryRecord)
+    return {
+      difficulty,
+      levels: levels.map(toLevelSummaryRecord),
+      totalCount,
+      page: normalizedPage,
+      limit,
+      totalPages,
+    }
   }
 
   async getByDifficultyAndNumber(difficulty: AppDifficulty, levelNumber: number) {

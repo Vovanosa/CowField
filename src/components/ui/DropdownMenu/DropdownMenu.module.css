@@ -12,6 +12,8 @@
     linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
     var(--color-surface);
   box-shadow: var(--shadow-raised);
+  transform-origin: top;
+  animation: dropdown-in 160ms var(--ease-emphasized);
 }
 
 .start {

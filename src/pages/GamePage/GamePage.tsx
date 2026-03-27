@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
-import { Button, StatusMessage } from '../../components/ui'
+import { Button, Panel, StatusMessage } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import { GameBoardPanel } from './GameBoardPanel'
@@ -64,7 +64,39 @@ function GamePageScreen() {
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <StatusMessage message={t('Loading level...')} compact />
+        <GameRouteHeader
+          backTo={`/levels/${difficulty}`}
+          backLabel={t('Back to levels')}
+          levelLabel={routeLevelLabel}
+        />
+        <Panel className={styles.loadingPanel}>
+          <div className={styles.boardPanelHeader}>
+            <div className={styles.boardPanelHeaderLeft}>
+              <span className={styles.loadingUndoButton} aria-hidden="true" />
+            </div>
+
+            <div className={styles.boardPanelHeaderRight}>
+              <span className={`${styles.loadingStat} ${styles.boardStatCompact}`} aria-hidden="true" />
+              {!isTakeYourTimeEnabled ? (
+                <span className={`${styles.loadingStat} ${styles.boardStatCompact}`} aria-hidden="true" />
+              ) : null}
+            </div>
+
+            <div className={styles.boardToolbar}>
+              <span className={styles.loadingRestartButton} aria-hidden="true" />
+            </div>
+          </div>
+
+          <div className={styles.loadingBoardShell}>
+            <div className={styles.loadingBoard} aria-hidden="true">
+              <div className={styles.loadingBoardGrid}>
+                {Array.from({ length: 36 }, (_, index) => (
+                  <span key={index} className={styles.loadingBoardCell} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </Panel>
       </div>
     )
   }

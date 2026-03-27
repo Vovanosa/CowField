@@ -6,17 +6,25 @@ import { resolveActorReference } from './prismaActor'
 
 function createEmptyStatisticsRecord(): PlayerStatisticsRecord {
   return {
+    totalCompletedLevels: 0,
     totalBullPlacements: 0,
+    totalCompletionTimeSeconds: 0,
+    byDifficulty: [],
     updatedAt: '',
   }
 }
 
 function toPlayerStatisticsRecord(record: {
+  totalCompletedLevels: number
   totalBullPlacements: number
+  totalCompletionTimeSeconds: number
   updatedAt: Date
 }): PlayerStatisticsRecord {
   return {
+    totalCompletedLevels: record.totalCompletedLevels,
     totalBullPlacements: record.totalBullPlacements,
+    totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
+    byDifficulty: [],
     updatedAt: record.updatedAt.toISOString(),
   }
 }
@@ -54,15 +62,17 @@ export class PrismaPlayerStatisticsRepository implements PlayerStatisticsReposit
       update: {
         actorType: actor.actorType,
         userId: actor.userId,
+        totalCompletedLevels: record.totalCompletedLevels,
         totalBullPlacements: record.totalBullPlacements,
+        totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
         updatedAt: new Date(record.updatedAt),
       },
       create: {
         actorType: actor.actorType,
         userId: actor.userId,
-        totalCompletedLevels: 0,
+        totalCompletedLevels: record.totalCompletedLevels,
         totalBullPlacements: record.totalBullPlacements,
-        totalCompletionTimeSeconds: 0,
+        totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
         updatedAt: new Date(record.updatedAt),
       },
     })

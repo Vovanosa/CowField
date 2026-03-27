@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { PageHeader } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
+import { getDifficultyOverview } from '../../game/storage/difficultyOverviewStorage'
 import { DIFFICULTIES } from '../../game/storage/levelStorage'
 import type { Difficulty } from '../../game/types'
 import styles from './LevelsPage.module.css'
@@ -15,9 +17,65 @@ const difficultyChipClassNames: Record<Difficulty, string> = {
   hard: styles.difficultyLinkChip,
 }
 
+type DifficultyProgressSummary = {
+  completed: number
+  total: number
+  percent: number
+}
+
+const emptyProgressSummary: DifficultyProgressSummary = {
+  completed: 0,
+  total: 0,
+  percent: 0,
+}
+
 export function LevelsPage() {
   const { isAdmin } = useRole()
   const { t } = useTranslation()
+  const [progressByDifficulty, setProgressByDifficulty] = useState<
+    Record<Difficulty, DifficultyProgressSummary>
+  >({
+    light: emptyProgressSummary,
+    easy: emptyProgressSummary,
+    medium: emptyProgressSummary,
+    hard: emptyProgressSummary,
+  })
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isActive = true
+
+    async function loadDifficultyProgress() {
+      const overview = await getDifficultyOverview()
+      const results = overview.difficulties.map((item) => {
+        const completed = item.completedCount
+        const total = item.totalCount
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0
+
+        return [
+          item.difficulty,
+          {
+            completed,
+            total,
+            percent,
+          },
+        ] as const
+      })
+
+      if (!isActive) {
+        return
+      }
+
+      setProgressByDifficulty(Object.fromEntries(results) as Record<Difficulty, DifficultyProgressSummary>)
+      setIsLoading(false)
+    }
+
+    void loadDifficultyProgress()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
 
   return (
     <div className={`${styles.levelsPage} page-shell`}>
@@ -26,23 +84,60 @@ export function LevelsPage() {
         backLabel={t('Back to home')}
         eyebrow={t('Level Select')}
         title={isAdmin ? t('Choose a difficulty.') : t('Choose a difficulty to play.')}
-        description={
-          isAdmin
-            ? t('Each difficulty has its own sequence of levels and its own create flow.')
-            : t('Each difficulty has its own level list.')
-        }
+        description={t('Each difficulty has its own level list.')}
       />
 
       <section className={styles.levelsGrid} aria-label={t('Available levels')}>
-        {DIFFICULTIES.map((difficulty) => (
-          <Link
-            key={difficulty}
-            className={difficultyChipClassNames[difficulty]}
-            to={`/levels/${difficulty}`}
-          >
-            <span className={styles.difficultyLinkLabel}>{getDifficultyLabel(t, difficulty)}</span>
-          </Link>
-        ))}
+        {DIFFICULTIES.map((difficulty) => {
+          const summary = progressByDifficulty[difficulty]
+
+          return (
+            <Link
+              key={difficulty}
+              className={difficultyChipClassNames[difficulty]}
+              to={`/levels/${difficulty}`}
+              aria-busy={isLoading}
+            >
+              <div className={styles.difficultyLinkTop}>
+                <span className={styles.difficultyLinkLabel}>
+                  {getDifficultyLabel(t, difficulty)}
+                </span>
+                {isLoading ? (
+                  <span className={`${styles.loadingBlock} ${styles.loadingPercent}`} />
+                ) : (
+                  <span className={styles.difficultyLinkPercent}>
+                    {t('{{percent}}% done', { percent: summary.percent })}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.difficultyLinkMeta}>
+                {isLoading ? (
+                  <span className={`${styles.loadingBlock} ${styles.loadingText}`} />
+                ) : (
+                  <span className={styles.difficultyLinkProgressText}>
+                    {t('{{completed}}/{{total}} completed', {
+                      completed: summary.completed,
+                      total: summary.total,
+                    })}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.difficultyLinkProgressTrack} aria-hidden="true">
+                <div
+                  className={[
+                    styles.difficultyLinkProgressFill,
+                    isLoading ? styles.difficultyLinkProgressFillLoading : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  style={{ width: isLoading ? '38%' : `${summary.percent}%` }}
+                />
+              </div>
+            </Link>
+          )
+        })}
       </section>
     </div>
   )

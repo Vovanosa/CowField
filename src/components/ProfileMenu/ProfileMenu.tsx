@@ -1,5 +1,5 @@
 import { ChevronDown, LogOut, UserRound } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '../../app/useAuth'
@@ -16,6 +16,7 @@ export function ProfileMenu() {
 
   const closeProfileMenu = useCallback(() => {
     setIsProfileMenuOpen(false)
+    setIsPreviewRoleOpen(false)
   }, [])
 
   const closePreviewRoleMenu = useCallback(() => {
@@ -32,12 +33,6 @@ export function ProfileMenu() {
     isOpen: isPreviewRoleOpen,
     onClose: closePreviewRoleMenu,
   })
-
-  useEffect(() => {
-    if (!isProfileMenuOpen) {
-      closePreviewRoleMenu()
-    }
-  }, [closePreviewRoleMenu, isProfileMenuOpen])
 
   if (!session) {
     return null

@@ -80,6 +80,7 @@
   height: 12px;
   border-radius: var(--radius-pill);
   background: var(--color-board-dot);
+  animation: bull-pop 160ms var(--ease-emphasized);
 }
 
 .playCowMarker {
@@ -88,13 +89,15 @@
 }
 
 .boardCellInvalid {
-  box-shadow:
-    inset 0 0 0 3px var(--color-board-invalid-ring-soft),
-    inset 0 0 0 999px var(--color-board-invalid-overlay);
+  animation: invalid-pulse 1.3s ease-in-out infinite;
 }
 
 .boardCellActive {
   filter: saturate(1.07);
+}
+
+.boardCellHasBull .playCowMarker {
+  animation: bull-pop 180ms var(--ease-emphasized);
 }
 
 @media (max-width: 960px) {

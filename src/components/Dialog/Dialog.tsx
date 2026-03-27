@@ -11,6 +11,9 @@ type DialogProps = {
   describedById?: string
   onBackdropPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void
   role?: 'dialog' | 'alertdialog'
+  className?: string
+  descriptionClassName?: string
+  actionsClassName?: string
 }
 
 export function Dialog({
@@ -21,20 +24,32 @@ export function Dialog({
   describedById,
   onBackdropPointerDown,
   role = 'dialog',
+  className,
+  descriptionClassName,
+  actionsClassName,
 }: DialogProps) {
+  const dialogClassName = className ? `${styles.dialog} ${className}` : styles.dialog
+  const resolvedActionsClassName = actionsClassName
+    ? `${styles.actions} ${actionsClassName}`
+    : styles.actions
+
   return (
     <div className={styles.backdrop} onPointerDown={onBackdropPointerDown}>
       <Panel
         as="section"
-        className={styles.dialog}
+        className={dialogClassName}
         role={role}
         aria-modal="true"
         aria-labelledby={labelledById}
         aria-describedby={describedById}
       >
         <h2 id={labelledById}>{title}</h2>
-        {description ? <div id={describedById}>{description}</div> : null}
-        <div className={styles.actions}>{actions}</div>
+        {description ? (
+          <div id={describedById} className={descriptionClassName}>
+            {description}
+          </div>
+        ) : null}
+        <div className={resolvedActionsClassName}>{actions}</div>
       </Panel>
     </div>
   )

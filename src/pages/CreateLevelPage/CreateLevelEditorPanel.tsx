@@ -2,6 +2,7 @@ import { BadgeCheck, RefreshCw, Save, SquarePen, Trash2 } from 'lucide-react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
 import { CowIcon } from '../../components/icons'
+import { ToolChip } from '../../components/ToolChip'
 import { Button, Panel } from '../../components/ui'
 import { getColorForId } from '../../game/levels'
 import type { LevelDraft } from '../../game/types'
@@ -46,9 +47,6 @@ export function CreateLevelEditorPanel({
   onCellPointerUp,
   t,
 }: CreateLevelEditorPanelProps) {
-  const getPenChipClassName = (isActive: boolean) =>
-    [styles.penChip, isActive ? styles.penChipActive : ''].filter(Boolean).join(' ')
-
   return (
     <section className={[styles.layout, styles.layoutSingle].join(' ')}>
       <Panel className={styles.editorPanel}>
@@ -94,30 +92,21 @@ export function CreateLevelEditorPanel({
           </p>
 
           <div className={styles.penPalette} aria-label={t('Color palette')}>
-            <button
-              type="button"
-              className={getPenChipClassName(activeTool === 0)}
-              onClick={() => onSetActiveTool(0)}
-            >
+            <ToolChip active={activeTool === 0} onClick={() => onSetActiveTool(0)}>
               {t('Erase')}
-            </button>
-            <button
-              type="button"
-              className={getPenChipClassName(activeTool === 'cow')}
-              onClick={() => onSetActiveTool('cow')}
-            >
+            </ToolChip>
+            <ToolChip active={activeTool === 'cow'} onClick={() => onSetActiveTool('cow')}>
               {t('Cow')}
-            </button>
+            </ToolChip>
             {colorOptions.map((colorId) => (
-              <button
+              <ToolChip
                 key={colorId}
-                type="button"
-                className={getPenChipClassName(activeTool === colorId)}
+                active={activeTool === colorId}
                 style={{ backgroundColor: getColorForId(colorId) }}
                 onClick={() => onSetActiveTool(colorId)}
               >
                 {t('Color {{colorId}}', { colorId })}
-              </button>
+              </ToolChip>
             ))}
           </div>
 

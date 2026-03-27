@@ -1,6 +1,5 @@
 import type { Difficulty } from '../types/level'
 import type {
-  DifficultyStatisticsSummary,
   PlayerStatisticsSummary,
 } from '../types/statistics'
 import type {
@@ -23,58 +22,20 @@ export class PlayerStatisticsService {
   }
 
   async getSummary(actorKey: string): Promise<PlayerStatisticsSummary> {
-    const [allProgress, statisticsRecord] = await Promise.all([
-      this.progressRepository.listAll(actorKey),
+    const [statisticsRecord, overallSummary, byDifficulty] = await Promise.all([
       this.statisticsRepository.get(actorKey),
+      this.progressRepository.getOverallStatisticsSummary(actorKey),
+      Promise.all(
+        difficulties.map((difficulty) =>
+          this.progressRepository.getDifficultyStatisticsSummary(actorKey, difficulty),
+        ),
+      ),
     ])
 
-    const completedProgress = allProgress.filter((progress) => progress.bestTimeSeconds !== null)
-    const byDifficulty = difficulties.map<DifficultyStatisticsSummary>((difficulty) => {
-      const completedForDifficulty = completedProgress.filter(
-        (progress) => progress.difficulty === difficulty,
-      )
-      const fastestProgress = completedForDifficulty.reduce<typeof completedForDifficulty[number] | null>(
-        (currentFastest, progress) => {
-          if (
-            currentFastest === null ||
-            (progress.bestTimeSeconds ?? Number.POSITIVE_INFINITY) <
-              (currentFastest.bestTimeSeconds ?? Number.POSITIVE_INFINITY)
-          ) {
-            return progress
-          }
-
-          return currentFastest
-        },
-        null,
-      )
-      const totalDifficultyTime = completedForDifficulty.reduce(
-        (total, progress) => total + (progress.bestTimeSeconds ?? 0),
-        0,
-      )
-
-      return {
-        difficulty,
-        completedLevels: completedForDifficulty.length,
-        fastestLevel: fastestProgress
-          ? {
-              levelNumber: fastestProgress.levelNumber,
-              timeSeconds: fastestProgress.bestTimeSeconds ?? 0,
-            }
-          : null,
-        averageTimeSeconds:
-          completedForDifficulty.length > 0
-            ? Math.round(totalDifficultyTime / completedForDifficulty.length)
-            : null,
-      }
-    })
-
     return {
-      totalCompletedLevels: completedProgress.length,
+      totalCompletedLevels: overallSummary.totalCompletedLevels,
       totalBullPlacements: statisticsRecord.totalBullPlacements,
-      totalCompletionTimeSeconds: completedProgress.reduce(
-        (total, progress) => total + (progress.bestTimeSeconds ?? 0),
-        0,
-      ),
+      totalCompletionTimeSeconds: overallSummary.totalCompletionTimeSeconds,
       byDifficulty,
     }
   }
@@ -82,7 +43,10 @@ export class PlayerStatisticsService {
   async recordBullPlacements(actorKey: string, count: number) {
     const currentStatistics = await this.statisticsRepository.get(actorKey)
     const nextStatistics = {
+      totalCompletedLevels: currentStatistics.totalCompletedLevels,
       totalBullPlacements: currentStatistics.totalBullPlacements + count,
+      totalCompletionTimeSeconds: currentStatistics.totalCompletionTimeSeconds,
+      byDifficulty: currentStatistics.byDifficulty,
       updatedAt: new Date().toISOString(),
     }
 

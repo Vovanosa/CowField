@@ -108,82 +108,84 @@ export function StatisticsPage() {
           title={t('Player statistics')}
         />
 
-        {statistics ? (
-          <div className={styles.overviewGrid}>
-            {overviewItems.map((item) => (
-              <StatCard
-                key={item.title}
-                title={item.title}
-                value={item.value}
-                icon={item.icon}
-                detail={'suffix' in item ? item.suffix : undefined}
-                inlineDetail={'inlineDetail' in item ? item.inlineDetail : false}
-              />
-            ))}
-          </div>
-        ) : null}
+        <div className={styles.overviewGrid}>
+          {statistics
+            ? overviewItems.map((item) => (
+                <StatCard
+                  key={item.title}
+                  title={item.title}
+                  value={item.value}
+                  icon={item.icon}
+                  detail={'suffix' in item ? item.suffix : undefined}
+                  inlineDetail={'inlineDetail' in item ? item.inlineDetail : false}
+                />
+              ))
+            : Array.from({ length: 4 }, (_, index) => (
+                <Panel key={`overview-skeleton-${index}`} className={styles.overviewSkeleton}>
+                  <span aria-hidden="true" />
+                </Panel>
+              ))}
+        </div>
       </section>
 
-      {!statistics ? (
-        <Panel className={styles.loadingPanel}>
-          <p className={styles.loadingMessage}>{t('Loading statistics...')}</p>
-        </Panel>
-      ) : null}
+      <section className={styles.sectionBlock}>
+        <div className={styles.sectionHeading}>
+          <h2>{t('Performance breakdown by difficulty:')}</h2>
+        </div>
 
-      {statistics ? (
-        <section className={styles.sectionBlock}>
-          <div className={styles.sectionHeading}>
-            <h2>{t('Performance breakdown by difficulty:')}</h2>
-          </div>
-
-          <div className={styles.difficultyGrid}>
-            {statistics.byDifficulty.map((difficultyStatistics) => (
-              <Panel
-                key={difficultyStatistics.difficulty}
-                as="article"
-                className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]}`}
-              >
-                <div className={styles.difficultyCardTop}>
-                  <div className={styles.inlinePair}>
-                    <p className={styles.difficultyLabel}>{t('Difficulty')}</p>
-                    <p className={styles.difficultyTitleInline}>
-                      {getDifficultyLabel(t, difficultyStatistics.difficulty)}
-                    </p>
-                  </div>
-                  <div className={styles.inlinePair}>
-                    <p className={styles.completedInline}>{t('Completed levels')}</p>
-                    <strong className={styles.completedInlineValue}>
-                      {difficultyStatistics.completedLevels}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className={styles.metricStack}>
-                  <div className={styles.metricSplitRow}>
-                    <div className={styles.metricBlock}>
-                      <p className={styles.metricLabel}>{t('Fastest level')}</p>
-                      <strong className={styles.metricValue}>
-                        {isTakeYourTimeEnabled
-                          ? t('Hidden')
-                          : formatFastestLevel(difficultyStatistics.fastestLevel, t)}
-                      </strong>
+        <div className={styles.difficultyGrid}>
+          {statistics
+            ? statistics.byDifficulty.map((difficultyStatistics) => (
+                <Panel
+                  key={difficultyStatistics.difficulty}
+                  as="article"
+                  className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]}`}
+                >
+                  <div className={styles.difficultyCardTop}>
+                    <div className={styles.inlinePair}>
+                      <p className={styles.difficultyLabel}>{t('Difficulty')}</p>
+                      <p className={styles.difficultyTitleInline}>
+                        {getDifficultyLabel(t, difficultyStatistics.difficulty)}
+                      </p>
                     </div>
-
-                    <div className={styles.metricBlock}>
-                      <p className={styles.metricLabel}>{t('Average per level')}</p>
-                      <strong className={styles.metricValue}>
-                        {isTakeYourTimeEnabled
-                          ? t('Hidden')
-                          : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
+                    <div className={styles.inlinePair}>
+                      <p className={styles.completedInline}>{t('Completed levels')}</p>
+                      <strong className={styles.completedInlineValue}>
+                        {difficultyStatistics.completedLevels}
                       </strong>
                     </div>
                   </div>
-                </div>
-              </Panel>
-            ))}
-          </div>
-        </section>
-      ) : null}
+
+                  <div className={styles.metricStack}>
+                    <div className={styles.metricSplitRow}>
+                      <div className={styles.metricBlock}>
+                        <p className={styles.metricLabel}>{t('Fastest level')}</p>
+                        <strong className={styles.metricValue}>
+                          {isTakeYourTimeEnabled
+                            ? t('Hidden')
+                            : formatFastestLevel(difficultyStatistics.fastestLevel, t)}
+                        </strong>
+                      </div>
+
+                      <div className={styles.metricBlock}>
+                        <p className={styles.metricLabel}>{t('Average per level')}</p>
+                        <strong className={styles.metricValue}>
+                          {isTakeYourTimeEnabled
+                            ? t('Hidden')
+                            : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
+              ))
+            : Array.from({ length: 4 }, (_, index) => (
+                <Panel key={`difficulty-skeleton-${index}`} className={styles.difficultySkeleton}>
+                  <span aria-hidden="true" />
+                </Panel>
+              ))}
+        </div>
+      </section>
     </div>
   )
 }

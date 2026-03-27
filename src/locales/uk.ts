@@ -1,4 +1,4 @@
-const uk = {
+﻿const uk = {
   Bullpen: 'Bullpen',
   'Loading...': 'Завантаження...',
   Hidden: 'Приховано',
@@ -43,6 +43,12 @@ const uk = {
   Levels: 'Рівні',
   '{{difficulty}} Levels': 'Рівні: {{difficulty}}',
   'Loading levels...': 'Завантаження рівнів...',
+  'Choose a level to play.': 'Оберіть рівень для гри.',
+  '{{count}} total levels': 'Усього рівнів: {{count}}',
+  'Showing {{from}}-{{to}}': 'Показано {{from}}-{{to}}',
+  Previous: 'Попередня',
+  Next: 'Наступна',
+  'Page {{page}} of {{totalPages}}': 'Сторінка {{page}} з {{totalPages}}',
   'Open level {{levelNumber}}': 'Відкрити рівень {{levelNumber}}',
   'Edit level {{levelNumber}}': 'Редагувати рівень {{levelNumber}}',
   'This level is locked. Complete the previous level first to open it.':
@@ -50,8 +56,12 @@ const uk = {
   'About the game': 'Про гру',
   'A quick guide for new players before the first level.':
     'Короткий вступ для нових гравців перед першим рівнем.',
+  'A quick guide for new players.':
+    'Короткий вступ для нових гравців.',
   'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.':
     'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без хаотичних здогадок, лише поступове розуміння того, де бик може стояти, а де ні.',
+  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
+    'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без стресу, лише поступове розуміння того, де бик може стояти, а де ні.',
   'How cell marks work': 'Як працюють позначки в клітинках',
   'Each cell changes like this:': 'Кожна клітинка змінюється так:',
   empty: 'порожньо',
@@ -80,6 +90,7 @@ const uk = {
   'Loading settings...': 'Завантаження налаштувань...',
   'Sound effects': 'Звукові ефекти',
   'Enable interface and gameplay sound effects.': 'Увімкнути звуки інтерфейсу та гри.',
+  'Enable sound effects.': 'Увімкнути звукові ефекти.',
   Music: 'Музика',
   'Enable background music during play.': 'Увімкнути фонову музику під час гри.',
   'Dark mode': 'Темна тема',
@@ -196,6 +207,8 @@ const uk = {
   'Completing Google login...': 'Завершення входу через Google...',
   'Adjust player preferences here. These switches stay on this device for every account.':
     'Налаштовуйте параметри гравця тут. Вони зберігаються локально на цьому пристрої для всіх акаунтів.',
+  'Adjust your preferences here.':
+    'Налаштуйте свої параметри тут.',
   'Switch to dark mode': 'Увімкнути темну тему',
   'Switch to light mode': 'Увімкнути світлу тему',
   'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.':

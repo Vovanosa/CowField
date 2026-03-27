@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  animation: fade-up-in 240ms var(--ease-emphasized);
 }
 
 .topbar {
@@ -33,6 +34,77 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.loadingPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-height: 720px;
+}
+
+.loadingUndoButton {
+  display: block;
+  width: 76px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, rgba(255, 246, 226, 0.05), rgba(255, 246, 226, 0.15), rgba(255, 246, 226, 0.05));
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+.loadingStat {
+  display: block;
+  width: 180px;
+  height: 44px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(255, 246, 226, 0.05), rgba(255, 246, 226, 0.15), rgba(255, 246, 226, 0.05));
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+.loadingRestartButton {
+  display: block;
+  width: 168px;
+  height: 44px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(255, 246, 226, 0.05), rgba(255, 246, 226, 0.15), rgba(255, 246, 226, 0.05));
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+.loadingBoardShell {
+  display: flex;
+  justify-content: center;
+}
+
+.loadingBoard {
+  width: min(100%, 660px);
+  padding: 10px;
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(255, 246, 226, 0.04), rgba(255, 246, 226, 0.1), rgba(255, 246, 226, 0.04)),
+    var(--color-surface);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.loadingBoardGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 4px solid rgba(255, 246, 226, 0.18);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.loadingBoardCell {
+  display: block;
+  aspect-ratio: 1;
+  background: rgba(255, 246, 226, 0.08);
 }
 
 .layout {
@@ -149,7 +221,30 @@
   min-height: 44px;
 }
 
+.completionDialog {
+  width: min(100%, 840px);
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+  padding: clamp(28px, 4vw, 48px);
+}
+
+.completionDialog h2 {
+  width: 100%;
+  margin: 0;
+}
+
+.completionDescription {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
 .completionTime {
+  margin: 0;
   font-family: var(--font-heading);
   font-size: clamp(2rem, 5vw, 2.8rem);
   color: var(--color-heading);
@@ -157,13 +252,29 @@
 }
 
 .completionBest {
+  margin: 0;
   font-weight: 600;
   color: var(--color-success);
+}
+
+.completionActions {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-4);
 }
 
 @media (max-width: 960px) {
   .emptyState {
     flex-direction: column;
+  }
+
+  .loadingStat {
+    width: 140px;
+  }
+
+  .loadingRestartButton {
+    width: 132px;
   }
 }
 

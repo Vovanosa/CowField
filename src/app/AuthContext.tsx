@@ -13,6 +13,9 @@ import {
   logout as logoutRequest,
   register as registerRequest,
 } from '../game/storage/authSessionStorage'
+import { invalidateDifficultyLevelsPageCache } from '../game/storage/difficultyLevelsPageStorage'
+import { invalidateDifficultyOverviewCache } from '../game/storage/difficultyOverviewStorage'
+import { invalidatePlayerStatisticsCache } from '../game/storage/statisticsStorage'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
 
@@ -24,6 +27,12 @@ function getInitialPreviewRole(): AdminPreviewRole {
   }
 
   return window.localStorage.getItem(ADMIN_PREVIEW_ROLE_STORAGE_KEY) === 'user' ? 'user' : 'admin'
+}
+
+function resetCachedPlayerData() {
+  invalidateDifficultyLevelsPageCache()
+  invalidateDifficultyOverviewCache()
+  invalidatePlayerStatisticsCache()
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -61,24 +70,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   const login = useCallback(async (email: string, password: string) => {
+    resetCachedPlayerData()
     const nextSession = await loginRequest(email, password)
     setSession(nextSession)
     return nextSession
   }, [])
 
   const register = useCallback(async (email: string, password: string) => {
+    resetCachedPlayerData()
     const nextSession = await registerRequest(email, password)
     setSession(nextSession)
     return nextSession
   }, [])
 
   const loginAsGuest = useCallback(async () => {
+    resetCachedPlayerData()
     const nextSession = await loginAsGuestRequest()
     setSession(nextSession)
     return nextSession
   }, [])
 
   const logout = useCallback(async () => {
+    resetCachedPlayerData()
     await logoutRequest()
     setSession(null)
     setPreviewRole('admin')

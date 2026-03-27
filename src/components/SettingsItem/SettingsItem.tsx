@@ -1,3 +1,4 @@
+import { Switch } from '../ui'
 import type { LucideIcon } from 'lucide-react'
 
 import styles from './SettingsItem.module.css'
@@ -40,15 +41,7 @@ export function SettingsItem({
           </div>
         </div>
 
-        <button
-          type="button"
-          className={checked ? `${styles.toggle} ${styles.toggleActive}` : styles.toggle}
-          onClick={onToggle}
-          aria-pressed={checked}
-          disabled={disabled}
-        >
-          <span className={styles.toggleThumb} />
-        </button>
+        <Switch checked={checked} onClick={onToggle} disabled={disabled} />
       </div>
 
       {typeof volume === 'number' && onVolumeChange ? (

@@ -26,6 +26,24 @@ export class PlayerProgressController {
     })
   }
 
+  getOverview = async (request: Request, response: Response) => {
+    const actor = getAuthenticatedActor(request)
+    const overview = await this.playerProgressService.getOverview(actor.actorKey)
+
+    response.json(overview)
+  }
+
+  getDifficultySummary = async (request: Request, response: Response) => {
+    const params = progressDifficultyParamsSchema.parse(request.params)
+    const actor = getAuthenticatedActor(request)
+    const summary = await this.playerProgressService.getDifficultySummary(
+      actor.actorKey,
+      params.difficulty,
+    )
+
+    response.json(summary)
+  }
+
   getByDifficultyAndNumber = async (request: Request, response: Response) => {
     const params = progressParamsSchema.parse(request.params)
     const actor = getAuthenticatedActor(request)

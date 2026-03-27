@@ -1,14 +1,15 @@
 import type { Difficulty, LevelProgress } from '../types'
-import {
-  buildAuthenticatedHeaders,
-  getStoredSessionRole,
-} from './authSessionStorage'
+import { getStoredSessionRole } from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
+import { invalidateDifficultyLevelsPageCache } from './difficultyLevelsPageStorage'
+import { invalidateDifficultyOverviewCache } from './difficultyOverviewStorage'
 import {
   completeGuestLevelProgress,
   getGuestLevelProgress,
   getGuestProgressByDifficulty,
 } from './guestProgressStorage'
+import { requestAuthenticatedJson } from './request'
+import { invalidatePlayerStatisticsCache } from './statisticsStorage'
 
 const API_BASE = buildApiUrl('/api/progress')
 
@@ -17,31 +18,18 @@ type DifficultyProgressResponse = {
   levels: LevelProgress[]
 }
 
+type DifficultyProgressSummary = {
+  difficulty: Difficulty
+  completedCount: number
+}
+
 type CompleteLevelResponse = {
   progress: LevelProgress
   isNewBest: boolean
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: await buildAuthenticatedHeaders(),
-    ...init,
-  })
-
-  if (!response.ok) {
-    let message = 'Request failed.'
-
-    try {
-      const payload = (await response.json()) as { message?: string }
-      message = payload.message ?? message
-    } catch {
-      // ignore parse error
-    }
-
-    throw new Error(message)
-  }
-
-  return (await response.json()) as T
+  return requestAuthenticatedJson<T>(`${API_BASE}${path}`, init)
 }
 
 export async function getProgressByDifficulty(difficulty: Difficulty) {
@@ -51,6 +39,21 @@ export async function getProgressByDifficulty(difficulty: Difficulty) {
 
   const response = await requestJson<DifficultyProgressResponse>(`/${difficulty}`)
   return response.levels
+}
+
+export async function getDifficultyProgressSummary(
+  difficulty: Difficulty,
+): Promise<DifficultyProgressSummary> {
+  if (getStoredSessionRole() === 'guest') {
+    const progress = await getGuestProgressByDifficulty(difficulty)
+
+    return {
+      difficulty,
+      completedCount: progress.filter((entry) => entry.bestTimeSeconds !== null).length,
+    }
+  }
+
+  return requestJson<DifficultyProgressSummary>(`/${difficulty}/summary`)
 }
 
 export async function getLevelProgress(difficulty: Difficulty, levelNumber: number) {
@@ -67,11 +70,18 @@ export async function completeLevelProgress(
   timeSeconds: number,
 ) {
   if (getStoredSessionRole() === 'guest') {
-    return completeGuestLevelProgress(difficulty, levelNumber, timeSeconds)
+    const response = await completeGuestLevelProgress(difficulty, levelNumber, timeSeconds)
+    invalidateDifficultyLevelsPageCache(difficulty)
+    invalidateDifficultyOverviewCache()
+    return response
   }
 
-  return requestJson<CompleteLevelResponse>(`/${difficulty}/${levelNumber}/complete`, {
+  const response = await requestJson<CompleteLevelResponse>(`/${difficulty}/${levelNumber}/complete`, {
     method: 'POST',
     body: JSON.stringify({ timeSeconds }),
   })
+  invalidateDifficultyLevelsPageCache(difficulty)
+  invalidateDifficultyOverviewCache()
+  invalidatePlayerStatisticsCache()
+  return response
 }

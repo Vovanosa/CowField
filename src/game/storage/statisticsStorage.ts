@@ -1,33 +1,42 @@
 import type { PlayerStatisticsSummary } from '../types'
-import { buildAuthenticatedHeaders } from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
+import { requestAuthenticatedJson } from './request'
 
 const API_BASE = buildApiUrl('/api/statistics')
+let cachedStatistics: PlayerStatisticsSummary | null = null
+let inFlightStatisticsPromise: Promise<PlayerStatisticsSummary> | null = null
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: await buildAuthenticatedHeaders(),
-    ...init,
-  })
-
-  if (!response.ok) {
-    let message = 'Request failed.'
-
-    try {
-      const payload = (await response.json()) as { message?: string }
-      message = payload.message ?? message
-    } catch {
-      // ignore parse error
-    }
-
-    throw new Error(message)
-  }
-
-  return (await response.json()) as T
+  return requestAuthenticatedJson<T>(`${API_BASE}${path}`, init)
 }
 
 export async function getPlayerStatistics() {
-  return requestJson<PlayerStatisticsSummary>('/')
+  if (cachedStatistics) {
+    return {
+      ...cachedStatistics,
+      byDifficulty: cachedStatistics.byDifficulty.map((item) => ({
+        ...item,
+        fastestLevel: item.fastestLevel ? { ...item.fastestLevel } : null,
+      })),
+    }
+  }
+
+  if (inFlightStatisticsPromise) {
+    return inFlightStatisticsPromise
+  }
+
+  inFlightStatisticsPromise = requestJson<PlayerStatisticsSummary>('/')
+    .then((statistics) => {
+      cachedStatistics = statistics
+      inFlightStatisticsPromise = null
+      return statistics
+    })
+    .catch((error) => {
+      inFlightStatisticsPromise = null
+      throw error
+    })
+
+  return inFlightStatisticsPromise
 }
 
 export async function recordBullPlacements(count: number, keepalive = false) {
@@ -35,9 +44,23 @@ export async function recordBullPlacements(count: number, keepalive = false) {
     return { totalBullPlacements: 0 }
   }
 
-  return requestJson<{ totalBullPlacements: number }>('/bull-placement', {
+  const response = await requestJson<{ totalBullPlacements: number }>('/bull-placement', {
     method: 'POST',
     keepalive,
     body: JSON.stringify({ count }),
   })
+
+  if (cachedStatistics) {
+    cachedStatistics = {
+      ...cachedStatistics,
+      totalBullPlacements: response.totalBullPlacements,
+    }
+  }
+
+  return response
+}
+
+export function invalidatePlayerStatisticsCache() {
+  cachedStatistics = null
+  inFlightStatisticsPromise = null
 }

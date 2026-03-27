@@ -125,7 +125,6 @@ export function useGameSession({
       setIsLoading(false)
     }
 
-    setIsLoading(true)
     void loadLevel()
 
     return () => {
@@ -210,6 +209,16 @@ export function useGameSession({
     setIsBoardLocked(true)
     setElapsedSeconds(completionTimeSeconds)
     setRunStartedAt(null)
+    const previousBestTime = levelProgressRef.current?.bestTimeSeconds
+
+    setCompletionModal({
+      isOpen: true,
+      isNewBest:
+        previousBestTime === null ||
+        previousBestTime === undefined ||
+        completionTimeSeconds < previousBestTime,
+      timeSeconds: completionTimeSeconds,
+    })
 
     async function saveCompletion() {
       const pendingBullPlacements = pendingBullPlacementsRef.current
@@ -229,22 +238,17 @@ export function useGameSession({
         ])
 
         setLevelProgress(response.progress)
-        setCompletionModal({
-          isOpen: true,
-          isNewBest: response.isNewBest,
-          timeSeconds: completionTimeSeconds,
-        })
+        setCompletionModal((currentModal) =>
+          currentModal
+            ? {
+                ...currentModal,
+                isNewBest: response.isNewBest,
+                timeSeconds: completionTimeSeconds,
+              }
+            : currentModal,
+        )
       } catch {
-        const previousBestTime = levelProgressRef.current?.bestTimeSeconds
-
-        setCompletionModal({
-          isOpen: true,
-          isNewBest:
-            previousBestTime === null ||
-            previousBestTime === undefined ||
-            completionTimeSeconds < previousBestTime,
-          timeSeconds: completionTimeSeconds,
-        })
+        // Keep the optimistic completion UI open even if persistence finishes later or fails.
       }
     }
 

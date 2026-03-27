@@ -35,7 +35,10 @@ export function createApp() {
   const allowedOrigins = new Set(getAllowedOrigins())
   const repositories = createRepositories()
   const levelService = new LevelService(repositories.levelRepository)
-  const playerProgressService = new PlayerProgressService(repositories.playerProgressRepository)
+  const playerProgressService = new PlayerProgressService(
+    repositories.playerProgressRepository,
+    repositories.levelRepository,
+  )
   const authService = new AuthService(
     repositories.userRepository,
     repositories.sessionRepository,

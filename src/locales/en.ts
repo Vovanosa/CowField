@@ -43,6 +43,14 @@ const en = {
   Levels: 'Levels',
   '{{difficulty}} Levels': '{{difficulty}} Levels',
   'Loading levels...': 'Loading levels...',
+  'Browse this difficulty one page at a time.': 'Browse this difficulty one page at a time.',
+  '{{count}} total levels': '{{count}} total levels',
+  'Showing {{from}}-{{to}}': 'Showing {{from}}-{{to}}',
+  Previous: 'Previous',
+  Next: 'Next',
+  'Page {{page}} of {{totalPages}}': 'Page {{page}} of {{totalPages}}',
+  '{{completed}}/{{total}} completed': '{{completed}}/{{total}} completed',
+  '{{percent}}% done': '{{percent}}% done',
   'Open level {{levelNumber}}': 'Open level {{levelNumber}}',
   'Edit level {{levelNumber}}': 'Edit level {{levelNumber}}',
   'This level is locked. Complete the previous level first to open it.':
@@ -50,8 +58,12 @@ const en = {
   'About the game': 'About the game',
   'A quick guide for new players before the first level.':
     'A quick guide for new players before the first level.',
+  'A quick guide for new players.':
+    'A quick guide for new players.',
   'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.':
     'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.',
+  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
+    'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
   'How cell marks work': 'How cell marks work',
   'Each cell changes like this:': 'Each cell changes like this:',
   empty: 'empty',
@@ -81,10 +93,14 @@ const en = {
     'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.',
   'Adjust player preferences here. These switches stay on this device for every account.':
     'Adjust player preferences here. These switches stay on this device for every account.',
+  'Adjust your preferences here.':
+    'Adjust your preferences here.',
   'Loading settings...': 'Loading settings...',
   'Sound effects': 'Sound effects',
   'Enable interface and gameplay sound effects.':
     'Enable interface and gameplay sound effects.',
+  'Enable sound effects.':
+    'Enable sound effects.',
   Music: 'Music',
   'Enable background music during play.': 'Enable background music during play.',
   'Dark mode': 'Dark mode',

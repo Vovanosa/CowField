@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
-import { Button, StatusMessage, Toast } from '../../components/ui'
+import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import type { Difficulty } from '../../game/types'
 import { CreateLevelDeleteDialog } from './CreateLevelDeleteDialog'
@@ -54,10 +54,29 @@ function CreateLevelPageView({
     t,
   })
 
+  if (isLoading && !draft) {
+    return (
+      <div className={styles.page}>
+        <CreateLevelHeader backTo={`/levels/${difficulty}`} backLabel={t('Back to levels')} />
+        <Panel className={styles.loadingPanel}>
+          <div className={styles.loadingToolbar}>
+            <span className={styles.loadingAction} />
+            <span className={styles.loadingAction} />
+            <span className={styles.loadingAction} />
+          </div>
+          <div className={styles.loadingEditorLayout}>
+            <div className={styles.loadingBoard} />
+            <div className={styles.loadingSidebar} />
+          </div>
+        </Panel>
+      </div>
+    )
+  }
+
   if (!draft) {
     return (
       <div className={styles.page}>
-        <EmptyState message={isLoading ? t('Loading level...') : loadError} />
+        <EmptyState message={loadError} />
       </div>
     )
   }

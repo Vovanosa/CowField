@@ -1,27 +1,28 @@
 import { Suspense, lazy, useEffect, type ComponentType, type ReactNode } from 'react'
-import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { Navigate, Outlet, RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom'
 
 import { AuthProvider } from './app/AuthContext'
 import { useAuth } from './app/useAuth'
 import { AppShell } from './app/AppShell'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
-import { StatusMessage } from './components/ui'
+import { AboutPage } from './pages/AboutPage'
+import { DifficultyLevelsPage } from './pages/DifficultyLevelsPage'
+import { HomePage } from './pages/HomePage'
+import { LevelsPage } from './pages/LevelsPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { StatisticsPage } from './pages/StatisticsPage'
 import { applyThemeMode } from './game/storage/playerSettingsStorage'
 import { usePlayerSettings } from './game/usePlayerSettings'
 import './App.css'
 
-function lazyPage<T extends ComponentType<never>>(
+function lazyPage<T extends ComponentType<object>>(
   load: () => Promise<{ default: T }>,
 ) {
-  return lazy(load as unknown as () => Promise<{ default: ComponentType<any> }>)
+  return lazy(load)
 }
 
-const AboutPage = lazyPage(() => import('./pages/AboutPage').then((module) => ({ default: module.AboutPage })))
 const CreateLevelPage = lazyPage(() =>
   import('./pages/CreateLevelPage').then((module) => ({ default: module.CreateLevelPage })),
-)
-const DifficultyLevelsPage = lazyPage(() =>
-  import('./pages/DifficultyLevelsPage').then((module) => ({ default: module.DifficultyLevelsPage })),
 )
 const ForgotPasswordPage = lazyPage(() =>
   import('./pages/ForgotPasswordPage/ForgotPasswordPage').then((module) => ({
@@ -34,8 +35,6 @@ const GoogleAuthCallbackPage = lazyPage(() =>
     default: module.GoogleAuthCallbackPage,
   })),
 )
-const HomePage = lazyPage(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })))
-const LevelsPage = lazyPage(() => import('./pages/LevelsPage').then((module) => ({ default: module.LevelsPage })))
 const LoginPage = lazyPage(() =>
   import('./pages/LoginPage/LoginPage').then((module) => ({ default: module.LoginPage })),
 )
@@ -47,23 +46,8 @@ const ResetPasswordPage = lazyPage(() =>
     default: module.ResetPasswordPage,
   })),
 )
-const SettingsPage = lazyPage(() =>
-  import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
-)
-const StatisticsPage = lazyPage(() =>
-  import('./pages/StatisticsPage').then((module) => ({ default: module.StatisticsPage })),
-)
-
-function RouteFallback() {
-  return (
-    <div className="page-shell">
-      <StatusMessage message="Loading..." compact />
-    </div>
-  )
-}
-
 function withSuspense(element: ReactNode) {
-  return <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+  return <Suspense fallback={null}>{element}</Suspense>
 }
 
 function RequireSession() {
@@ -93,6 +77,7 @@ function PublicOnlyRoute() {
 }
 
 function PublicShell() {
+  const location = useLocation()
   const settings = usePlayerSettings()
 
   useEffect(() => {
@@ -104,7 +89,9 @@ function PublicShell() {
       <div className="app-frame">
         <main className="app-content">
           <LanguageSwitcher />
-          <Outlet />
+          <div key={location.pathname} className="route-stage">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
@@ -151,15 +138,15 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: withSuspense(<HomePage />),
+            element: <HomePage />,
           },
           {
             path: 'levels',
-            element: withSuspense(<LevelsPage />),
+            element: <LevelsPage />,
           },
           {
             path: 'levels/:difficulty',
-            element: withSuspense(<DifficultyLevelsPage />),
+            element: <DifficultyLevelsPage />,
           },
           {
             path: 'levels/:difficulty/create',
@@ -175,20 +162,20 @@ const router = createBrowserRouter([
           },
           {
             path: 'about',
-            element: withSuspense(<AboutPage />),
+            element: <AboutPage />,
           },
           {
             element: <RequireNonGuest />,
             children: [
               {
                 path: 'statistics',
-                element: withSuspense(<StatisticsPage />),
+                element: <StatisticsPage />,
               },
             ],
           },
           {
             path: 'settings',
-            element: withSuspense(<SettingsPage />),
+            element: <SettingsPage />,
           },
           {
             path: '*',

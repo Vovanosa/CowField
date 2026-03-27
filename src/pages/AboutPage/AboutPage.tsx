@@ -15,13 +15,13 @@ export function AboutPage() {
         backLabel={t('Back to home')}
         eyebrow={t('About')}
         title={t('About the game')}
-        description={t('A quick guide for new players before the first level.')}
+        description={t('A quick guide for new players.')}
       />
       <Panel className={styles.aboutPanel}>
         <article className={styles.aboutArticle}>
           <p className={styles.lead}>
             {t(
-              'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.',
+              'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
             )}
           </p>
 

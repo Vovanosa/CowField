@@ -13,6 +13,8 @@ export function createPlayerProgressRoutes(
   const requireAuth = createRequireAuthMiddleware(authService)
 
   router.use(requireAuth)
+  router.get('/overview', asyncHandler(playerProgressController.getOverview))
+  router.get('/:difficulty/summary', asyncHandler(playerProgressController.getDifficultySummary))
   router.get('/:difficulty', asyncHandler(playerProgressController.listByDifficulty))
   router.get('/:difficulty/:levelNumber', asyncHandler(playerProgressController.getByDifficultyAndNumber))
   router.post(

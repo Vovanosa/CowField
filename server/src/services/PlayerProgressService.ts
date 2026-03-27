@@ -1,6 +1,7 @@
 import type { CompleteLevelInput } from '../schemas/progressSchemas'
 import type { Difficulty } from '../types/level'
-import type { PlayerProgressRepository } from '../repositories/interfaces'
+import type { LevelRepository, PlayerProgressRepository } from '../repositories/interfaces'
+import type { ProgressOverviewRecord } from '../types/progress'
 
 function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
   return {
@@ -14,9 +15,40 @@ function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
 
 export class PlayerProgressService {
   private readonly repository: PlayerProgressRepository
+  private readonly levelRepository: LevelRepository
 
-  constructor(repository: PlayerProgressRepository) {
+  constructor(repository: PlayerProgressRepository, levelRepository: LevelRepository) {
     this.repository = repository
+    this.levelRepository = levelRepository
+  }
+
+  async getDifficultySummary(actorKey: string, difficulty: Difficulty) {
+    return this.repository.getDifficultySummary(actorKey, difficulty)
+  }
+
+  async getOverview(actorKey: string): Promise<ProgressOverviewRecord> {
+    const levelsOverviewPromise = this.levelRepository.getOverview()
+    const progressSummariesPromise = Promise.all(
+      levelsOverviewDifficulties.map((difficulty) =>
+        this.repository.getDifficultySummary(actorKey, difficulty),
+      ),
+    )
+    const [levelsOverview, progressSummaries] = await Promise.all([
+      levelsOverviewPromise,
+      progressSummariesPromise,
+    ])
+
+    const progressByDifficulty = new Map(
+      progressSummaries.map((summary) => [summary.difficulty, summary.completedCount]),
+    )
+
+    return {
+      difficulties: levelsOverview.difficulties.map((summary) => ({
+        difficulty: summary.difficulty,
+        totalCount: summary.totalCount,
+        completedCount: progressByDifficulty.get(summary.difficulty) ?? 0,
+      })),
+    }
   }
 
   async listByDifficulty(actorKey: string, difficulty: Difficulty) {
@@ -61,3 +93,5 @@ export class PlayerProgressService {
     }
   }
 }
+
+const levelsOverviewDifficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']

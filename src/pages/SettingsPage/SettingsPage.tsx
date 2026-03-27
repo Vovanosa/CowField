@@ -88,7 +88,7 @@ export function SettingsPage() {
 
   function getSettingDescription(key: ToggleSettingKey) {
     if (key === 'soundEffectsEnabled') {
-      return t('Enable interface and gameplay sound effects.')
+      return t('Enable sound effects.')
     }
 
     if (key === 'musicEnabled') {
@@ -109,7 +109,7 @@ export function SettingsPage() {
         backLabel={t('Back to home')}
         eyebrow={t('Settings')}
         title={t('Settings')}
-        description={t('Adjust player preferences here. These switches stay on this device for every account.')}
+        description={t('Adjust your preferences here.')}
       />
 
       <Panel className={styles.settingsPanel}>

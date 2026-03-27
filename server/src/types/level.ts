@@ -16,6 +16,22 @@ export type LevelRecord = {
 }
 
 export type LevelSummaryRecord = Omit<LevelRecord, 'colorsByCell' | 'cowsByCell'>
+export type LevelDifficultySummaryRecord = {
+  difficulty: Difficulty
+  totalCount: number
+  highestLevelNumber: number | null
+}
+export type LevelsOverviewRecord = {
+  difficulties: LevelDifficultySummaryRecord[]
+}
+export type LevelListPageRecord = {
+  difficulty: Difficulty
+  levels: LevelSummaryRecord[]
+  totalCount: number
+  page: number
+  limit: number
+  totalPages: number
+}
 export type LevelPublicRecord = Omit<LevelRecord, 'cowsByCell'> & {
   hasNextLevel: boolean
 }

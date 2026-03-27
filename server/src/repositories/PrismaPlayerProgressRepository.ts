@@ -1,7 +1,12 @@
 import { Difficulty, type PrismaClient } from '@prisma/client'
 
 import type { Difficulty as AppDifficulty } from '../types/level'
-import type { LevelProgressRecord } from '../types/progress'
+import type {
+  DifficultyProgressSummaryRecord,
+  LevelProgressRecord,
+  OverallProgressStatisticsSummary,
+} from '../types/progress'
+import type { DifficultyStatisticsSummary } from '../types/statistics'
 import type { PlayerProgressRepository } from './interfaces'
 import { resolveActorReference } from './prismaActor'
 
@@ -38,6 +43,141 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma
+  }
+
+  async getDifficultySummary(
+    actorKey: string,
+    difficulty: AppDifficulty,
+  ): Promise<DifficultyProgressSummaryRecord> {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return {
+        difficulty,
+        completedCount: 0,
+      }
+    }
+
+    const completedCount = await this.prisma.levelProgress.count({
+      where: {
+        difficulty: toPrismaDifficulty(difficulty),
+        userId: actor.userId,
+        bestTimeSeconds: {
+          not: null,
+        },
+      },
+    })
+
+    return {
+      difficulty,
+      completedCount,
+    }
+  }
+
+  async getDifficultyStatisticsSummary(
+    actorKey: string,
+    difficulty: AppDifficulty,
+  ): Promise<DifficultyStatisticsSummary> {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return {
+        difficulty,
+        completedLevels: 0,
+        fastestLevel: null,
+        averageTimeSeconds: null,
+      }
+    }
+
+    const [aggregate, fastestRecord] = await Promise.all([
+      this.prisma.levelProgress.aggregate({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          userId: actor.userId,
+          bestTimeSeconds: {
+            not: null,
+          },
+        },
+        _count: {
+          _all: true,
+        },
+        _avg: {
+          bestTimeSeconds: true,
+        },
+      }),
+      this.prisma.levelProgress.findFirst({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          userId: actor.userId,
+          bestTimeSeconds: {
+            not: null,
+          },
+        },
+        orderBy: [
+          {
+            bestTimeSeconds: 'asc',
+          },
+          {
+            levelNumber: 'asc',
+          },
+        ],
+        select: {
+          levelNumber: true,
+          bestTimeSeconds: true,
+        },
+      }),
+    ])
+
+    const completedLevels = aggregate._count._all
+
+    return {
+      difficulty,
+      completedLevels,
+      fastestLevel:
+        fastestRecord && fastestRecord.bestTimeSeconds !== null
+          ? {
+              levelNumber: fastestRecord.levelNumber,
+              timeSeconds: fastestRecord.bestTimeSeconds,
+            }
+          : null,
+      averageTimeSeconds:
+        completedLevels > 0 && aggregate._avg.bestTimeSeconds !== null
+          ? Math.round(aggregate._avg.bestTimeSeconds)
+          : null,
+    }
+  }
+
+  async getOverallStatisticsSummary(
+    actorKey: string,
+  ): Promise<OverallProgressStatisticsSummary> {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return {
+        totalCompletedLevels: 0,
+        totalCompletionTimeSeconds: 0,
+      }
+    }
+
+    const aggregate = await this.prisma.levelProgress.aggregate({
+      where: {
+        userId: actor.userId,
+        bestTimeSeconds: {
+          not: null,
+        },
+      },
+      _count: {
+        _all: true,
+      },
+      _sum: {
+        bestTimeSeconds: true,
+      },
+    })
+
+    return {
+      totalCompletedLevels: aggregate._count._all,
+      totalCompletionTimeSeconds: aggregate._sum.bestTimeSeconds ?? 0,
+    }
   }
 
   async listByDifficulty(actorKey: string, difficulty: AppDifficulty) {

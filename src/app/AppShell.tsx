@@ -31,7 +31,9 @@ export function AppShell() {
         <main className="app-content">
           {location.pathname === '/' && session ? <ProfileMenu /> : null}
           <LanguageSwitcher />
-          <Outlet />
+          <div key={location.pathname} className="route-stage">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

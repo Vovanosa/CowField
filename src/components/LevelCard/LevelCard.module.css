@@ -6,6 +6,7 @@
   min-height: 110px;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
+  animation: fade-up-in 260ms var(--ease-emphasized) both;
 }
 
 .clickable:hover {

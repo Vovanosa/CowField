@@ -1,7 +1,20 @@
 import type { SessionRecord, UserRecord } from '../types/auth'
-import type { Difficulty, LevelRecord, LevelSummaryRecord } from '../types/level'
-import type { LevelProgressRecord } from '../types/progress'
-import type { PlayerStatisticsRecord } from '../types/statistics'
+import type {
+  Difficulty,
+  LevelDifficultySummaryRecord,
+  LevelListPageRecord,
+  LevelsOverviewRecord,
+  LevelRecord,
+} from '../types/level'
+import type {
+  DifficultyProgressSummaryRecord,
+  LevelProgressRecord,
+  OverallProgressStatisticsSummary,
+} from '../types/progress'
+import type {
+  DifficultyStatisticsSummary,
+  PlayerStatisticsRecord,
+} from '../types/statistics'
 
 export interface UserRepository {
   listAll(): Promise<UserRecord[]>
@@ -20,6 +33,15 @@ export interface SessionRepository {
 
 export interface PlayerProgressRepository {
   listByDifficulty(actorKey: string, difficulty: Difficulty): Promise<LevelProgressRecord[]>
+  getDifficultySummary(
+    actorKey: string,
+    difficulty: Difficulty,
+  ): Promise<DifficultyProgressSummaryRecord>
+  getDifficultyStatisticsSummary(
+    actorKey: string,
+    difficulty: Difficulty,
+  ): Promise<DifficultyStatisticsSummary>
+  getOverallStatisticsSummary(actorKey: string): Promise<OverallProgressStatisticsSummary>
   listAll(actorKey: string): Promise<LevelProgressRecord[]>
   getByDifficultyAndNumber(
     actorKey: string,
@@ -35,7 +57,15 @@ export interface PlayerStatisticsRepository {
 }
 
 export interface LevelRepository {
-  listByDifficulty(difficulty: Difficulty): Promise<LevelSummaryRecord[]>
+  getDifficultySummary(difficulty: Difficulty): Promise<LevelDifficultySummaryRecord>
+  getOverview(): Promise<LevelsOverviewRecord>
+  listByDifficulty(
+    difficulty: Difficulty,
+    options?: {
+      page?: number
+      limit?: number
+    },
+  ): Promise<LevelListPageRecord>
   getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number): Promise<LevelRecord | null>
   save(level: LevelRecord): Promise<LevelRecord>
   delete(difficulty: Difficulty, levelNumber: number): Promise<boolean>

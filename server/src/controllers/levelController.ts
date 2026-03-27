@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 
 import {
   difficultyParamsSchema,
+  levelListQuerySchema,
   levelParamsSchema,
   levelRecordInputSchema,
 } from '../schemas/levelSchemas'
@@ -17,12 +18,26 @@ export class LevelController {
 
   listByDifficulty = async (request: Request, response: Response) => {
     const params = difficultyParamsSchema.parse(request.params)
-    const levels = await this.levelService.listByDifficulty(params.difficulty)
+    const query = levelListQuerySchema.parse(request.query)
+    const levels =
+      query.page !== undefined && query.limit !== undefined
+        ? await this.levelService.listPageByDifficulty(params.difficulty, query.page, query.limit)
+        : await this.levelService.listByDifficulty(params.difficulty)
 
-    response.json({
-      difficulty: params.difficulty,
-      levels,
-    })
+    response.json(levels)
+  }
+
+  getOverview = async (_request: Request, response: Response) => {
+    const overview = await this.levelService.getOverview()
+
+    response.json(overview)
+  }
+
+  getDifficultySummary = async (request: Request, response: Response) => {
+    const params = difficultyParamsSchema.parse(request.params)
+    const summary = await this.levelService.getDifficultySummary(params.difficulty)
+
+    response.json(summary)
   }
 
   getByDifficultyAndNumber = async (request: Request, response: Response) => {

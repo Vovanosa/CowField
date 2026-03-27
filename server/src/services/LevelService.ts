@@ -11,8 +11,24 @@ export class LevelService {
     this.repository = repository
   }
 
+  async getDifficultySummary(difficulty: LevelRecordInput['difficulty']) {
+    return this.repository.getDifficultySummary(difficulty)
+  }
+
+  async getOverview() {
+    return this.repository.getOverview()
+  }
+
   async listByDifficulty(difficulty: LevelRecordInput['difficulty']) {
     return this.repository.listByDifficulty(difficulty)
+  }
+
+  async listPageByDifficulty(
+    difficulty: LevelRecordInput['difficulty'],
+    page: number,
+    limit: number,
+  ) {
+    return this.repository.listByDifficulty(difficulty, { page, limit })
   }
 
   async getByDifficultyAndNumber(
@@ -20,14 +36,18 @@ export class LevelService {
     levelNumber: number,
     includeAuthoringData = false,
   ) {
-    const level = await this.repository.getByDifficultyAndNumber(difficulty, levelNumber)
+    const [level, difficultySummary] = await Promise.all([
+      this.repository.getByDifficultyAndNumber(difficulty, levelNumber),
+      this.repository.getDifficultySummary(difficulty),
+    ])
 
     if (!level) {
       throw new HttpError(404, 'Level not found.')
     }
 
     const hasNextLevel =
-      (await this.repository.getByDifficultyAndNumber(difficulty, levelNumber + 1)) !== null
+      difficultySummary.highestLevelNumber !== null &&
+      difficultySummary.highestLevelNumber > levelNumber
 
     if (includeAuthoringData) {
       return {

@@ -28,6 +28,12 @@
   padding: var(--space-8);
 }
 
+.route-stage {
+  flex: 1;
+  min-width: 0;
+  animation: fade-up-in 280ms var(--ease-emphasized);
+}
+
 .page-shell {
   --page-shell-width: 860px;
   width: min(100%, var(--page-shell-width));

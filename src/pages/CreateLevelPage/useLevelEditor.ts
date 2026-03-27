@@ -4,8 +4,8 @@ import { generateLevelDraft } from '../../game/levels'
 import {
   createEmptyLevelDraft,
   deleteLevel,
+  getDifficultyLevelSummary,
   getLevelByDifficultyAndNumber,
-  getLevelsByDifficulty,
   saveLevel,
 } from '../../game/storage/levelStorage'
 import { getBullsPerGroupForDifficulty, validateLevelDraft } from '../../game/validation'
@@ -54,8 +54,10 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
 
           setDraft(existingLevel ?? createEmptyLevelDraft(difficulty, routeLevelNumber))
         } else {
-          const levels = await getLevelsByDifficulty(difficulty)
-          const nextLevelNumber = getNextLevelNumber(levels.map((level) => level.levelNumber))
+          const levelSummary = await getDifficultyLevelSummary(difficulty)
+          const nextLevelNumber = getNextLevelNumber(
+            levelSummary.highestLevelNumber !== null ? [levelSummary.highestLevelNumber] : [],
+          )
 
           if (!isActive) {
             return
