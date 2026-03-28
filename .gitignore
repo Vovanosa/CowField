@@ -25,6 +25,7 @@ dist-ssr
 
 # Agent
 AGENTS.md
+mobile-migration-plan.md
 
 .env
 *.sql

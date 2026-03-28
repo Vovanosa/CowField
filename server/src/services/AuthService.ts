@@ -15,6 +15,15 @@ import {
   hashPassword,
   normalizeEmail,
 } from '../auth/adminAccount'
+import {
+  extractNeonUser,
+  extractNeonToken,
+  getNeonAuthFrontendOrigin,
+  requestNeonPasswordReset,
+  resetNeonPassword,
+  signInWithNeonPassword,
+  signUpWithNeonPassword,
+} from '../auth/neonAuthClient'
 
 const scrypt = promisify(nodeScrypt)
 
@@ -134,6 +143,36 @@ function createActorKey(userId: string | null, role: 'admin' | 'user' | 'guest')
   return `user:${userId}`
 }
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && typeof error.message === 'string') {
+    return error.message
+  }
+
+  return 'Unexpected server error.'
+}
+
+function mapNeonAuthError(error: unknown): never {
+  const message = getErrorMessage(error)
+
+  if (message === 'Invalid email or password') {
+    throw new HttpError(401, 'Incorrect email or password.')
+  }
+
+  if (message === 'User already exists') {
+    throw new HttpError(409, 'An account with that email already exists.')
+  }
+
+  if (message === 'Email not verified') {
+    throw new HttpError(401, 'Please verify your email before logging in.')
+  }
+
+  if (message === 'Invalid origin') {
+    throw new HttpError(500, 'Mobile auth origin is not configured correctly.')
+  }
+
+  throw error instanceof HttpError ? error : new HttpError(500, message)
+}
+
 export class AuthService {
   private readonly userRepository: UserRepository
   private readonly sessionRepository: SessionRepository
@@ -230,6 +269,138 @@ export class AuthService {
   async createGuestSession() {
     await this.ensureAdminSeed()
     return this.createSessionPayload('guest', null, null, 'Guest')
+  }
+
+  private async createStoredNeonSession(
+    token: string,
+    payload: {
+      id: string
+      email?: string
+      name?: string
+    },
+  ) {
+    const user = await this.syncNeonUser({
+      sub: payload.id,
+      aud: 'neon-auth',
+      email: payload.email,
+      name: payload.name,
+    })
+
+    const timestamp = new Date().toISOString()
+    const session: SessionRecord = {
+      token,
+      actorKey: `user:${user.id}`,
+      role: user.role,
+      accountUserId: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+
+    await this.sessionRepository.save(session)
+
+    return {
+      token: session.token,
+      actorKey: session.actorKey,
+      role: session.role,
+      email: session.email,
+      displayName: session.displayName,
+    } satisfies AuthSessionPayload
+  }
+
+  async loginWithNeonPassword(input: LoginInput) {
+    try {
+      const data = await signInWithNeonPassword(input.email, input.password)
+      const token = extractNeonToken(data)
+      const user = extractNeonUser(data)
+
+      if (!token) {
+        throw new HttpError(500, 'Failed to restore Neon session after login.')
+      }
+
+      if (user) {
+        return this.createStoredNeonSession(token, user)
+      }
+
+      const fallbackJwtUser = this.getFallbackJwtUser(token)
+
+      if (fallbackJwtUser) {
+        return this.createStoredNeonSession(token, {
+          id: fallbackJwtUser.sub,
+          email: fallbackJwtUser.email,
+          name: fallbackJwtUser.name,
+        })
+      }
+
+      const session = await this.getSessionByToken(token)
+
+      if (session) {
+        return session
+      }
+
+      throw new HttpError(500, 'Failed to restore user session after login.')
+    } catch (error) {
+      mapNeonAuthError(error)
+    }
+  }
+
+  async registerWithNeonPassword(input: RegisterInput) {
+    try {
+      const redirectTo = `${getNeonAuthFrontendOrigin()}/login?verified=1&email=${encodeURIComponent(normalizeEmail(input.email))}`
+      const data = await signUpWithNeonPassword(input.email, input.password, redirectTo)
+      const token = extractNeonToken(data)
+      const user = extractNeonUser(data)
+
+      if (!token) {
+        throw new HttpError(409, 'EMAIL_VERIFICATION_REQUIRED')
+      }
+
+      if (user) {
+        return this.createStoredNeonSession(token, user)
+      }
+
+      const fallbackJwtUser = this.getFallbackJwtUser(token)
+
+      if (fallbackJwtUser) {
+        return this.createStoredNeonSession(token, {
+          id: fallbackJwtUser.sub,
+          email: fallbackJwtUser.email,
+          name: fallbackJwtUser.name,
+        })
+      }
+
+      const session = await this.getSessionByToken(token)
+
+      if (session) {
+        return session
+      }
+
+      throw new HttpError(500, 'Failed to restore user session after signup.')
+    } catch (error) {
+      mapNeonAuthError(error)
+    }
+  }
+
+  async requestNeonPasswordReset(email: string, frontendOrigin?: string) {
+    try {
+      const safeFrontendOrigin =
+        frontendOrigin?.trim() && /^https?:\/\//.test(frontendOrigin)
+          ? frontendOrigin.trim()
+          : getNeonAuthFrontendOrigin()
+
+      await requestNeonPasswordReset(email, `${safeFrontendOrigin}/reset-password`)
+    } catch (error) {
+      mapNeonAuthError(error)
+    }
+  }
+
+  async resetNeonPassword(token: string, password: string) {
+    try {
+      await resetNeonPassword(token, password)
+    } catch (error) {
+      mapNeonAuthError(error)
+    }
   }
 
   private async getNeonAccountInfoForToken(token: string): Promise<NeonAccountInfoResponse> {
