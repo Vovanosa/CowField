@@ -42,6 +42,7 @@ function GamePageScreen() {
     handleRestartBoard,
     handleUndoMove,
     handleCompletionBackdropClick: handleCompletionBackdropClose,
+    setCompletionModal,
   } = useGameSession({
     difficulty,
     levelNumber,
@@ -147,6 +148,7 @@ function GamePageScreen() {
   }
 
   function handleBackToLevels() {
+    setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
     navigate(`/levels/${difficulty}`)
   }
 
@@ -155,6 +157,7 @@ function GamePageScreen() {
       return
     }
 
+    setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
     navigate(`/game/${difficulty}/${level.levelNumber + 1}`)
   }
 

@@ -20,26 +20,14 @@ type GameCompletionDialogProps = {
 export function GameCompletionDialog({
   isTakeYourTimeEnabled,
   isNewBest,
-  isFirstClear,
   timeSeconds,
   bestTimeSeconds,
-  previousBestTimeSeconds,
   hasNextLevel,
   onBackdropPointerDown,
   onBackToLevels,
   onNextLevel,
   t,
 }: GameCompletionDialogProps) {
-  const timeDeltaSeconds =
-    previousBestTimeSeconds === null ? null : Math.abs(timeSeconds - previousBestTimeSeconds)
-  const statusLabel = isTakeYourTimeEnabled
-    ? t('Progress saved.')
-    : isFirstClear
-      ? t('First clear')
-      : isNewBest
-        ? t('New best time!')
-        : t('Completed again')
-
   return (
     <Dialog
       title={t('Level complete')}
@@ -50,45 +38,24 @@ export function GameCompletionDialog({
       actionsClassName={styles.completionActions}
       description={
         <>
-          <p className={styles.completionStatus}>{statusLabel}</p>
           {!isTakeYourTimeEnabled ? (
             <p className={styles.completionTime}>{formatElapsedTime(timeSeconds)}</p>
           ) : null}
-          {!isTakeYourTimeEnabled && isFirstClear && bestTimeSeconds !== null ? (
-            <p className={styles.completionMeta}>
-              {t('Best time set at {{time}}.', {
-                time: formatElapsedTime(bestTimeSeconds),
-              })}
-            </p>
+          {!isTakeYourTimeEnabled && isNewBest ? (
+            <p className={styles.completionMeta}>{t('New best time.')}</p>
           ) : null}
-          {!isTakeYourTimeEnabled && !isFirstClear && bestTimeSeconds !== null ? (
+          {!isTakeYourTimeEnabled && !isNewBest && bestTimeSeconds !== null ? (
             <p className={styles.completionMeta}>
               {t('Best time: {{time}}', {
                 time: formatElapsedTime(bestTimeSeconds),
               })}
             </p>
           ) : null}
-          {!isTakeYourTimeEnabled && isNewBest && previousBestTimeSeconds !== null && timeDeltaSeconds !== null ? (
-            <p className={styles.completionBest}>
-              {t('{{delta}} faster than your previous best.', {
-                delta: formatElapsedTime(timeDeltaSeconds),
-              })}
-            </p>
-          ) : null}
-          {!isTakeYourTimeEnabled && !isNewBest && previousBestTimeSeconds !== null && timeDeltaSeconds !== null ? (
-            <p className={styles.completionMeta}>
-              {t('{{delta}} slower than your best.', {
-                delta: formatElapsedTime(timeDeltaSeconds),
-              })}
-            </p>
-          ) : null}
-          {hasNextLevel ? (
-            <p className={styles.completionHint}>{t('Next level is ready.')}</p>
-          ) : (
+          {!hasNextLevel ? (
             <p className={styles.completionHint}>{t('You completed the last available level.')}</p>
-          )}
+          ) : null}
           {isTakeYourTimeEnabled ? (
-            <p className={styles.completionBest}>{t('Your progress has been saved.')}</p>
+            <p className={styles.completionMeta}>{t('Your progress has been saved.')}</p>
           ) : null}
         </>
       }

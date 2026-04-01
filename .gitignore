@@ -29,3 +29,6 @@ mobile-migration-plan.md
 
 .env
 *.sql
+docs/logbook.md
+docs/project-reference.md
+docs/roadmap.md

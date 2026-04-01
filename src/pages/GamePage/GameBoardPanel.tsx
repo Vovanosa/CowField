@@ -84,7 +84,7 @@ export function GameBoardPanel({
           </div>
 
           <div className={styles.boardToolbar}>
-            {isBoardLocked && hasNextLevel && !isCompletionModalOpen ? (
+            {isBoardLocked && hasNextLevel ? (
               <Button variant="primary" className={styles.boardNextButton} onClick={onNextLevel}>
                 {t('Next Level')}
               </Button>

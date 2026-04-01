@@ -90,6 +90,9 @@ function PublicOnlyRoute() {
 function PublicShell() {
   const location = useLocation()
   const settings = usePlayerSettings()
+  const hideLanguageSwitcher =
+    location.pathname === '/auth/mobile-google/start' ||
+    location.pathname === '/auth/mobile-google/callback'
 
   useEffect(() => {
     applyThemeMode(settings.darkModeEnabled)
@@ -99,7 +102,7 @@ function PublicShell() {
     <div className="app-shell">
       <div className="app-frame">
         <main className="app-content">
-          <LanguageSwitcher />
+          {hideLanguageSwitcher ? null : <LanguageSwitcher />}
           <div key={location.pathname} className="route-stage">
             <Outlet />
           </div>

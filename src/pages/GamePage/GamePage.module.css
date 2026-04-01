@@ -224,11 +224,11 @@
 .completionDialog {
   position: relative;
   isolation: isolate;
-  width: min(100%, 840px);
+  width: min(100%, 520px);
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
   text-align: center;
-  padding: clamp(28px, 4vw, 48px);
+  padding: clamp(28px, 4vw, 38px);
   animation: completion-dialog-in 420ms var(--ease-emphasized);
 }
 
@@ -258,7 +258,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -274,7 +274,7 @@
 .completionTime {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-size: clamp(2rem, 5vw, 2.6rem);
   color: var(--color-heading);
   line-height: 1;
   animation: completion-time-in 380ms var(--ease-emphasized);
@@ -295,7 +295,7 @@
 }
 
 .completionHint {
-  margin: var(--space-2) 0 0;
+  margin: 0;
   color: var(--color-heading);
   font-weight: 600;
   animation: completion-copy-in 560ms var(--ease-emphasized);
