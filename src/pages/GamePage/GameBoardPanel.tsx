@@ -36,7 +36,6 @@ export function GameBoardPanel({
   cellMarks,
   invalidBullIndexes,
   isBoardLocked,
-  isCompletionModalOpen,
   activeCellIndex,
   canUndo,
   hasNextLevel,
