@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
@@ -12,29 +13,32 @@ import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, LevelProgress, LevelSummary } from '../../game/types'
 import styles from './DifficultyLevelsPage.module.css'
 
-const LEVEL_CARD_HEIGHT = 112
-const LEVEL_GRID_GAP = 16
-const PAGE_SECTION_GAP = 20
-const PAGINATION_HEIGHT = 56
-
-function getGridColumns(viewportWidth: number) {
+function getPageSize(viewportWidth: number) {
   if (viewportWidth <= 640) {
-    return 2
+    return 12
   }
 
   if (viewportWidth <= 820) {
-    return 3
+    return 12
   }
 
   if (viewportWidth <= 1040) {
-    return 4
+    return 16
   }
 
   if (viewportWidth <= 1280) {
-    return 5
+    return 20
   }
 
-  return 6
+  return 24
+}
+
+function getVisiblePageButtons(currentPage: number, totalPages: number, maxVisibleButtons: number) {
+  const visibleButtons = Math.min(Math.max(maxVisibleButtons, 1), totalPages)
+  const halfWindow = Math.floor(visibleButtons / 2)
+  const start = Math.max(Math.min(currentPage - halfWindow, totalPages - visibleButtons + 1), 1)
+
+  return Array.from({ length: visibleButtons }, (_, index) => start + index)
 }
 
 function isDifficulty(value: string | undefined): value is Difficulty {
@@ -46,56 +50,28 @@ function DifficultyLevelsPageScreen() {
   const [levels, setLevels] = useState<LevelSummary[]>([])
   const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(18)
+  const [viewportWidth, setViewportWidth] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 1280
+    }
+
+    return window.innerWidth
+  })
   const [isLoading, setIsLoading] = useState(true)
-  const pageRef = useRef<HTMLDivElement | null>(null)
-  const headerRef = useRef<HTMLDivElement | null>(null)
   const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
 
-  useLayoutEffect(() => {
-    function updatePageSize() {
-      const pageElement = pageRef.current
-      const headerElement = headerRef.current
-
-      if (!pageElement || !headerElement) {
-        return
-      }
-
-      const containerHeight = pageElement.parentElement?.clientHeight ?? window.innerHeight
-      const headerHeight = headerElement.getBoundingClientRect().height
-      const columns = getGridColumns(window.innerWidth)
-      const availableHeight =
-        containerHeight - headerHeight - PAGINATION_HEIGHT - PAGE_SECTION_GAP * 2
-      const rows = Math.max(
-        Math.floor((availableHeight + LEVEL_GRID_GAP) / (LEVEL_CARD_HEIGHT + LEVEL_GRID_GAP)),
-        1,
-      )
-
-      setPageSize(columns * rows)
+  useEffect(() => {
+    function handleResize() {
+      setViewportWidth(window.innerWidth)
     }
 
-    updatePageSize()
-
-    const resizeObserver = new ResizeObserver(() => {
-      updatePageSize()
-    })
-
-    if (pageRef.current) {
-      resizeObserver.observe(pageRef.current)
-    }
-
-    if (headerRef.current) {
-      resizeObserver.observe(headerRef.current)
-    }
-
-    window.addEventListener('resize', updatePageSize)
+    window.addEventListener('resize', handleResize)
 
     return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', updatePageSize)
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
@@ -128,13 +104,22 @@ function DifficultyLevelsPageScreen() {
     }
   }, [difficulty])
 
-  const normalizedPageSize = Math.max(pageSize, 1)
-  const totalPages = Math.max(Math.ceil(levels.length / normalizedPageSize), 1)
+  const normalizedPageSize = getPageSize(viewportWidth)
+  const levelItems = [
+    ...levels.map((level) => ({ type: 'level' as const, level })),
+    ...(isAdmin ? [{ type: 'create' as const }] : []),
+  ]
+  const totalPages = Math.max(Math.ceil(levelItems.length / normalizedPageSize), 1)
   const currentVisiblePage = Math.min(currentPage, totalPages)
+  const visiblePageButtons = getVisiblePageButtons(
+    currentVisiblePage,
+    totalPages,
+    viewportWidth <= 640 ? 3 : 5,
+  )
 
   if (!isDifficulty(difficulty)) {
     return (
-      <div ref={pageRef} className={[styles.page, 'page-shell'].join(' ')}>
+      <div className={[styles.page, 'page-shell'].join(' ')}>
         <PageHeader
           eyebrow="Levels"
           title={t('Unknown difficulty.')}
@@ -144,22 +129,19 @@ function DifficultyLevelsPageScreen() {
     )
   }
 
-  const visibleLevels = levels.slice(
+  const visibleItems = levelItems.slice(
     (currentVisiblePage - 1) * normalizedPageSize,
     currentVisiblePage * normalizedPageSize,
   )
 
   return (
-    <div ref={pageRef} className={[styles.page, 'page-shell'].join(' ')}>
-      <div ref={headerRef}>
-        <PageHeader
-          backTo="/levels"
-          backLabel={t('Back to all difficulties')}
-          eyebrow={t('Levels')}
-          title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
-          description={t('Choose a level to play.')}
-        />
-      </div>
+    <div className={[styles.page, 'page-shell'].join(' ')}>
+      <PageHeader
+        backTo="/levels"
+        backLabel={t('Back to all difficulties')}
+        eyebrow={t('Levels')}
+        title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
+      />
 
       <section className={styles.levelsGrid}>
         {isLoading
@@ -174,61 +156,100 @@ function DifficultyLevelsPageScreen() {
           : null}
 
         {!isLoading
-          ? visibleLevels.map((level) => (
-              <LevelCard
-                key={level.id}
-                levelNumber={level.levelNumber}
-                bestTime={
-                  !isTakeYourTimeEnabled
-                    ? formatElapsedTime(
-                        progressByLevelNumber[level.levelNumber]?.bestTimeSeconds ?? null,
-                      )
-                    : null
-                }
-                isLocked={
-                  !isAdmin &&
-                  level.levelNumber > 1 &&
-                  (progressByLevelNumber[level.levelNumber - 1]?.bestTimeSeconds ?? null) === null
-                }
-                openTo={`/game/${level.difficulty}/${level.levelNumber}`}
-                openLabel={t('Open level {{levelNumber}}', { levelNumber: level.levelNumber })}
-                editTo={
-                  isAdmin ? `/levels/${level.difficulty}/${level.levelNumber}/edit` : undefined
-                }
-                editLabel={
-                  isAdmin
-                    ? t('Edit level {{levelNumber}}', { levelNumber: level.levelNumber })
-                    : undefined
-                }
-              />
-            ))
+          ? visibleItems.map((item) =>
+              item.type === 'create' ? (
+                <LevelCard
+                  key={`create-${difficulty}`}
+                  createTo={`/levels/${difficulty}/create`}
+                  createLabel={t('Create level')}
+                />
+              ) : (
+                <LevelCard
+                  key={item.level.id}
+                  levelNumber={item.level.levelNumber}
+                  bestTime={
+                    !isTakeYourTimeEnabled
+                      ? formatElapsedTime(
+                          progressByLevelNumber[item.level.levelNumber]?.bestTimeSeconds ?? null,
+                        )
+                      : null
+                  }
+                  isLocked={
+                    !isAdmin &&
+                    item.level.levelNumber > 1 &&
+                    (progressByLevelNumber[item.level.levelNumber - 1]?.bestTimeSeconds ?? null) ===
+                      null
+                  }
+                  openTo={`/game/${item.level.difficulty}/${item.level.levelNumber}`}
+                  openLabel={t('Open level {{levelNumber}}', { levelNumber: item.level.levelNumber })}
+                  editTo={
+                    isAdmin
+                      ? `/levels/${item.level.difficulty}/${item.level.levelNumber}/edit`
+                      : undefined
+                  }
+                  editLabel={
+                    isAdmin
+                      ? t('Edit level {{levelNumber}}', { levelNumber: item.level.levelNumber })
+                      : undefined
+                  }
+                />
+              ),
+            )
           : null}
-
-        {!isLoading && isAdmin && currentVisiblePage === totalPages ? (
-          <LevelCard
-            createTo={`/levels/${difficulty}/create`}
-            createLabel={t('Create level')}
-          />
-        ) : null}
       </section>
 
       {totalPages > 1 ? (
         <div className={styles.pagination}>
-          <Button
-            onClick={() => setCurrentPage((page) => Math.max(Math.min(page, totalPages) - 1, 1))}
-            disabled={currentVisiblePage === 1 || isLoading}
-          >
-            {t('Previous')}
-          </Button>
-          <p className={styles.paginationLabel}>
+          <p className={styles.paginationSummary}>
             {t('Page {{page}} of {{totalPages}}', { page: currentVisiblePage, totalPages })}
           </p>
-          <Button
-            onClick={() => setCurrentPage((page) => Math.min(Math.min(page, totalPages) + 1, totalPages))}
-            disabled={currentVisiblePage === totalPages || isLoading}
-          >
-            {t('Next')}
-          </Button>
+          <div className={styles.paginationControls}>
+            <Button
+              size="sm"
+              iconOnly
+              className={styles.paginationNavButton}
+              aria-label={t('Previous')}
+              onClick={() => setCurrentPage((page) => Math.max(Math.min(page, totalPages) - 1, 1))}
+              disabled={currentVisiblePage === 1 || isLoading}
+              leadingIcon={<ChevronLeft size={18} />}
+            >
+              {null}
+            </Button>
+
+            <div className={styles.paginationPageList} role="navigation" aria-label={t('Levels')}>
+              {visiblePageButtons.map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  className={[
+                    styles.paginationPageButton,
+                    pageNumber === currentVisiblePage ? styles.paginationPageButtonActive : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-current={pageNumber === currentVisiblePage ? 'page' : undefined}
+                  disabled={isLoading}
+                  onClick={() => setCurrentPage(pageNumber)}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              size="sm"
+              iconOnly
+              className={styles.paginationNavButton}
+              aria-label={t('Next')}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(Math.min(page, totalPages) + 1, totalPages))
+              }
+              disabled={currentVisiblePage === totalPages || isLoading}
+              leadingIcon={<ChevronRight size={18} />}
+            >
+              {null}
+            </Button>
+          </div>
         </div>
       ) : null}
     </div>

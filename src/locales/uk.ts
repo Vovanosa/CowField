@@ -96,6 +96,7 @@
   'Dark mode': 'Темна тема',
   'Use a darker visual theme for low-light play.':
     'Використовувати темну тему для гри в умовах слабкого освітлення.',
+  'Choose the language used across the game.': 'Оберіть мову, яка буде використовуватися в усій грі.',
   'Take your time': 'Без поспіху',
   'Hide visible timers so play can stay fully relaxed.':
     'Приховати таймери, щоб можна було грати у комфортному темпі.',

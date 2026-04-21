@@ -13,9 +13,8 @@ export function AboutPage() {
       <PageHeader
         backTo="/"
         backLabel={t('Back to home')}
-        eyebrow={t('About')}
+        eyebrow={t(' ')}
         title={t('About the game')}
-        description={t('A quick guide for new players.')}
       />
       <Panel className={styles.aboutPanel}>
         <article className={styles.aboutArticle}>

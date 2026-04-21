@@ -2,6 +2,12 @@
 
 Calm, grid-based logic puzzle game inspired by Bullpen, built with React, Vite, TypeScript, Express, PostgreSQL, and Prisma.
 
+## Current Project Layout
+
+- Main web/backend app: `C:\Users\mykha\OneDrive\Desktop\CowField`
+- Separate Expo mobile app: `C:\Users\mykha\OneDrive\Desktop\CowField-mobile\CowFieldMobile`
+- Planned long-term direction: merge both into a monorepo with shared logic/types/API wrappers
+
 ## Stack
 
 - Frontend: React + Vite + TypeScript
@@ -249,6 +255,8 @@ src/
 - The frontend can target a separate backend host through `VITE_API_BASE_URL`.
 - The backend now uses `ALLOWED_ORIGINS` for deployment-safe CORS control.
 - `DIRECT_URL` can be used for Prisma CLI commands when the runtime `DATABASE_URL` uses a pooled host such as a Neon pooler URL.
+- The separate mobile app now has working player-facing flows for auth restore, home, about, settings, statistics, level select, and the game screen.
+- Mobile visual parity work is active, but the shared monorepo architecture is still planned rather than completed.
 
 ## Deployment Direction
 

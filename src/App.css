@@ -28,6 +28,10 @@
   padding: var(--space-8);
 }
 
+.app-shell-floating-controls {
+  display: contents;
+}
+
 .route-stage {
   flex: 1;
   min-width: 0;
@@ -67,5 +71,9 @@
 
   .app-content {
     padding: var(--space-5);
+  }
+
+  .app-shell-floating-controls {
+    display: none;
   }
 }

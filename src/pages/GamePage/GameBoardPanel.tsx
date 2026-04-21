@@ -53,9 +53,9 @@ export function GameBoardPanel({
 }: GameBoardPanelProps) {
   return (
     <section className={styles.layout}>
-      <Panel>
+      <Panel className={styles.boardPanel}>
         <div className={styles.boardPanelHeader}>
-          <div className={styles.boardPanelHeaderLeft}>
+          <div className={styles.boardControlsRow}>
             <Button
               className={styles.boardUndoButton}
               onClick={onUndo}
@@ -67,30 +67,34 @@ export function GameBoardPanel({
             >
               {null}
             </Button>
-          </div>
 
-          <div className={styles.boardPanelHeaderRight}>
-            <div className={[styles.boardStat, styles.boardStatCompact].join(' ')}>
-              <p className={styles.boardPanelLabel}>{t('Remaining bulls')}</p>
-              <strong className={styles.boardPanelValue}>{remainingBulls}</strong>
-            </div>
-            {!isTakeYourTimeEnabled ? (
+            <div className={styles.boardStatsRow}>
               <div className={[styles.boardStat, styles.boardStatCompact].join(' ')}>
-                <p className={styles.boardPanelLabel}>{t('Timer')}</p>
-                <strong className={styles.boardPanelValue}>{formatElapsedTime(elapsedSeconds)}</strong>
+                <p className={styles.boardPanelLabel}>{t('Remaining bulls')}</p>
+                <strong className={styles.boardPanelValue}>{remainingBulls}</strong>
               </div>
-            ) : null}
+              {!isTakeYourTimeEnabled ? (
+                <div className={[styles.boardStat, styles.boardStatCompact].join(' ')}>
+                  <p className={styles.boardPanelLabel}>{t('Timer')}</p>
+                  <strong className={styles.boardPanelValue}>{formatElapsedTime(elapsedSeconds)}</strong>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className={styles.boardToolbar}>
             {isBoardLocked && hasNextLevel ? (
-              <Button variant="primary" className={styles.boardNextButton} onClick={onNextLevel}>
+              <Button
+                variant="primary"
+                className={[styles.boardNextButton, styles.boardActionButton].join(' ')}
+                onClick={onNextLevel}
+              >
                 {t('Next Level')}
               </Button>
             ) : null}
 
             <Button
-              className={styles.boardResetButton}
+              className={[styles.boardResetButton, styles.boardActionButton].join(' ')}
               onClick={onRestart}
               leadingIcon={<TimerReset size={18} />}
             >
@@ -100,6 +104,7 @@ export function GameBoardPanel({
             {isAdmin ? (
               <Button
                 to={`/levels/${difficulty}/${level.levelNumber}/edit`}
+                className={styles.boardActionButton}
                 leadingIcon={<SquarePen size={18} />}
               >
                 {t('Edit level')}

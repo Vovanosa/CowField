@@ -106,6 +106,7 @@ const en = {
   'Dark mode': 'Dark mode',
   'Use a darker visual theme for low-light play.':
     'Use a darker visual theme for low-light play.',
+  'Choose the language used across the game.': 'Choose the language used across the game.',
   'Switch to dark mode': 'Switch to dark mode',
   'Switch to light mode': 'Switch to light mode',
   'Take your time': 'Take your time',

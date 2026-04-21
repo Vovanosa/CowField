@@ -4,7 +4,7 @@ type CowIconProps = SVGProps<SVGSVGElement>
 
 export function CowIcon(props: CowIconProps) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false" {...props}>
+    <svg viewBox="4 4 24 20" aria-hidden="true" focusable="false" {...props}>
       <path
         d="M8 10 5.5 5.8l5 2.4L12.6 7h6.8l2.1 1.2 5-2.4L24 10v8.2A4.8 4.8 0 0 1 19.2 23H12.8A4.8 4.8 0 0 1 8 18.2Z"
         fill="var(--color-cow-fill)"

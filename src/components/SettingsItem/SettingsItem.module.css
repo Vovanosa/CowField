@@ -12,15 +12,15 @@
 
 .settingMainRow {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--space-4);
 }
 
-.settingInfo {
+.settingContent {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -37,21 +37,27 @@
   flex-shrink: 0;
 }
 
-.settingCopy {
+.settingTitleRow {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .settingTitle {
   font-size: 1.1rem;
   line-height: 1.2;
+  min-width: 0;
 }
 
 .settingDescription {
   color: var(--color-muted);
   line-height: 1.6;
+}
+
+.belowControlRow {
+  padding-left: calc(40px + var(--space-4));
 }
 
 .sliderRow {
@@ -83,10 +89,14 @@
   accent-color: var(--color-button-primary-end);
 }
 
-@media (max-width: 768px) {
-  .settingMainRow {
+@media (max-width: 640px) {
+  .settingTitleRow {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .belowControlRow {
+    padding-left: 0;
   }
 
   .sliderRow {

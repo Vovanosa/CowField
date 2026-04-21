@@ -1,14 +1,21 @@
-import { Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
+import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { useAuth } from '../../app/useAuth'
+import gbFlag from '../../assets/flags/gb.svg'
+import uaFlag from '../../assets/flags/ua.svg'
 import { SettingsItem } from '../../components/SettingsItem'
 import { PageHeader, Panel } from '../../components/ui'
 import { playSoundEffect } from '../../game/audio/audioManager'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
+import type { PlayerLanguage } from '../../game/types/settings'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
+import i18n from '../../i18n'
 import styles from './SettingsPage.module.css'
 
 type ToggleSettingKey =
+  | 'darkModeEnabled'
   | 'soundEffectsEnabled'
   | 'musicEnabled'
   | 'takeYourTimeEnabled'
@@ -21,6 +28,10 @@ const settingsConfig: Array<{
   icon: typeof Music4
   volumeKey?: VolumeSettingKey
 }> = [
+  {
+    key: 'darkModeEnabled',
+    icon: MoonStar,
+  },
   {
     key: 'soundEffectsEnabled',
     icon: Volume2,
@@ -41,10 +52,53 @@ const settingsConfig: Array<{
   },
 ]
 
+const languageOptions: Array<{
+  value: PlayerLanguage
+  code: 'EN' | 'UA'
+  flag: string
+}> = [
+  {
+    value: 'en',
+    code: 'EN',
+    flag: gbFlag,
+  },
+  {
+    value: 'uk',
+    code: 'UA',
+    flag: uaFlag,
+  },
+]
+
 export function SettingsPage() {
   const { isGuest } = useAuth()
   const settings = usePlayerSettings()
   const { t } = useTranslation()
+  const [areFloatingControlsHidden, setAreFloatingControlsHidden] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false
+    }
+
+    return window.matchMedia('(max-width: 768px)').matches
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)')
+
+    function syncFloatingControlVisibility() {
+      setAreFloatingControlsHidden(mediaQuery.matches)
+    }
+
+    syncFloatingControlVisibility()
+    mediaQuery.addEventListener('change', syncFloatingControlVisibility)
+
+    return () => {
+      mediaQuery.removeEventListener('change', syncFloatingControlVisibility)
+    }
+  }, [])
 
   function handleToggle(key: ToggleSettingKey) {
     if (isGuest && key === 'takeYourTimeEnabled') {
@@ -70,7 +124,25 @@ export function SettingsPage() {
     })
   }
 
+  function handleLanguageChange(nextLanguage: PlayerLanguage) {
+    if (settings.language === nextLanguage) {
+      return
+    }
+
+    playSoundEffect('uiClick')
+
+    void savePlayerSettings({
+      ...settings,
+      language: nextLanguage,
+    })
+    void i18n.changeLanguage(nextLanguage)
+  }
+
   function getSettingTitle(key: ToggleSettingKey) {
+    if (key === 'darkModeEnabled') {
+      return t('Dark mode')
+    }
+
     if (key === 'soundEffectsEnabled') {
       return t('Sound effects')
     }
@@ -87,6 +159,10 @@ export function SettingsPage() {
   }
 
   function getSettingDescription(key: ToggleSettingKey) {
+    if (key === 'darkModeEnabled') {
+      return t('Use a darker visual theme for low-light play.')
+    }
+
     if (key === 'soundEffectsEnabled') {
       return t('Enable sound effects.')
     }
@@ -107,7 +183,6 @@ export function SettingsPage() {
       <PageHeader
         backTo="/"
         backLabel={t('Back to home')}
-        eyebrow={t('Settings')}
         title={t('Settings')}
         description={t('Adjust your preferences here.')}
       />
@@ -115,7 +190,38 @@ export function SettingsPage() {
       <Panel className={styles.settingsPanel}>
         {isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
         <div className={styles.settingsList}>
-          {settingsConfig.map((setting, index) => {
+          {areFloatingControlsHidden ? (
+            <SettingsItem
+              icon={Globe2}
+              title={t('Language')}
+              description={t('Choose the language used across the game.')}
+              controlBelow
+              control={
+                <div className={styles.languageControl} role="group" aria-label={t('Language')}>
+                  {languageOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={[
+                        styles.languageOption,
+                        settings.language === option.value ? styles.languageOptionActive : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-pressed={settings.language === option.value}
+                      onClick={() => handleLanguageChange(option.value)}
+                    >
+                      <img className={styles.languageOptionFlag} src={option.flag} alt="" aria-hidden="true" />
+                      <span>{option.code}</span>
+                    </button>
+                  ))}
+                </div>
+              }
+            />
+          ) : null}
+          {settingsConfig
+            .filter((setting) => areFloatingControlsHidden || setting.key !== 'darkModeEnabled')
+            .map((setting) => {
             const isEnabled =
               isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
             const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
@@ -136,10 +242,10 @@ export function SettingsPage() {
                     ? (value) => handleVolumeChange(setting.volumeKey!, value)
                     : undefined
                 }
-                showDivider={index > 0}
+                showDivider
               />
             )
-          })}
+            })}
         </div>
       </Panel>
     </div>

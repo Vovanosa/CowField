@@ -88,16 +88,16 @@
 }
 
 .boardCellDot {
-  width: 12px;
-  height: 12px;
+  width: clamp(8px, 24%, 12px);
+  height: clamp(8px, 24%, 12px);
   border-radius: var(--radius-pill);
   background: var(--color-board-dot);
   animation: bull-pop 160ms var(--ease-emphasized);
 }
 
 .playCowMarker {
-  width: 68%;
-  height: 68%;
+  width: 56%;
+  height: 56%;
 }
 
 .boardCellInvalid {
@@ -134,5 +134,22 @@
 @media (max-width: 960px) {
   .boardPreview {
     width: min(100%, 640px);
+  }
+}
+
+@media (max-width: 768px) {
+  .boardPreview {
+    padding: 6px;
+    border-radius: 22px;
+  }
+
+  .boardPreviewGrid {
+    border-width: 3px;
+    border-radius: 18px;
+  }
+
+  .playCowMarker {
+    width: 74%;
+    height: 74%;
   }
 }

@@ -13,6 +13,61 @@
   flex-direction: column;
 }
 
+.languageControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-glass-faint);
+  border: 1px solid var(--color-border-strong);
+}
+
+.languageOption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 72px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--color-muted);
+  background: transparent;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-fast);
+}
+
+.languageOption:hover {
+  transform: translateY(-1px);
+}
+
+.languageOption:focus-visible {
+  outline: 2px solid rgba(158, 116, 49, 0.34);
+  outline-offset: 3px;
+}
+
+.languageOptionActive {
+  color: var(--color-heading);
+  background:
+    linear-gradient(180deg, var(--color-surface-glass-base), var(--color-surface-panel-end)),
+    var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.languageOptionFlag {
+  width: 18px;
+  height: 12px;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
 .guestNote {
   padding: var(--space-5) var(--space-5) 0;
   color: var(--color-muted);

@@ -30,7 +30,9 @@ export function AppShell() {
       <div className="app-frame">
         <main className="app-content">
           {location.pathname === '/' && session ? <ProfileMenu /> : null}
-          <LanguageSwitcher />
+          <div className="app-shell-floating-controls">
+            <LanguageSwitcher />
+          </div>
           <div key={location.pathname} className="route-stage">
             <Outlet />
           </div>

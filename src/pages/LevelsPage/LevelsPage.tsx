@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { useRole } from '../../app/role'
 import { PageHeader } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getDifficultyOverview } from '../../game/storage/difficultyOverviewStorage'
@@ -30,7 +29,6 @@ const emptyProgressSummary: DifficultyProgressSummary = {
 }
 
 export function LevelsPage() {
-  const { isAdmin } = useRole()
   const { t } = useTranslation()
   const [progressByDifficulty, setProgressByDifficulty] = useState<
     Record<Difficulty, DifficultyProgressSummary>
@@ -83,8 +81,7 @@ export function LevelsPage() {
         backTo="/"
         backLabel={t('Back to home')}
         eyebrow={t('Level Select')}
-        title={isAdmin ? t('Choose a difficulty.') : t('Choose a difficulty to play.')}
-        description={t('Each difficulty has its own level list.')}
+        title={t('Choose a difficulty to play.')}
       />
 
       <section className={styles.levelsGrid} aria-label={t('Available levels')}>

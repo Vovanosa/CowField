@@ -1,15 +1,18 @@
-import { Switch } from '../ui'
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
+import { Switch } from '../ui'
 import styles from './SettingsItem.module.css'
 
 type SettingsItemProps = {
   icon: LucideIcon
   title: string
   description: string
-  checked: boolean
+  checked?: boolean
   disabled?: boolean
-  onToggle: () => void
+  onToggle?: () => void
+  control?: ReactNode
+  controlBelow?: boolean
   volume?: number
   volumeLabel?: string
   onVolumeChange?: (value: number) => void
@@ -23,26 +26,36 @@ export function SettingsItem({
   checked,
   disabled = false,
   onToggle,
+  control,
+  controlBelow = false,
   volume,
   volumeLabel,
   onVolumeChange,
   showDivider = false,
 }: SettingsItemProps) {
+  const inlineControl =
+    !controlBelow && (control ?? (typeof checked === 'boolean' && onToggle ? (
+      <Switch checked={checked} onClick={onToggle} disabled={disabled} />
+    ) : null))
+
+  const belowControl = controlBelow ? control : null
+
   return (
     <article className={[styles.settingCard, showDivider ? styles.withDivider : ''].filter(Boolean).join(' ')}>
       <div className={styles.settingMainRow}>
-        <div className={styles.settingInfo}>
-          <span className={styles.settingIcon}>
-            <Icon size={18} />
-          </span>
-          <div className={styles.settingCopy}>
+        <span className={styles.settingIcon}>
+          <Icon size={18} />
+        </span>
+        <div className={styles.settingContent}>
+          <div className={styles.settingTitleRow}>
             <h2 className={styles.settingTitle}>{title}</h2>
-            <p className={styles.settingDescription}>{description}</p>
+            {inlineControl}
           </div>
+          <p className={styles.settingDescription}>{description}</p>
         </div>
-
-        <Switch checked={checked} onClick={onToggle} disabled={disabled} />
       </div>
+
+      {belowControl ? <div className={styles.belowControlRow}>{belowControl}</div> : null}
 
       {typeof volume === 'number' && onVolumeChange ? (
         <div className={styles.sliderRow}>

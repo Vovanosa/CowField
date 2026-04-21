@@ -1,9 +1,8 @@
 import { Suspense, lazy, useEffect, type ComponentType, type ReactNode } from 'react'
-import { Navigate, Outlet, RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from './AppShell'
 import { useAuth } from './useAuth'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { AboutPage } from '../pages/AboutPage'
 import { DifficultyLevelsPage } from '../pages/DifficultyLevelsPage'
 import { HomePage } from '../pages/HomePage'
@@ -88,11 +87,7 @@ function PublicOnlyRoute() {
 }
 
 function PublicShell() {
-  const location = useLocation()
   const settings = usePlayerSettings()
-  const hideLanguageSwitcher =
-    location.pathname === '/auth/mobile-google/start' ||
-    location.pathname === '/auth/mobile-google/callback'
 
   useEffect(() => {
     applyThemeMode(settings.darkModeEnabled)
@@ -102,8 +97,7 @@ function PublicShell() {
     <div className="app-shell">
       <div className="app-frame">
         <main className="app-content">
-          {hideLanguageSwitcher ? null : <LanguageSwitcher />}
-          <div key={location.pathname} className="route-stage">
+          <div className="route-stage">
             <Outlet />
           </div>
         </main>

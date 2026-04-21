@@ -111,6 +111,10 @@
   display: block;
 }
 
+.boardPanel {
+  padding: var(--space-6);
+}
+
 .boardPanelHeader {
   display: flex;
   align-items: center;
@@ -119,13 +123,13 @@
   margin-bottom: var(--space-5);
 }
 
-.boardPanelHeaderLeft {
+.boardControlsRow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.boardPanelHeaderRight {
+.boardStatsRow {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -215,6 +219,10 @@
   min-height: 44px;
   padding: 0 14px;
   white-space: nowrap;
+}
+
+.boardActionButton {
+  min-width: 0;
 }
 
 .boardNextButton {
@@ -364,12 +372,26 @@
     flex-direction: column;
   }
 
+  .boardPanelHeader {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
   .loadingStat {
     width: 140px;
   }
 
   .loadingRestartButton {
     width: 132px;
+  }
+}
+
+@media (max-width: 768px) {
+  .boardPanel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 }
 
@@ -380,16 +402,30 @@
 
   .boardPanelHeader {
     flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
   }
 
-  .boardPanelHeaderRight {
+  .boardControlsRow {
     flex-direction: column;
     align-items: stretch;
-    margin-left: 0;
   }
 
-  .boardStatCompact {
-    min-width: 0;
+  .boardUndoButton {
+    align-self: flex-start;
+  }
+
+  .boardUndoButton::after {
+    display: none;
+  }
+
+  .boardStatsRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-left: 0;
   }
 
   .boardToolbar {
@@ -398,7 +434,16 @@
   }
 
   .boardStat {
-    flex-wrap: wrap;
-    min-height: auto;
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .boardStatCompact {
+    min-width: 160px;
+  }
+
+  .boardActionButton,
+  .boardResetButton {
+    width: auto;
   }
 }
