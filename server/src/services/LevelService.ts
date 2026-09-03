@@ -68,7 +68,7 @@ export class LevelService {
     } satisfies LevelPublicRecord
   }
 
-  async save(input: LevelRecordInput) {
+  async save(input: LevelRecordInput, createdByActorKey?: string) {
     const validation = validateLevelRecord(input)
 
     if (!validation.isValid) {
@@ -81,11 +81,14 @@ export class LevelService {
     )
     const timestamp = new Date().toISOString()
 
-    return this.repository.save({
-      ...input,
-      createdAt: existing?.createdAt ?? timestamp,
-      updatedAt: timestamp,
-    })
+    return this.repository.save(
+      {
+        ...input,
+        createdAt: existing?.createdAt ?? timestamp,
+        updatedAt: timestamp,
+      },
+      { createdByActorKey },
+    )
   }
 
   async delete(difficulty: LevelRecordInput['difficulty'], levelNumber: number) {

@@ -7,14 +7,14 @@ export const levelProgressRecordSchema = z.object({
   levelNumber: z.number().int().positive(),
   bestTimeSeconds: z.number().int().nonnegative().nullable(),
   completedAt: z.string().nullable(),
-  updatedAt: z.string(),
+  // Null when the player has never touched this level: there is no timestamp to report.
+  updatedAt: z.string().nullable(),
 })
 
 export type LevelProgressRecord = z.infer<typeof levelProgressRecordSchema>
 
 export const overallProgressStatisticsSummarySchema = z.object({
   totalCompletedLevels: z.number().int().nonnegative(),
-  totalCompletionTimeSeconds: z.number().int().nonnegative(),
 })
 
 export type OverallProgressStatisticsSummary = z.infer<

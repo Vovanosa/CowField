@@ -37,6 +37,20 @@ export function setStoredLanguage(language: SupportedLanguage) {
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
 }
 
+/**
+ * Keeps `<html lang>` in step with the active language.
+ *
+ * `index.html` hardcodes `lang="en"`, so without this a Ukrainian page announces itself as English
+ * to screen readers, translation prompts and search engines.
+ */
+function applyDocumentLanguage(language: string) {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.lang = normalizeLanguage(language)
+}
+
 void i18n.use(initReactI18next).init({
   resources: {
     en: {
@@ -54,5 +68,8 @@ void i18n.use(initReactI18next).init({
     escapeValue: false,
   },
 })
+
+applyDocumentLanguage(i18n.language)
+i18n.on('languageChanged', applyDocumentLanguage)
 
 export default i18n

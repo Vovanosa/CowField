@@ -30,14 +30,6 @@ function toLevelProgressRecord(progress: {
   }
 }
 
-function sortProgress(left: LevelProgressRecord, right: LevelProgressRecord) {
-  if (left.difficulty === right.difficulty) {
-    return left.levelNumber - right.levelNumber
-  }
-
-  return left.difficulty.localeCompare(right.difficulty)
-}
-
 export class PrismaPlayerProgressRepository implements PlayerProgressRepository {
   private readonly prisma: PrismaClient
 
@@ -155,28 +147,23 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     if (!actor.userId) {
       return {
         totalCompletedLevels: 0,
-        totalCompletionTimeSeconds: 0,
       }
     }
 
-    const aggregate = await this.prisma.levelProgress.aggregate({
+    // Time played is no longer derived here. It used to be `_sum(bestTimeSeconds)`, which fell
+    // whenever a player improved a level; it is now a lifetime counter on
+    // `player_statistics_totals`, added to by every completion.
+    const totalCompletedLevels = await this.prisma.levelProgress.count({
       where: {
         userId: actor.userId,
         bestTimeSeconds: {
           not: null,
         },
       },
-      _count: {
-        _all: true,
-      },
-      _sum: {
-        bestTimeSeconds: true,
-      },
     })
 
     return {
-      totalCompletedLevels: aggregate._count._all,
-      totalCompletionTimeSeconds: aggregate._sum.bestTimeSeconds ?? 0,
+      totalCompletedLevels,
     }
   }
 
@@ -198,20 +185,6 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     })
 
     return records.map(toLevelProgressRecord)
-  }
-
-  async listAll(actorKey: string) {
-    const actor = await resolveActorReference(this.prisma, actorKey)
-
-    if (!actor.userId) {
-      return []
-    }
-
-    const records = await this.prisma.levelProgress.findMany({
-      where: { userId: actor.userId },
-    })
-
-    return records.map(toLevelProgressRecord).sort(sortProgress)
   }
 
   async getByDifficultyAndNumber(actorKey: string, difficulty: AppDifficulty, levelNumber: number) {
@@ -239,6 +212,10 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
       return progress
     }
 
+    // A write always stamps its own time. `progress.updatedAt` is the caller's idea of when it last
+    // changed and can legitimately be null (nothing recorded yet), so it is not a value to persist.
+    const writtenAt = new Date()
+
     const savedRecord = await this.prisma.levelProgress.upsert({
       where: {
         userId_difficulty_levelNumber: {
@@ -252,7 +229,7 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
         userId: actor.userId,
         bestTimeSeconds: progress.bestTimeSeconds,
         completedAt: progress.completedAt ? new Date(progress.completedAt) : null,
-        updatedAt: new Date(progress.updatedAt),
+        updatedAt: writtenAt,
       },
       create: {
         actorType: actor.actorType,
@@ -261,7 +238,7 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
         levelNumber: progress.levelNumber,
         bestTimeSeconds: progress.bestTimeSeconds,
         completedAt: progress.completedAt ? new Date(progress.completedAt) : null,
-        updatedAt: new Date(progress.updatedAt),
+        updatedAt: writtenAt,
       },
     })
 

@@ -9,6 +9,7 @@ import type {
   LevelsOverviewRecord,
 } from '../types/level'
 import type { LevelRepository } from './interfaces'
+import { resolveActorReference } from './prismaActor'
 
 function toPrismaDifficulty(difficulty: AppDifficulty): Difficulty {
   return difficulty as Difficulty
@@ -206,7 +207,13 @@ export class PrismaLevelRepository implements LevelRepository {
     return previousLevel?.levelNumber ?? null
   }
 
-  async save(level: LevelRecord) {
+  async save(level: LevelRecord, options: { createdByActorKey?: string } = {}) {
+    // Only guests have no user row, and they can never reach level authoring; resolving here keeps
+    // the actor-key format out of the service layer.
+    const author = options.createdByActorKey
+      ? await resolveActorReference(this.prisma, options.createdByActorKey)
+      : null
+
     const savedLevel = await this.prisma.level.upsert({
       where: {
         difficulty_levelNumber: {
@@ -229,6 +236,8 @@ export class PrismaLevelRepository implements LevelRepository {
         gridSize: level.gridSize,
         pensByCell: level.colorsByCell,
         cowsByCell: level.cowsByCell,
+        // Authorship is set once, on create, and deliberately absent from `update` above.
+        createdByUserId: author?.userId ?? null,
         createdAt: new Date(level.createdAt),
         updatedAt: new Date(level.updatedAt),
       },

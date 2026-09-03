@@ -39,6 +39,7 @@ export function createApp() {
   const playerProgressService = new PlayerProgressService(
     repositories.playerProgressRepository,
     repositories.levelRepository,
+    repositories.playerStatisticsRepository,
   )
   const authService = new AuthService(
     repositories.userRepository,

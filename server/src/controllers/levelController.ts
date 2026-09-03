@@ -59,7 +59,8 @@ export class LevelController {
       difficulty: params.difficulty,
       levelNumber: params.levelNumber,
     })
-    const level = await this.levelService.save(body)
+    const actor = getAuthenticatedActor(request)
+    const level = await this.levelService.save(body, actor.actorKey)
 
     response.status(201).json(level)
   }

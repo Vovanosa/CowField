@@ -98,7 +98,6 @@ model PlayerStatisticsTotal {
   id                         String     @id @default(uuid())
   actorType                  ActorType  @map("actor_type")
   userId                     String?    @map("user_id")
-  totalCompletedLevels       Int        @default(0) @map("total_completed_levels")
   totalBullPlacements        Int        @default(0) @map("total_bull_placements")
   totalCompletionTimeSeconds Int        @default(0) @map("total_completion_time_seconds")
   updatedAt                  DateTime   @updatedAt @map("updated_at")

@@ -28,7 +28,11 @@ AGENTS.md
 mobile-migration-plan.md
 
 .env
+
+# Database dumps, but NOT the Prisma migration history — those are the schema's only record and the
+# deploy path for a fresh database. `*.sql` alone silently kept every migration out of git.
 *.sql
+!prisma/migrations/**/*.sql
 docs/logbook.md
 docs/project-reference.md
 docs/roadmap.md

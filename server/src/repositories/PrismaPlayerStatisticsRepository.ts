@@ -6,25 +6,20 @@ import { resolveActorReference } from './prismaActor'
 
 function createEmptyStatisticsRecord(): PlayerStatisticsRecord {
   return {
-    totalCompletedLevels: 0,
     totalBullPlacements: 0,
     totalCompletionTimeSeconds: 0,
-    byDifficulty: [],
-    updatedAt: '',
+    updatedAt: null,
   }
 }
 
 function toPlayerStatisticsRecord(record: {
-  totalCompletedLevels: number
   totalBullPlacements: number
   totalCompletionTimeSeconds: number
   updatedAt: Date
 }): PlayerStatisticsRecord {
   return {
-    totalCompletedLevels: record.totalCompletedLevels,
     totalBullPlacements: record.totalBullPlacements,
     totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
-    byDifficulty: [],
     updatedAt: record.updatedAt.toISOString(),
   }
 }
@@ -83,33 +78,38 @@ export class PrismaPlayerStatisticsRepository implements PlayerStatisticsReposit
     return record.totalBullPlacements
   }
 
-  async save(actorKey: string, record: PlayerStatisticsRecord) {
+  /**
+   * Adds one completion's time to the player's lifetime total, in a single statement.
+   *
+   * This is **time actually played**, so it counts every completion — including replaying a level
+   * you have already finished — and it never goes down. It used to be reported as
+   * `SUM(best_time_seconds)` across the progress table, which meant the figure *fell* whenever a
+   * player improved a level.
+   */
+  async addCompletionTimeSeconds(actorKey: string, seconds: number) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
-    if (!actor.userId) {
-      return record
+    if (!actor.userId || seconds <= 0) {
+      return 0
     }
 
-    const savedRecord = await this.prisma.playerStatisticsTotal.upsert({
+    const record = await this.prisma.playerStatisticsTotal.upsert({
       where: { userId: actor.userId },
       update: {
-        actorType: actor.actorType,
-        userId: actor.userId,
-        totalCompletedLevels: record.totalCompletedLevels,
-        totalBullPlacements: record.totalBullPlacements,
-        totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
-        updatedAt: new Date(record.updatedAt),
+        totalCompletionTimeSeconds: {
+          increment: seconds,
+        },
       },
       create: {
         actorType: actor.actorType,
         userId: actor.userId,
-        totalCompletedLevels: record.totalCompletedLevels,
-        totalBullPlacements: record.totalBullPlacements,
-        totalCompletionTimeSeconds: record.totalCompletionTimeSeconds,
-        updatedAt: new Date(record.updatedAt),
+        totalCompletionTimeSeconds: seconds,
+      },
+      select: {
+        totalCompletionTimeSeconds: true,
       },
     })
 
-    return toPlayerStatisticsRecord(savedRecord)
+    return record.totalCompletionTimeSeconds
   }
 }

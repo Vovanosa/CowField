@@ -19,7 +19,8 @@ function createEmptyProgress(difficulty: Difficulty, levelNumber: number): Level
     levelNumber,
     bestTimeSeconds: null,
     completedAt: null,
-    updatedAt: '',
+    // Null, not '': nothing has been recorded, and '' formats as an Invalid Date.
+    updatedAt: null,
   }
 }
 

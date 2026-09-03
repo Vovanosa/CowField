@@ -42,7 +42,6 @@ export interface PlayerProgressRepository {
     difficulty: Difficulty,
   ): Promise<DifficultyStatisticsSummary>
   getOverallStatisticsSummary(actorKey: string): Promise<OverallProgressStatisticsSummary>
-  listAll(actorKey: string): Promise<LevelProgressRecord[]>
   getByDifficultyAndNumber(
     actorKey: string,
     difficulty: Difficulty,
@@ -55,7 +54,11 @@ export interface PlayerStatisticsRepository {
   get(actorKey: string): Promise<PlayerStatisticsRecord>
   /** Atomic add to the lifetime bull counter. Returns the new total (0 for actors with no row). */
   incrementBullPlacements(actorKey: string, count: number): Promise<number>
-  save(actorKey: string, record: PlayerStatisticsRecord): Promise<PlayerStatisticsRecord>
+  /**
+   * Atomic add to the lifetime **time played** counter. Every completion counts, replays included,
+   * so this only ever grows. Returns the new total (0 for actors with no row).
+   */
+  addCompletionTimeSeconds(actorKey: string, seconds: number): Promise<number>
 }
 
 export interface LevelRepository {
@@ -75,7 +78,12 @@ export interface LevelRepository {
    * order follows the list, not the numbering.
    */
   getPreviousLevelNumber(difficulty: Difficulty, levelNumber: number): Promise<number | null>
-  save(level: LevelRecord): Promise<LevelRecord>
+  /**
+   * `createdByActorKey` records who authored the level. It is written **only when the row is
+   * created** — the original author of a level does not change because someone edited it later.
+   * Omit it for machine-authored levels (the bulk generator has no user behind it).
+   */
+  save(level: LevelRecord, options?: { createdByActorKey?: string }): Promise<LevelRecord>
   /**
    * Saves a batch of levels in **one transaction**, so a batch can never land half-written.
    *

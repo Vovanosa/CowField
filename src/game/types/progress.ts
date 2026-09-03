@@ -5,5 +5,6 @@ export type LevelProgress = {
   levelNumber: number
   bestTimeSeconds: number | null
   completedAt: string | null
-  updatedAt: string
+  /** Null when nothing has ever been recorded for this level. */
+  updatedAt: string | null
 }

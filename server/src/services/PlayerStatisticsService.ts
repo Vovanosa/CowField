@@ -35,7 +35,7 @@ export class PlayerStatisticsService {
     return {
       totalCompletedLevels: overallSummary.totalCompletedLevels,
       totalBullPlacements: statisticsRecord.totalBullPlacements,
-      totalCompletionTimeSeconds: overallSummary.totalCompletionTimeSeconds,
+      totalCompletionTimeSeconds: statisticsRecord.totalCompletionTimeSeconds,
       byDifficulty,
     }
   }

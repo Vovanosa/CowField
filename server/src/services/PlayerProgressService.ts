@@ -1,7 +1,11 @@
 import { HttpError } from '../errors/HttpError'
 import type { CompleteLevelInput } from '../schemas/progressSchemas'
 import type { Difficulty } from '../types/level'
-import type { LevelRepository, PlayerProgressRepository } from '../repositories/interfaces'
+import type {
+  LevelRepository,
+  PlayerProgressRepository,
+  PlayerStatisticsRepository,
+} from '../repositories/interfaces'
 import type { ProgressOverviewRecord } from '../types/progress'
 
 const levelsOverviewDifficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']
@@ -14,23 +18,35 @@ function isGuestActor(actorKey: string) {
   return actorKey.startsWith('guest:')
 }
 
+/**
+ * The "no progress recorded yet" placeholder for a level the player has never touched.
+ *
+ * `updatedAt` is `null`, not `''`: there is no timestamp, and an empty string formats as an Invalid
+ * Date on the client and would throw inside Prisma if this object ever reached `save`.
+ */
 function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
   return {
     difficulty,
     levelNumber,
     bestTimeSeconds: null,
     completedAt: null,
-    updatedAt: '',
+    updatedAt: null,
   }
 }
 
 export class PlayerProgressService {
   private readonly repository: PlayerProgressRepository
   private readonly levelRepository: LevelRepository
+  private readonly statisticsRepository: PlayerStatisticsRepository
 
-  constructor(repository: PlayerProgressRepository, levelRepository: LevelRepository) {
+  constructor(
+    repository: PlayerProgressRepository,
+    levelRepository: LevelRepository,
+    statisticsRepository: PlayerStatisticsRepository,
+  ) {
     this.repository = repository
     this.levelRepository = levelRepository
+    this.statisticsRepository = statisticsRepository
   }
 
   async getDifficultySummary(actorKey: string, difficulty: Difficulty) {
@@ -140,6 +156,10 @@ export class PlayerProgressService {
       completedAt: timestamp,
       updatedAt: timestamp,
     })
+
+    // Time played, not best times: this run happened whether or not it beat the record, so it
+    // counts. The counter is a no-op for guests, who have no backend rows.
+    await this.statisticsRepository.addCompletionTimeSeconds(actorKey, input.timeSeconds)
 
     return {
       progress,
