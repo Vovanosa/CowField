@@ -76,6 +76,18 @@ export interface LevelRepository {
    */
   getPreviousLevelNumber(difficulty: Difficulty, levelNumber: number): Promise<number | null>
   save(level: LevelRecord): Promise<LevelRecord>
+  /**
+   * Saves a batch of levels in **one transaction**, so a batch can never land half-written.
+   *
+   * `replacedLevelNumbers` are levels whose board is being overwritten: their `level_progress` rows
+   * are deleted in the same transaction. That is not optional — progress keys on
+   * `(difficulty, levelNumber)` with no foreign key to `levels`, so a recorded best time would
+   * otherwise survive onto a board nobody has solved.
+   */
+  saveMany(
+    levels: LevelRecord[],
+    options?: { replacedLevelNumbers?: number[] },
+  ): Promise<{ savedCount: number; deletedProgressCount: number }>
   delete(difficulty: Difficulty, levelNumber: number): Promise<boolean>
   exists(): Promise<boolean>
 }

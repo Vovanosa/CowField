@@ -62,17 +62,25 @@ export function getNextLevelNumber(levelNumbers: number[]) {
   return levelNumbers.length > 0 ? Math.max(...levelNumbers) + 1 : 1
 }
 
+/** Drops blank lines so a caller can pass an optional detail without guarding it first. */
+function cleanDetails(details?: string[]) {
+  const kept = details?.filter((detail) => detail.trim().length > 0)
+
+  return kept && kept.length > 0 ? kept : undefined
+}
+
 export function createWarningToast(title: string, details?: string[]): ToastState {
   return {
     variant: 'warning',
     title,
-    details,
+    details: cleanDetails(details),
   }
 }
 
-export function createSuccessToast(title: string): ToastState {
+export function createSuccessToast(title: string, details?: string[]): ToastState {
   return {
     variant: 'success',
     title,
+    details: cleanDetails(details),
   }
 }

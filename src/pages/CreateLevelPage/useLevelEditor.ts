@@ -42,7 +42,9 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [pendingDiscard, setPendingDiscard] = useState<PendingDiscard | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
   const dragStateRef = useRef(createEditorDragState())
+  const isGeneratingRef = useRef(false)
 
   // `t` is only needed for a fallback message, and its identity changes when the language changes.
   // Keeping it out of the load effect's deps matters: with it in there, switching language reloaded
@@ -225,7 +227,15 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
       await saveLevel(nextDraft)
       setDraft(nextDraft)
       setHasUnsavedChanges(false)
-      setToast(createSuccessToast(t('Level saved')))
+
+      // Saving a multi-solution level is allowed, but say so — otherwise the only signal is a
+      // player finishing it a way the author never intended.
+      const solutionNote =
+        validationResult.solutionCount !== null && validationResult.solutionCount > 1
+          ? [describeSolutionCount(validationResult) ?? '']
+          : undefined
+
+      setToast(createSuccessToast(t('Level saved'), solutionNote))
     } catch (error) {
       setToast(createWarningToast(error instanceof Error ? error.message : t('Failed to save level.')))
     }
@@ -274,6 +284,28 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     clearBoard()
   }
 
+  /**
+   * How many ways the puzzle can be finished, phrased for the author. A level worth shipping has
+   * exactly one solution; anything higher means players can reach the end a different way.
+   */
+  function describeSolutionCount(result: ReturnType<typeof validateLevelDraft>) {
+    if (result.solutionCount === null) {
+      return null
+    }
+
+    if (result.solutionCount === 1) {
+      return t('Exactly one solution.')
+    }
+
+    return result.solutionCountReachedLimit
+      ? t('Found {{count}}+ solutions. A good level has exactly one.', {
+          count: result.solutionCount,
+        })
+      : t('Found {{count}} solutions. A good level has exactly one.', {
+          count: result.solutionCount,
+        })
+  }
+
   function handleValidate() {
     if (!draft) {
       return
@@ -281,52 +313,70 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
 
     const validationResult = validateLevelDraft(draft)
 
-    if (validationResult.isValid) {
-      setToast(createSuccessToast(t('Validation passed')))
+    if (!validationResult.isValid) {
+      setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
       return
     }
 
-    setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
+    // The rules pass, so the board is saveable either way — but a multi-solution level is a quality
+    // problem the author should see rather than a silent pass.
+    if (validationResult.solutionCount !== null && validationResult.solutionCount > 1) {
+      setToast(
+        createWarningToast(t('This level has more than one solution.'), [
+          describeSolutionCount(validationResult) ?? '',
+          t('Generate builds a level with exactly one solution.'),
+        ]),
+      )
+      return
+    }
+
+    setToast(
+      createSuccessToast(t('Validation passed'), [describeSolutionCount(validationResult) ?? '']),
+    )
   }
 
-  function generateBoard() {
-    if (!draft) {
+  async function generateBoard() {
+    if (!draft || isGeneratingRef.current) {
       return
     }
 
+    const { difficulty: draftDifficulty, levelNumber } = draft
+
     setToast(null)
+    setIsGenerating(true)
+    isGeneratingRef.current = true
+
+    // The generator is synchronous and searches until the board has a single solution, which takes
+    // a couple of seconds at worst on medium and hard. Let the browser paint the busy state before
+    // handing it the main thread, or the button never visibly changes.
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(resolve, 0)
+      })
+    })
 
     const generatedDraft = generateLevelDraft(
-      draft.levelNumber,
-      t('Level {{levelNumber}}', { levelNumber: draft.levelNumber }),
-      draft.difficulty,
+      levelNumber,
+      t('Level {{levelNumber}}', { levelNumber }),
+      draftDifficulty,
     )
+
+    isGeneratingRef.current = false
+    setIsGenerating(false)
 
     if (!generatedDraft) {
       setToast(
-        createWarningToast(
-          difficulty === 'hard'
-            ? t('Automatic hard generation could not find a valid draft. Try again.')
-            : t('Switch to light, easy, or medium to use automatic generation.'),
-          [
-            difficulty === 'hard'
-              ? t('Hard generation now searches for a legal 20-bull layout first, then grows 10 connected pens around those row seed pairs.')
-              : t('Automatic generation is currently implemented for light, easy, and medium only.'),
-            difficulty === 'hard'
-              ? t('Because hard needs 2 bulls in every row, column, and pen, generation can take longer and some attempts will be discarded by the validator.')
-              : t('The generator builds a full draft by placing one legal cow in each row and column, then growing connected color regions around those seed cells.'),
-            difficulty === 'hard'
-              ? t('If a generated hard draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.')
-              : t('If a generated draft does not pass the validator, the generator retries automatically until it finds a legal result or gives up.'),
-          ],
-        ),
+        createWarningToast(t('Generation ran out of time. Try again.'), [
+          t('The generator searches for a board with exactly one solution, which takes longer on medium and hard.'),
+          t('Nothing on the board was changed, so you can run Generate again.'),
+        ]),
       )
       return
     }
 
     setHasUnsavedChanges(true)
     setDraft(generatedDraft)
-    setToast(createSuccessToast(t('Level generated')))
+    setToast(createSuccessToast(t('Level generated'), [t('Exactly one solution.')]))
   }
 
   function handleGenerate() {
@@ -335,7 +385,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
       return
     }
 
-    generateBoard()
+    void generateBoard()
   }
 
   function handleCancelDiscard() {
@@ -356,7 +406,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     }
 
     if (action === 'generate') {
-      generateBoard()
+      void generateBoard()
       return
     }
 
@@ -378,6 +428,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     colorOptions,
     requiredCowCount,
     hasUnsavedChanges,
+    isGenerating,
     pendingDiscard,
     handleCancelDiscard,
     handleConfirmDiscard,

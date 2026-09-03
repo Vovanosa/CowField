@@ -28,4 +28,13 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    // The shared game rules run in both the browser bundle and on the server, so no environment
+    // globals are declared here on purpose — this code must not reach for `window` or `process`.
+    files: ['shared/**/*.ts'],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
+    },
+  },
 ])

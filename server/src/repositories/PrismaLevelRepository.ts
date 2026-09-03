@@ -237,6 +237,73 @@ export class PrismaLevelRepository implements LevelRepository {
     return toLevelRecord(savedLevel)
   }
 
+  /**
+   * All-or-nothing batch save. Used by `npm run levels:generate`, where a partially written batch
+   * would leave the library in a state nobody asked for.
+   *
+   * Deleting the replaced levels' progress is part of the same transaction on purpose: the board
+   * changing and its best times surviving must never be separable outcomes.
+   */
+  async saveMany(levels: LevelRecord[], options: { replacedLevelNumbers?: number[] } = {}) {
+    if (levels.length === 0) {
+      return { savedCount: 0, deletedProgressCount: 0 }
+    }
+
+    const replacedLevelNumbers = options.replacedLevelNumbers ?? []
+    // Every level in a batch belongs to one difficulty; `save` is keyed on the pair either way.
+    const difficulty = toPrismaDifficulty(levels[0].difficulty)
+
+    return this.prisma.$transaction(
+      async (transaction) => {
+        let deletedProgressCount = 0
+
+        if (replacedLevelNumbers.length > 0) {
+          const deleted = await transaction.levelProgress.deleteMany({
+            where: {
+              difficulty,
+              levelNumber: { in: replacedLevelNumbers },
+            },
+          })
+          deletedProgressCount = deleted.count
+        }
+
+        for (const level of levels) {
+          const values = {
+            title: level.title,
+            gridSize: level.gridSize,
+            pensByCell: level.colorsByCell,
+            cowsByCell: level.cowsByCell,
+            createdAt: new Date(level.createdAt),
+            updatedAt: new Date(level.updatedAt),
+          }
+
+          await transaction.level.upsert({
+            where: {
+              difficulty_levelNumber: {
+                difficulty: toPrismaDifficulty(level.difficulty),
+                levelNumber: level.levelNumber,
+              },
+            },
+            update: values,
+            create: {
+              difficulty: toPrismaDifficulty(level.difficulty),
+              levelNumber: level.levelNumber,
+              ...values,
+            },
+          })
+        }
+
+        return { savedCount: levels.length, deletedProgressCount }
+      },
+      {
+        // Prisma's default interactive-transaction timeout is 5s, which a 50-level batch against a
+        // remote database can exceed — and it would fail *after* doing the work.
+        timeout: 120_000,
+        maxWait: 15_000,
+      },
+    )
+  }
+
   async delete(difficulty: AppDifficulty, levelNumber: number) {
     // `level_progress` has no foreign key to `levels` — it identifies a level by
     // (difficulty, levelNumber). So the progress rows have to go with the level, in the same

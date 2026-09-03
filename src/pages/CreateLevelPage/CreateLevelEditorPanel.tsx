@@ -17,6 +17,7 @@ type CreateLevelEditorPanelProps = {
   requiredCowCount: number
   colorOptions: number[]
   isDeleting: boolean
+  isGenerating: boolean
   onGenerate: () => void
   onValidate: () => void
   onSave: () => void
@@ -36,6 +37,7 @@ export function CreateLevelEditorPanel({
   requiredCowCount,
   colorOptions,
   isDeleting,
+  isGenerating,
   onGenerate,
   onValidate,
   onSave,
@@ -58,19 +60,34 @@ export function CreateLevelEditorPanel({
         <div className={styles.editorSection}>
           <div className={styles.editorActions}>
             <div className={styles.editorActionsGroup}>
-              <Button onClick={onGenerate} leadingIcon={<RefreshCw size={18} />}>
-                {t('Generate')}
+              <Button
+                onClick={onGenerate}
+                disabled={isGenerating}
+                leadingIcon={<RefreshCw size={18} />}
+              >
+                {isGenerating ? t('Generating...') : t('Generate')}
               </Button>
-              <Button onClick={onValidate} leadingIcon={<BadgeCheck size={18} />}>
+              <Button
+                onClick={onValidate}
+                disabled={isGenerating}
+                leadingIcon={<BadgeCheck size={18} />}
+              >
                 {t('Validate level')}
               </Button>
-              <Button variant="primary" onClick={onSave} leadingIcon={<Save size={18} />}>
+              <Button
+                variant="primary"
+                onClick={onSave}
+                disabled={isGenerating}
+                leadingIcon={<Save size={18} />}
+              >
                 {t('Save level')}
               </Button>
             </div>
 
             <div className={[styles.editorActionsGroup, styles.editorActionsGroupRight].join(' ')}>
-              <Button onClick={onClearBoard}>{t('Clear board')}</Button>
+              <Button onClick={onClearBoard} disabled={isGenerating}>
+                {t('Clear board')}
+              </Button>
               {routeLevelNumber ? (
                 <Button
                   variant="danger"
