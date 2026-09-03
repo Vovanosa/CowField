@@ -41,19 +41,13 @@ export class PlayerStatisticsService {
   }
 
   async recordBullPlacements(actorKey: string, count: number) {
-    const currentStatistics = await this.statisticsRepository.get(actorKey)
-    const nextStatistics = {
-      totalCompletedLevels: currentStatistics.totalCompletedLevels,
-      totalBullPlacements: currentStatistics.totalBullPlacements + count,
-      totalCompletionTimeSeconds: currentStatistics.totalCompletionTimeSeconds,
-      byDifficulty: currentStatistics.byDifficulty,
-      updatedAt: new Date().toISOString(),
-    }
-
-    await this.statisticsRepository.save(actorKey, nextStatistics)
+    const totalBullPlacements = await this.statisticsRepository.incrementBullPlacements(
+      actorKey,
+      count,
+    )
 
     return {
-      totalBullPlacements: nextStatistics.totalBullPlacements,
+      totalBullPlacements,
     }
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useBlocker } from 'react-router-dom'
 
 import { generateLevelDraft } from '../../game/levels'
 import {
@@ -28,6 +29,9 @@ type UseLevelEditorArgs = {
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
+/** An action that would discard the current draft, held until the user confirms it. */
+type PendingDiscard = 'clear' | 'generate' | 'navigate'
+
 export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEditorArgs) {
   const [draft, setDraft] = useState<LevelDraft | null>(null)
   const [loadError, setLoadError] = useState('')
@@ -36,7 +40,41 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [pendingDiscard, setPendingDiscard] = useState<PendingDiscard | null>(null)
   const dragStateRef = useRef(createEditorDragState())
+
+  // `t` is only needed for a fallback message, and its identity changes when the language changes.
+  // Keeping it out of the load effect's deps matters: with it in there, switching language reloaded
+  // the level and silently threw away the draft in progress.
+  const translateRef = useRef(t)
+  translateRef.current = t
+
+  // In-app navigation away from an unsaved draft (the "Back to levels" link, the header, browser
+  // back). `beforeunload` below only covers closing or reloading the tab.
+  const blocker = useBlocker(hasUnsavedChanges)
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setPendingDiscard('navigate')
+    }
+  }, [blocker.state])
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return
+    }
+
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+    }
+
+    window.addEventListener('beforeunload', warnBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', warnBeforeUnload)
+    }
+  }, [hasUnsavedChanges])
 
   useEffect(() => {
     let isActive = true
@@ -69,12 +107,15 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
         setLoadError('')
         setToast(null)
         setActiveTool(1)
+        setHasUnsavedChanges(false)
       } catch (error) {
         if (!isActive) {
           return
         }
 
-        setLoadError(error instanceof Error ? error.message : t('Failed to load level data.'))
+        setLoadError(
+          error instanceof Error ? error.message : translateRef.current('Failed to load level data.'),
+        )
       } finally {
         if (isActive) {
           setIsLoading(false)
@@ -88,7 +129,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     return () => {
       isActive = false
     }
-  }, [difficulty, routeLevelNumber, t])
+  }, [difficulty, routeLevelNumber])
 
   useEffect(() => {
     function stopDragging() {
@@ -127,6 +168,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     : 0
 
   function handleCellPaint(cellIndex: number) {
+    setHasUnsavedChanges(true)
     setDraft((currentDraft) => {
       if (!currentDraft) {
         return currentDraft
@@ -182,6 +224,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     try {
       await saveLevel(nextDraft)
       setDraft(nextDraft)
+      setHasUnsavedChanges(false)
       setToast(createSuccessToast(t('Level saved')))
     } catch (error) {
       setToast(createWarningToast(error instanceof Error ? error.message : t('Failed to save level.')))
@@ -206,7 +249,8 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     }
   }
 
-  function handleClearBoard() {
+  function clearBoard() {
+    setHasUnsavedChanges(true)
     setDraft((currentDraft) => {
       if (!currentDraft) {
         return currentDraft
@@ -215,6 +259,19 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
       return createClearedDraft(currentDraft)
     })
     setToast(createSuccessToast(t('Board cleared')))
+  }
+
+  /**
+   * Clear and Generate both overwrite the whole draft, and the editor has no undo — so when there
+   * is unsaved work, ask first. With nothing unsaved there is nothing to lose, so don't nag.
+   */
+  function handleClearBoard() {
+    if (hasUnsavedChanges) {
+      setPendingDiscard('clear')
+      return
+    }
+
+    clearBoard()
   }
 
   function handleValidate() {
@@ -232,7 +289,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
   }
 
-  function handleGenerate() {
+  function generateBoard() {
     if (!draft) {
       return
     }
@@ -267,8 +324,47 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
       return
     }
 
+    setHasUnsavedChanges(true)
     setDraft(generatedDraft)
     setToast(createSuccessToast(t('Level generated')))
+  }
+
+  function handleGenerate() {
+    if (hasUnsavedChanges) {
+      setPendingDiscard('generate')
+      return
+    }
+
+    generateBoard()
+  }
+
+  function handleCancelDiscard() {
+    if (pendingDiscard === 'navigate' && blocker.state === 'blocked') {
+      blocker.reset()
+    }
+
+    setPendingDiscard(null)
+  }
+
+  function handleConfirmDiscard() {
+    const action = pendingDiscard
+    setPendingDiscard(null)
+
+    if (action === 'clear') {
+      clearBoard()
+      return
+    }
+
+    if (action === 'generate') {
+      generateBoard()
+      return
+    }
+
+    if (action === 'navigate' && blocker.state === 'blocked') {
+      // Drop the guard before proceeding, or the blocker re-triggers on the same navigation.
+      setHasUnsavedChanges(false)
+      blocker.proceed()
+    }
   }
 
   return {
@@ -281,6 +377,10 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     deleteDialog,
     colorOptions,
     requiredCowCount,
+    hasUnsavedChanges,
+    pendingDiscard,
+    handleCancelDiscard,
+    handleConfirmDiscard,
     setActiveTool,
     setDeleteDialog,
     handleCellPointerDown,

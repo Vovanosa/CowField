@@ -1,83 +1,44 @@
+import type { CellMark } from '../types'
+
 type MoveHistoryEntry = {
-  cellMarks: string[]
+  cellMarks: CellMark[]
   elapsedSeconds: number
   runStartedAt: number | null
 }
 
-const MOVE_HISTORY_STORAGE_KEY = 'bullpen:move-history'
+/**
+ * Undo depth. Each entry holds a whole board (up to 100 cells), so the stack needs a ceiling.
+ */
+const MAX_MOVE_HISTORY_ENTRIES = 60
 
-function isMoveHistoryEntry(value: unknown): value is MoveHistoryEntry {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const candidate = value as {
-    cellMarks?: unknown
-    elapsedSeconds?: unknown
-    runStartedAt?: unknown
-  }
-
-  return (
-    Array.isArray(candidate.cellMarks) &&
-    typeof candidate.elapsedSeconds === 'number' &&
-    (typeof candidate.runStartedAt === 'number' || candidate.runStartedAt === null)
-  )
-}
-
-function readMoveHistory() {
-  if (typeof window === 'undefined') {
-    return [] as MoveHistoryEntry[]
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(MOVE_HISTORY_STORAGE_KEY)
-
-    if (!rawValue) {
-      return [] as MoveHistoryEntry[]
-    }
-
-    const parsed = JSON.parse(rawValue) as unknown
-
-    if (!Array.isArray(parsed)) {
-      return [] as MoveHistoryEntry[]
-    }
-
-    return parsed.filter(isMoveHistoryEntry)
-  } catch {
-    return [] as MoveHistoryEntry[]
-  }
-}
-
-function writeMoveHistory(history: MoveHistoryEntry[]) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  if (history.length === 0) {
-    window.localStorage.removeItem(MOVE_HISTORY_STORAGE_KEY)
-    return
-  }
-
-  window.localStorage.setItem(MOVE_HISTORY_STORAGE_KEY, JSON.stringify(history))
-}
+/**
+ * In memory only, deliberately.
+ *
+ * This used to mirror every move into localStorage, which cost a full read + parse + stringify +
+ * write per tap (quadratic over a long game), shared one key across tabs so undo in one tab could
+ * restore another tab's board, and could throw QuotaExceededError straight out of the board's click
+ * handler — leaving the board unresponsive. The mirror bought nothing either way: the stack is
+ * cleared whenever a level loads, and the board itself is never persisted, so a restored history
+ * would not have matched the fresh empty board anyway.
+ */
+let history: MoveHistoryEntry[] = []
 
 export function clearMoveHistory() {
-  writeMoveHistory([])
+  history = []
 }
 
 export function getMoveHistoryCount() {
-  return readMoveHistory().length
+  return history.length
 }
 
 export function pushMoveHistoryEntry(entry: MoveHistoryEntry) {
-  const history = readMoveHistory()
   history.push(entry)
-  writeMoveHistory(history)
+
+  if (history.length > MAX_MOVE_HISTORY_ENTRIES) {
+    history.splice(0, history.length - MAX_MOVE_HISTORY_ENTRIES)
+  }
 }
 
 export function popMoveHistoryEntry() {
-  const history = readMoveHistory()
-  const entry = history.pop() ?? null
-  writeMoveHistory(history)
-  return entry
+  return history.pop() ?? null
 }

@@ -42,6 +42,7 @@ function GamePageScreen() {
     handleRestartBoard,
     handleUndoMove,
     handleCompletionBackdropClick: handleCompletionBackdropClose,
+    handleRetrySaveCompletion,
     setCompletionModal,
   } = useGameSession({
     difficulty,
@@ -200,10 +201,12 @@ function GamePageScreen() {
           timeSeconds={completionModal.timeSeconds}
           bestTimeSeconds={completionModal.bestTimeSeconds}
           previousBestTimeSeconds={completionModal.previousBestTimeSeconds}
+          saveState={completionModal.saveState}
           hasNextLevel={hasNextLevel}
           onBackdropPointerDown={handleCompletionBackdropClick}
           onBackToLevels={handleBackToLevels}
           onNextLevel={handleNextLevel}
+          onRetrySave={handleRetrySaveCompletion}
           t={t}
         />
       ) : null}

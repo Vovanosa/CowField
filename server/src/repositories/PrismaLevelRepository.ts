@@ -187,6 +187,25 @@ export class PrismaLevelRepository implements LevelRepository {
     return level ? toLevelRecord(level) : null
   }
 
+  async getPreviousLevelNumber(difficulty: AppDifficulty, levelNumber: number) {
+    const previousLevel = await this.prisma.level.findFirst({
+      where: {
+        difficulty: toPrismaDifficulty(difficulty),
+        levelNumber: {
+          lt: levelNumber,
+        },
+      },
+      orderBy: {
+        levelNumber: 'desc',
+      },
+      select: {
+        levelNumber: true,
+      },
+    })
+
+    return previousLevel?.levelNumber ?? null
+  }
+
   async save(level: LevelRecord) {
     const savedLevel = await this.prisma.level.upsert({
       where: {
@@ -219,12 +238,24 @@ export class PrismaLevelRepository implements LevelRepository {
   }
 
   async delete(difficulty: AppDifficulty, levelNumber: number) {
-    const deleted = await this.prisma.level.deleteMany({
-      where: {
-        difficulty: toPrismaDifficulty(difficulty),
-        levelNumber,
-      },
-    })
+    // `level_progress` has no foreign key to `levels` — it identifies a level by
+    // (difficulty, levelNumber). So the progress rows have to go with the level, in the same
+    // transaction. Leaving them behind would keep them counting toward completion totals, and a
+    // level later created at the same number would silently inherit the old best times.
+    const [deleted] = await this.prisma.$transaction([
+      this.prisma.level.deleteMany({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          levelNumber,
+        },
+      }),
+      this.prisma.levelProgress.deleteMany({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          levelNumber,
+        },
+      }),
+    ])
 
     return deleted.count > 0
   }

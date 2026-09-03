@@ -12,7 +12,9 @@ export const progressDifficultyParamsSchema = z.object({
 })
 
 export const completeLevelInputSchema = z.object({
-  timeSeconds: z.number().int().nonnegative(),
+  // At least a second: no board can be solved faster than its bulls can be tapped, so 0 only ever
+  // means a hand-crafted request. The client clamps to the same floor.
+  timeSeconds: z.number().int().min(1),
 })
 
 export type CompleteLevelInput = z.infer<typeof completeLevelInputSchema>

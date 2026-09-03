@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { CowIcon } from '../icons'
 import type { LevelDefinition } from '../../game/types'
-import type { CellMark } from '../../pages/GamePage/gameSession.helpers'
+import type { CellMark } from '../../game/types'
 import { getBoardCellStyle, getBoardIntersectionStyle } from './GameBoard.helpers'
 import styles from './GameBoard.module.css'
 

@@ -6,6 +6,7 @@ import { EmptyState } from '../../components/EmptyState'
 import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import type { Difficulty } from '../../game/types'
+import { CreateLevelConfirmDialog } from './CreateLevelConfirmDialog'
 import { CreateLevelDeleteDialog } from './CreateLevelDeleteDialog'
 import { CreateLevelEditorPanel } from './CreateLevelEditorPanel'
 import { CreateLevelHeader } from './CreateLevelHeader'
@@ -38,6 +39,9 @@ function CreateLevelPageView({
     deleteDialog,
     colorOptions,
     requiredCowCount,
+    pendingDiscard,
+    handleCancelDiscard,
+    handleConfirmDiscard,
     setActiveTool,
     setDeleteDialog,
     handleCellPointerDown,
@@ -117,6 +121,21 @@ function CreateLevelPageView({
           isDeleting={isDeleting}
           onCancel={() => setDeleteDialog(null)}
           onDelete={() => void handleDelete((deletedDifficulty) => navigate(`/levels/${deletedDifficulty}`))}
+          t={t}
+        />
+      ) : null}
+
+      {pendingDiscard ? (
+        <CreateLevelConfirmDialog
+          title={t('Discard unsaved changes?')}
+          description={
+            pendingDiscard === 'navigate'
+              ? t('This level has unsaved changes. Leaving now discards them.')
+              : t('This level has unsaved changes. This action replaces the board and discards them.')
+          }
+          confirmLabel={pendingDiscard === 'navigate' ? t('Leave and discard') : t('Discard')}
+          onCancel={handleCancelDiscard}
+          onConfirm={handleConfirmDiscard}
           t={t}
         />
       ) : null}

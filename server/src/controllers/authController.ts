@@ -84,43 +84,4 @@ export class AuthController {
 
     response.status(204).send()
   }
-
-  mobileGoogleCallback = async (request: Request, response: Response) => {
-    const requestedAppRedirect =
-      typeof request.query.appRedirect === 'string' && request.query.appRedirect.length > 0
-        ? request.query.appRedirect
-        : 'cowfieldmobile://google-callback'
-    const redirectUrl = new URL(requestedAppRedirect)
-
-    for (const [key, value] of Object.entries(request.query)) {
-      if (key === 'appRedirect') {
-        continue
-      }
-
-      if (typeof value === 'string') {
-        redirectUrl.searchParams.set(key, value)
-      }
-    }
-
-    const escapedRedirectUrl = redirectUrl.toString().replace(/"/g, '&quot;')
-
-    response
-      .status(200)
-      .type('html')
-      .send(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Redirecting to CowField Mobile</title>
-  </head>
-  <body style="font-family: sans-serif; padding: 24px; text-align: center;">
-    <p>Redirecting back to the CowField Android app...</p>
-    <p><a href="${escapedRedirectUrl}">Tap here if nothing happens.</a></p>
-    <script>
-      window.location.replace("${escapedRedirectUrl}");
-    </script>
-  </body>
-</html>`)
-  }
 }

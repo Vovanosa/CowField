@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import {
+  completeGoogleLogin as completeGoogleLoginRequest,
   getCurrentSession,
   login as loginRequest,
   loginAsGuest as loginAsGuestRequest,
@@ -90,6 +91,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return nextSession
   }, [])
 
+  const completeGoogleLogin = useCallback(async (code?: string) => {
+    resetCachedPlayerData()
+    const nextSession = await completeGoogleLoginRequest(code)
+    setSession(nextSession)
+    return nextSession
+  }, [])
+
   const logout = useCallback(async () => {
     resetCachedPlayerData()
     await logoutRequest()
@@ -116,9 +124,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       login,
       register,
       loginAsGuest,
+      completeGoogleLogin,
       logout,
     }
-  }, [isLoading, login, loginAsGuest, logout, previewRole, register, session])
+  }, [completeGoogleLogin, isLoading, login, loginAsGuest, logout, previewRole, register, session])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

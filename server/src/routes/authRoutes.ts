@@ -11,7 +11,6 @@ export function createAuthRoutes(authController: AuthController) {
   router.post('/guest', asyncHandler(authController.loginAsGuest))
   router.post('/request-password-reset', asyncHandler(authController.requestPasswordReset))
   router.post('/reset-password', asyncHandler(authController.resetPassword))
-  router.get('/mobile-google/callback', asyncHandler(authController.mobileGoogleCallback))
   router.get('/me', asyncHandler(authController.me))
   router.post('/logout', asyncHandler(authController.logout))
 

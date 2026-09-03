@@ -23,31 +23,65 @@ function createEmptyProgress(difficulty: Difficulty, levelNumber: number): Level
   }
 }
 
+function isLevelProgress(value: unknown): value is LevelProgress {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Partial<LevelProgress>
+
+  return (
+    typeof candidate.difficulty === 'string' &&
+    typeof candidate.levelNumber === 'number' &&
+    (candidate.bestTimeSeconds === null || typeof candidate.bestTimeSeconds === 'number')
+  )
+}
+
 function readGuestProgressRecord(): GuestProgressRecord {
   if (typeof window === 'undefined') {
     return {}
   }
 
-  const rawValue = window.localStorage.getItem(GUEST_PROGRESS_STORAGE_KEY)
-
-  if (!rawValue) {
-    return {}
-  }
-
   try {
-    const parsed = JSON.parse(rawValue) as GuestProgressRecord
-    return parsed && typeof parsed === 'object' ? parsed : {}
+    const rawValue = window.localStorage.getItem(GUEST_PROGRESS_STORAGE_KEY)
+
+    if (!rawValue) {
+      return {}
+    }
+
+    const parsed = JSON.parse(rawValue) as unknown
+
+    if (!parsed || typeof parsed !== 'object') {
+      return {}
+    }
+
+    // Validate every entry, not just the container. A single malformed entry used to reach
+    // `progress.difficulty` on the levels page and throw.
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(([, value]) =>
+        isLevelProgress(value),
+      ),
+    ) as GuestProgressRecord
   } catch {
     return {}
   }
 }
 
+/**
+ * Returns false when the write could not be persisted — a full quota, or a browser with site data
+ * blocked. Callers must not let that surface as "progress saved".
+ */
 function writeGuestProgressRecord(record: GuestProgressRecord) {
   if (typeof window === 'undefined') {
-    return
+    return false
   }
 
-  window.localStorage.setItem(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(record))
+  try {
+    window.localStorage.setItem(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(record))
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function getGuestProgressByDifficulty(difficulty: Difficulty) {
@@ -86,10 +120,16 @@ export async function completeGuestLevelProgress(
     updatedAt: timestamp,
   }
 
-  writeGuestProgressRecord({
+  const didPersist = writeGuestProgressRecord({
     ...record,
     [progressKey]: progress,
   })
+
+  if (!didPersist) {
+    // Surface it the same way a failed API write does, so the completion dialog can say so instead
+    // of claiming the progress was saved.
+    throw new Error('Could not save your progress on this device.')
+  }
 
   return {
     progress,

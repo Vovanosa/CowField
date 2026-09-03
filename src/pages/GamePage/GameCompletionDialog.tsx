@@ -11,9 +11,11 @@ type GameCompletionDialogProps = {
   bestTimeSeconds: number | null
   previousBestTimeSeconds: number | null
   hasNextLevel: boolean
+  saveState: 'saving' | 'saved' | 'failed'
   onBackdropPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void
   onBackToLevels: () => void
   onNextLevel: () => void
+  onRetrySave: () => void
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
@@ -23,11 +25,14 @@ export function GameCompletionDialog({
   timeSeconds,
   bestTimeSeconds,
   hasNextLevel,
+  saveState,
   onBackdropPointerDown,
   onBackToLevels,
   onNextLevel,
+  onRetrySave,
   t,
 }: GameCompletionDialogProps) {
+  const hasSaveFailed = saveState === 'failed'
   return (
     <Dialog
       title={t('Level complete')}
@@ -54,17 +59,28 @@ export function GameCompletionDialog({
           {!hasNextLevel ? (
             <p className={styles.completionHint}>{t('You completed the last available level.')}</p>
           ) : null}
-          {isTakeYourTimeEnabled ? (
+          {isTakeYourTimeEnabled && !hasSaveFailed ? (
             <p className={styles.completionMeta}>{t('Your progress has been saved.')}</p>
+          ) : null}
+          {hasSaveFailed ? (
+            <p className={styles.completionHint} role="alert">
+              {t("Couldn't save your progress. Check your connection and try again.")}
+            </p>
           ) : null}
         </>
       }
       actions={
         <>
           <Button onClick={onBackToLevels}>{t('Back')}</Button>
-          <Button variant="primary" onClick={onNextLevel} disabled={!hasNextLevel}>
-            {t('Next Level')}
-          </Button>
+          {hasSaveFailed ? (
+            <Button variant="primary" onClick={onRetrySave}>
+              {t('Try again')}
+            </Button>
+          ) : (
+            <Button variant="primary" onClick={onNextLevel} disabled={!hasNextLevel}>
+              {t('Next Level')}
+            </Button>
+          )}
         </>
       }
     />

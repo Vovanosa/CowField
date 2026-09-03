@@ -21,19 +21,37 @@ export function isNeonAuthConfigured() {
   return neonAuthClient !== null
 }
 
+/**
+ * Fetches a **JWT** for the current Neon session, for use as the bearer token against our API.
+ *
+ * This must not return the session object's `token`: that is an **opaque** Better Auth session
+ * token, and our backend cannot verify it — Neon's `/account-info` rejects it and `/get-session`
+ * ignores `Authorization` headers. `/token` mints a proper Ed25519-signed JWT instead, which the
+ * backend verifies against Neon's published JWKS.
+ *
+ * `credentials: 'include'` is required — the Neon session lives in a cookie on the Neon domain.
+ */
 export async function getNeonJwtToken() {
-  const session = await getNeonSession()
-
-  if (!session) {
+  if (!NEON_AUTH_URL) {
     return null
   }
 
-  const tokenSession = session as typeof session & {
-    token?: string
-    access_token?: string
-  }
+  try {
+    const response = await fetch(`${NEON_AUTH_URL}/token`, {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
 
-  return tokenSession.access_token ?? tokenSession.token ?? null
+    if (!response.ok) {
+      return null
+    }
+
+    const payload = (await response.json()) as { token?: unknown } | null
+
+    return typeof payload?.token === 'string' && payload.token.length > 0 ? payload.token : null
+  } catch {
+    return null
+  }
 }
 
 export async function getNeonSession() {

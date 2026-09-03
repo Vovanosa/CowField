@@ -3,6 +3,7 @@ import express from 'express'
 import { ZodError } from 'zod'
 
 import { HttpError } from './errors/HttpError'
+import { getConfiguredAdminEmail } from './auth/adminAccount'
 import { AuthController } from './controllers/authController'
 import { createAuthRoutes } from './routes/authRoutes'
 import { createLevelRoutes } from './routes/levelRoutes'
@@ -42,7 +43,7 @@ export function createApp() {
   const authService = new AuthService(
     repositories.userRepository,
     repositories.sessionRepository,
-    process.env.BULLPEN_ADMIN_EMAIL ?? 'vovanosa06@gmail.com',
+    getConfiguredAdminEmail(),
     process.env.NEON_AUTH_URL ?? process.env.VITE_NEON_AUTH_URL ?? null,
   )
   const playerStatisticsService = new PlayerStatisticsService(

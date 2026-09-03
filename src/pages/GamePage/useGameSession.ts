@@ -35,6 +35,12 @@ export type CompletionModalState = {
   timeSeconds: number
   bestTimeSeconds: number | null
   previousBestTimeSeconds: number | null
+  /**
+   * The modal is optimistic — it opens before the write lands. This tracks whether the write
+   * actually succeeded, so a failure can be shown instead of silently telling the player their
+   * progress was saved when it wasn't.
+   */
+  saveState: 'saving' | 'saved' | 'failed'
 }
 
 type UseGameSessionArgs = {
@@ -155,6 +161,35 @@ export function useGameSession({
   }, [])
 
   useEffect(() => {
+    if (isGuest) {
+      return
+    }
+
+    // Bulls placed but not yet flushed are only in a ref, so closing or backgrounding the tab lost
+    // them. `pagehide` is the reliable signal here (`beforeunload` doesn't fire on mobile), and
+    // `keepalive` lets the request outlive the page.
+    function flushPendingBullPlacements() {
+      const pending = pendingBullPlacementsRef.current
+
+      if (pending <= 0) {
+        return
+      }
+
+      pendingBullPlacementsRef.current = 0
+      hasFlushedBullPlacementsRef.current = true
+      void recordBullPlacements(pending, true).catch(() => {
+        // Nothing useful to do while the page is going away.
+      })
+    }
+
+    window.addEventListener('pagehide', flushPendingBullPlacements)
+
+    return () => {
+      window.removeEventListener('pagehide', flushPendingBullPlacements)
+    }
+  }, [isGuest])
+
+  useEffect(() => {
     if (!completionModal?.isOpen) {
       return
     }
@@ -227,44 +262,63 @@ export function useGameSession({
           ? completionTimeSeconds
           : Math.min(previousBestTime, completionTimeSeconds),
       previousBestTimeSeconds: previousBestTime ?? null,
+      saveState: 'saving',
     })
 
-    async function saveCompletion() {
-      const pendingBullPlacements = pendingBullPlacementsRef.current
-      pendingBullPlacementsRef.current = 0
-      hasFlushedBullPlacementsRef.current = true
+    void saveCompletion(currentLevel, completionTimeSeconds)
+  }
 
-      try {
-        const [response] = await Promise.all([
-          completeLevelProgress(
-            currentLevel.difficulty,
-            currentLevel.levelNumber,
-            completionTimeSeconds,
-          ),
-          !isGuest && pendingBullPlacements > 0
-            ? recordBullPlacements(pendingBullPlacements)
-            : Promise.resolve(null),
-        ])
+  async function saveCompletion(currentLevel: LevelDefinition, completionTimeSeconds: number) {
+    const pendingBullPlacements = pendingBullPlacementsRef.current
+    pendingBullPlacementsRef.current = 0
+    hasFlushedBullPlacementsRef.current = true
 
-        setLevelProgress(response.progress)
-        setCompletionModal((currentModal) =>
-          currentModal
-            ? {
-                ...currentModal,
-                isNewBest: response.isNewBest,
-                isFirstClear: currentModal.isFirstClear,
-                timeSeconds: completionTimeSeconds,
-                bestTimeSeconds: response.progress.bestTimeSeconds ?? currentModal.bestTimeSeconds,
-                previousBestTimeSeconds: currentModal.previousBestTimeSeconds,
-              }
-            : currentModal,
-        )
-      } catch {
-        // Keep the optimistic completion UI open even if persistence finishes later or fails.
-      }
+    try {
+      const [response] = await Promise.all([
+        completeLevelProgress(
+          currentLevel.difficulty,
+          currentLevel.levelNumber,
+          completionTimeSeconds,
+        ),
+        !isGuest && pendingBullPlacements > 0
+          ? recordBullPlacements(pendingBullPlacements)
+          : Promise.resolve(null),
+      ])
+
+      setLevelProgress(response.progress)
+      setCompletionModal((currentModal) =>
+        currentModal
+          ? {
+              ...currentModal,
+              isNewBest: response.isNewBest,
+              isFirstClear: currentModal.isFirstClear,
+              timeSeconds: completionTimeSeconds,
+              bestTimeSeconds: response.progress.bestTimeSeconds ?? currentModal.bestTimeSeconds,
+              previousBestTimeSeconds: currentModal.previousBestTimeSeconds,
+              saveState: 'saved',
+            }
+          : currentModal,
+      )
+    } catch {
+      // The optimistic UI stays, but say so rather than claiming the progress was saved. Put the
+      // placements back so a retry — or the unmount flush — still counts them.
+      pendingBullPlacementsRef.current += pendingBullPlacements
+      hasFlushedBullPlacementsRef.current = false
+      setCompletionModal((currentModal) =>
+        currentModal ? { ...currentModal, saveState: 'failed' } : currentModal,
+      )
+    }
+  }
+
+  function handleRetrySaveCompletion() {
+    if (!level || completionModal?.saveState !== 'failed') {
+      return
     }
 
-    void saveCompletion()
+    setCompletionModal((currentModal) =>
+      currentModal ? { ...currentModal, saveState: 'saving' } : currentModal,
+    )
+    void saveCompletion(level, completionModal.timeSeconds)
   }
 
   function applyCellMarks(currentLevel: LevelDefinition, nextMarks: CellMark[], interactionTimestampMs: number) {
@@ -287,11 +341,15 @@ export function useGameSession({
     const nextSolution = getSolutionState(currentLevel, resolvedMarks)
 
     if (!completionHandledRef.current && nextSolution.isSolved) {
+      // Floor at 1s: a sub-second solve would otherwise report 0, which the API rejects.
       handleLevelSolved(
         currentLevel,
-        nextStartedAt === null
-          ? elapsedSecondsRef.current
-          : Math.floor((interactionTimestampMs - nextStartedAt) / 1000),
+        Math.max(
+          1,
+          nextStartedAt === null
+            ? elapsedSecondsRef.current
+            : Math.floor((interactionTimestampMs - nextStartedAt) / 1000),
+        ),
       )
     }
   }
@@ -490,11 +548,17 @@ export function useGameSession({
       return
     }
 
-    const restoredMarks = previousMove.cellMarks as CellMark[]
+    const restoredMarks = previousMove.cellMarks
 
     completionHandledRef.current = false
     cellMarksRef.current = restoredMarks
     setCellMarks(restoredMarks)
+    // Restore the clock too, not just the board. Each snapshot records these; ignoring them left
+    // the timer frozen after undoing a completion, because runStartedAt stayed null.
+    elapsedSecondsRef.current = previousMove.elapsedSeconds
+    runStartedAtRef.current = previousMove.runStartedAt
+    setElapsedSeconds(previousMove.elapsedSeconds)
+    setRunStartedAt(previousMove.runStartedAt)
     setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)
@@ -532,6 +596,7 @@ export function useGameSession({
     handleRestartBoard,
     handleUndoMove,
     handleCompletionBackdropClick,
+    handleRetrySaveCompletion,
     setCompletionModal,
   }
 }

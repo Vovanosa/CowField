@@ -53,6 +53,8 @@ export interface PlayerProgressRepository {
 
 export interface PlayerStatisticsRepository {
   get(actorKey: string): Promise<PlayerStatisticsRecord>
+  /** Atomic add to the lifetime bull counter. Returns the new total (0 for actors with no row). */
+  incrementBullPlacements(actorKey: string, count: number): Promise<number>
   save(actorKey: string, record: PlayerStatisticsRecord): Promise<PlayerStatisticsRecord>
 }
 
@@ -67,6 +69,12 @@ export interface LevelRepository {
     },
   ): Promise<LevelListPageRecord>
   getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number): Promise<LevelRecord | null>
+  /**
+   * The level immediately before `levelNumber` in this difficulty's ordered list, or null if
+   * `levelNumber` is the first. Not `levelNumber - 1`: deleting a level leaves gaps, and unlock
+   * order follows the list, not the numbering.
+   */
+  getPreviousLevelNumber(difficulty: Difficulty, levelNumber: number): Promise<number | null>
   save(level: LevelRecord): Promise<LevelRecord>
   delete(difficulty: Difficulty, levelNumber: number): Promise<boolean>
   exists(): Promise<boolean>

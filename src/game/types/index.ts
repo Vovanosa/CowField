@@ -1,4 +1,5 @@
 export type {
+  CellMark,
   Difficulty,
   LevelDefinition,
   LevelEditorDefinition,

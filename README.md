@@ -257,6 +257,7 @@ src/
 - `DIRECT_URL` can be used for Prisma CLI commands when the runtime `DATABASE_URL` uses a pooled host such as a Neon pooler URL.
 - The separate mobile app now has working player-facing flows for auth restore, home, about, settings, statistics, level select, and the game screen.
 - Mobile visual parity work is active, but the shared monorepo architecture is still planned rather than completed.
+- Recent web work improved narrow-screen responsiveness: auth pages stay cleaner, settings absorb theme/language controls when the floating controls are hidden, difficulty pagination is stable by breakpoint, and the game board scales more intentionally on thin screens.
 
 ## Deployment Direction
 

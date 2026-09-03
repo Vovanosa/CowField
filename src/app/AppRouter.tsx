@@ -34,16 +34,6 @@ const GoogleAuthCallbackPage = lazyPage(() =>
     default: module.GoogleAuthCallbackPage,
   })),
 )
-const MobileGoogleRelayPage = lazyPage(() =>
-  import('../pages/MobileGoogleRelayPage/MobileGoogleRelayPage').then((module) => ({
-    default: module.MobileGoogleRelayPage,
-  })),
-)
-const MobileGoogleStartPage = lazyPage(() =>
-  import('../pages/MobileGoogleStartPage/MobileGoogleStartPage').then((module) => ({
-    default: module.MobileGoogleStartPage,
-  })),
-)
 const LoginPage = lazyPage(() =>
   import('../pages/LoginPage/LoginPage').then((module) => ({ default: module.LoginPage })),
 )
@@ -113,14 +103,6 @@ const router = createBrowserRouter([
       {
         path: '/auth/google/callback',
         element: withSuspense(<GoogleAuthCallbackPage />),
-      },
-      {
-        path: '/auth/mobile-google/start',
-        element: withSuspense(<MobileGoogleStartPage />),
-      },
-      {
-        path: '/auth/mobile-google/callback',
-        element: withSuspense(<MobileGoogleRelayPage />),
       },
       {
         path: '/reset-password',

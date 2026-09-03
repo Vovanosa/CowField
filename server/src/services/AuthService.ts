@@ -11,7 +11,6 @@ import type {
   UserRepository,
 } from '../repositories/interfaces'
 import {
-  enforceConfiguredAdminAccount,
   hashPassword,
   normalizeEmail,
 } from '../auth/adminAccount'
@@ -24,6 +23,7 @@ import {
   signInWithNeonPassword,
   signUpWithNeonPassword,
 } from '../auth/neonAuthClient'
+import { verifyNeonJwt } from '../auth/neonJwt'
 
 const scrypt = promisify(nodeScrypt)
 
@@ -47,32 +47,6 @@ type NeonJwtPayload = {
   name?: string
   iss?: string
 }
-
-type NeonSessionResponse = {
-  user: {
-    id: string
-    email: string
-    name: string
-  }
-  session: {
-    token: string
-  }
-} | null
-
-type NeonAccountInfoResponse = {
-  user?: {
-    id?: string
-    sub?: string
-    email?: string
-    name?: string
-  } | null
-  data?: {
-    id?: string
-    sub?: string
-    email?: string
-    name?: string
-  } | null
-} | null
 
 function decodeJwtPayload(token: string): NeonJwtPayload | null {
   const segments = token.split('.')
@@ -191,9 +165,6 @@ export class AuthService {
     this.neonAuthUrl = neonAuthUrl?.trim() || null
   }
 
-  private async ensureAdminSeed() {
-    return enforceConfiguredAdminAccount(this.userRepository, this.adminEmail, 'adminadmin')
-  }
 
   private async createSessionPayload(
     role: 'admin' | 'user' | 'guest',
@@ -227,8 +198,6 @@ export class AuthService {
   }
 
   async register(input: RegisterInput) {
-    await this.ensureAdminSeed()
-
     const email = normalizeEmail(input.email)
     const existingUser = await this.userRepository.getByEmail(email)
 
@@ -254,8 +223,6 @@ export class AuthService {
   }
 
   async login(input: LoginInput) {
-    await this.ensureAdminSeed()
-
     const email = normalizeEmail(input.email)
     const user = await this.userRepository.getByEmail(email)
 
@@ -267,7 +234,6 @@ export class AuthService {
   }
 
   async createGuestSession() {
-    await this.ensureAdminSeed()
     return this.createSessionPayload('guest', null, null, 'Guest')
   }
 
@@ -323,13 +289,13 @@ export class AuthService {
         return this.createStoredNeonSession(token, user)
       }
 
-      const fallbackJwtUser = this.getFallbackJwtUser(token)
+      const issuedTokenClaims = this.readIssuedTokenClaims(token)
 
-      if (fallbackJwtUser) {
+      if (issuedTokenClaims) {
         return this.createStoredNeonSession(token, {
-          id: fallbackJwtUser.sub,
-          email: fallbackJwtUser.email,
-          name: fallbackJwtUser.name,
+          id: issuedTokenClaims.sub,
+          email: issuedTokenClaims.email,
+          name: issuedTokenClaims.name,
         })
       }
 
@@ -360,13 +326,13 @@ export class AuthService {
         return this.createStoredNeonSession(token, user)
       }
 
-      const fallbackJwtUser = this.getFallbackJwtUser(token)
+      const issuedTokenClaims = this.readIssuedTokenClaims(token)
 
-      if (fallbackJwtUser) {
+      if (issuedTokenClaims) {
         return this.createStoredNeonSession(token, {
-          id: fallbackJwtUser.sub,
-          email: fallbackJwtUser.email,
-          name: fallbackJwtUser.name,
+          id: issuedTokenClaims.sub,
+          email: issuedTokenClaims.email,
+          name: issuedTokenClaims.name,
         })
       }
 
@@ -403,42 +369,6 @@ export class AuthService {
     }
   }
 
-  private async getNeonAccountInfoForToken(token: string): Promise<NeonAccountInfoResponse> {
-    if (!this.neonAuthUrl) {
-      return null
-    }
-
-    const response = await fetch(`${this.neonAuthUrl}/account-info`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    return (await response.json()) as NeonAccountInfoResponse
-  }
-
-  private async getNeonSessionForToken(token: string): Promise<NeonSessionResponse> {
-    if (!this.neonAuthUrl) {
-      return null
-    }
-
-    const response = await fetch(`${this.neonAuthUrl}/get-session`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    return (await response.json()) as NeonSessionResponse
-  }
-
   private async syncNeonUser(payload: NeonJwtPayload) {
     const normalizedEmail = payload.email ? normalizeEmail(payload.email) : `${payload.sub}@neon.local`
     const existingUserById = await this.userRepository.getById(payload.sub)
@@ -466,7 +396,14 @@ export class AuthService {
     return nextUser
   }
 
-  private getFallbackJwtUser(token: string) {
+  /**
+   * Reads the claims out of a token WITHOUT verifying its signature.
+   *
+   * Only ever call this on a token Neon Auth just issued to us over an authenticated call
+   * (login/register), where the transport is the proof and the claims are just being unpacked.
+   * Never call it on a token supplied by a client — see the comment in `getSessionByToken`.
+   */
+  private readIssuedTokenClaims(token: string) {
     const payload = decodeJwtPayload(token)
 
     if (!payload?.sub) {
@@ -504,52 +441,21 @@ export class AuthService {
       }
     }
 
-    const neonAccountInfo = await this.getNeonAccountInfoForToken(token)
-    const accountUser = neonAccountInfo?.user ?? neonAccountInfo?.data ?? null
+    // Otherwise it must be a Neon-issued JWT, verified against Neon's JWKS. There is deliberately
+    // no unverified path: Neon offers no way to validate the opaque session token it gives the
+    // browser, so a cryptographic check is the only thing that can identify a caller here.
+    const claims = await verifyNeonJwt(token, this.neonAuthUrl)
 
-    if (accountUser?.id || accountUser?.sub) {
-      const user = await this.syncNeonUser({
-        sub: accountUser.id ?? accountUser.sub ?? '',
-        aud: 'neon-auth',
-        email: accountUser.email,
-        name: accountUser.name,
-      })
-
-      return {
-        token,
-        actorKey: `user:${user.id}`,
-        role: user.role,
-        email: user.email,
-        displayName: user.displayName,
-      }
-    }
-
-    const neonSession = await this.getNeonSessionForToken(token)
-
-    if (neonSession?.user?.id) {
-      const user = await this.syncNeonUser({
-        sub: neonSession.user.id,
-        aud: 'neon-auth',
-        email: neonSession.user.email,
-        name: neonSession.user.name,
-      })
-
-      return {
-        token,
-        actorKey: `user:${user.id}`,
-        role: user.role,
-        email: user.email,
-        displayName: user.displayName,
-      }
-    }
-
-    const fallbackJwtUser = this.getFallbackJwtUser(token)
-
-    if (!fallbackJwtUser) {
+    if (!claims) {
       return null
     }
 
-    const user = await this.syncNeonUser(fallbackJwtUser)
+    const user = await this.syncNeonUser({
+      sub: claims.sub,
+      aud: 'neon-auth',
+      email: claims.email,
+      name: claims.name,
+    })
 
     return {
       token,

@@ -9,8 +9,8 @@ import {
   resetNeonPassword,
   signInWithNeonGoogle,
   signInWithNeonPassword,
-  signOutNeon,
   signUpWithNeonPassword,
+  signOutNeon,
 } from './neonAuthClient'
 
 const AUTH_API_BASE = buildApiUrl('/api/auth')
@@ -101,11 +101,19 @@ function setStoredSessionRole(role: AuthSession['role']) {
   window.localStorage.setItem(SESSION_ROLE_STORAGE_KEY, role)
 }
 
+/**
+ * The bearer token for API calls: guests carry one our backend minted and stored, everyone else
+ * carries a Neon-issued JWT the backend verifies against Neon's JWKS.
+ *
+ * `null` means "not signed in" — callers should skip the request rather than send an unauthenticated
+ * one that can only 401.
+ */
+async function resolveBearerToken() {
+  return getStoredSessionToken() ?? (await getNeonJwtToken())
+}
+
 export async function buildAuthenticatedHeaders(init?: HeadersInit) {
-  const token =
-    getStoredSessionRole() === 'guest'
-      ? getStoredSessionToken()
-      : await getNeonJwtToken()
+  const token = await resolveBearerToken()
 
   return buildHeaders({
     ...(init ?? {}),
@@ -123,10 +131,15 @@ async function resetAuthState() {
   }
 }
 
+/**
+ * Sign-in and registration happen against **Neon Auth**, in the browser — Neon owns credentials,
+ * email verification, password reset and Google, so keeping all of it in one system avoids two
+ * places disagreeing about an account. Our API then identifies the caller from the Neon JWT.
+ */
 export async function login(email: string, password: string) {
   await resetAuthState()
   await signInWithNeonPassword(email, password)
-  const session = await getCurrentSession()
+  const session = await getCurrentSession({ force: true })
 
   if (!session) {
     throw new Error('Failed to restore session after login.')
@@ -139,7 +152,7 @@ export async function register(email: string, password: string) {
   await resetAuthState()
   await signUpWithNeonPassword(email, password)
 
-  const session = await getCurrentSession()
+  const session = await getCurrentSession({ force: true })
 
   if (session) {
     return session
@@ -158,37 +171,44 @@ export async function loginAsGuest() {
   return session
 }
 
-export async function getCurrentSession() {
-  if (getStoredSessionRole() === 'guest') {
-    const token = getStoredSessionToken()
+type SessionLookupOptions = {
+  /**
+   * Ask even when nothing is remembered locally. Used right after a sign-in, where a session
+   * certainly exists but hasn't been recorded yet.
+   */
+  force?: boolean
+}
 
-    if (!token) {
-      return null
-    }
+/**
+ * Restores the session by asking our API who the current bearer is.
+ *
+ * Makes **no network requests at all** when the browser has nothing to restore. Without that,
+ * every visit by a signed-out player produced two guaranteed failures: a `401` from Neon's `/token`
+ * and then a `401` from our `/me`, called with no `Authorization` header whatsoever.
+ */
+export async function getCurrentSession({ force = false }: SessionLookupOptions = {}) {
+  const storedRole = getStoredSessionRole()
 
-    try {
-      const session = await requestJson<AuthSession>('/me', {
-        headers: await buildAuthenticatedHeaders(),
-      })
+  // Guests authenticate purely with the stored backend token; no token means no guest session.
+  if (storedRole === 'guest' && !getStoredSessionToken()) {
+    return null
+  }
 
-      setStoredSessionRole(session.role)
-      return session
-    } catch {
-      clearStoredSessionToken()
-      return null
-    }
+  // Nothing remembered and no sign-in just happened, so there is nobody to look up.
+  if (!force && !storedRole) {
+    return null
+  }
+
+  const token = await resolveBearerToken()
+
+  if (!token) {
+    clearStoredSessionToken()
+    return null
   }
 
   try {
-    const neonSession = await getNeonSession()
-
-    if (!neonSession) {
-      clearStoredSessionToken()
-      return null
-    }
-
     const session = await requestJson<AuthSession>('/me', {
-      headers: await buildAuthenticatedHeaders(),
+      headers: buildHeaders({ Authorization: `Bearer ${token}` }),
     })
 
     setStoredSessionRole(session.role)
@@ -200,16 +220,28 @@ export async function getCurrentSession() {
 }
 
 export async function logout() {
+  const wasGuest = getStoredSessionRole() === 'guest'
+
   try {
-    if (getStoredSessionRole() === 'guest') {
+    // Only guests hold a backend session row; for them the row is the credential, so it has to be
+    // deleted. Neon owns the session for everyone else, hence signOutNeon below.
+    if (getStoredSessionToken()) {
       await requestJson<void>('/logout', {
         method: 'POST',
         headers: await buildAuthenticatedHeaders(),
       })
-    } else {
-      await signOutNeon()
     }
+  } catch {
+    // Clearing locally still signs the player out of this browser.
   } finally {
+    if (!wasGuest) {
+      try {
+        await signOutNeon()
+      } catch {
+        // Ignore stale or missing Neon session state.
+      }
+    }
+
     clearStoredSessionToken()
   }
 }
@@ -234,18 +266,26 @@ export async function completeGoogleLogin(code?: string) {
     await exchangeNeonCodeForSession(code)
   }
 
-  let session = await getCurrentSession()
+  // Wait for Neon to finish establishing the browser session before asking it for a JWT. It
+  // finalises asynchronously on the callback route, and asking early makes `/token` answer 401 —
+  // which is what used to put a failed request in the waterfall on every Google sign-in.
+  let neonSession = await getNeonSession()
 
-  // Neon OAuth can finalize the browser session asynchronously on the callback route.
-  if (!session) {
+  if (!neonSession) {
     await delay(150)
-    session = await getCurrentSession()
+    neonSession = await getNeonSession()
   }
 
-  if (!session) {
+  if (!neonSession) {
     await delay(350)
-    session = await getCurrentSession()
+    neonSession = await getNeonSession()
   }
+
+  if (!neonSession) {
+    throw new Error('Google login failed.')
+  }
+
+  const session = await getCurrentSession({ force: true })
 
   if (!session) {
     throw new Error('Google login failed.')

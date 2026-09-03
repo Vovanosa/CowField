@@ -56,7 +56,11 @@ export class LevelService {
       } satisfies LevelAdminRecord
     }
 
-    const {  ...publicLevel } = level
+    // `cowsByCell` is the authored solution. It must never reach a non-admin caller, and stripping
+    // it has to happen at runtime — `satisfies LevelPublicRecord` below does not remove properties
+    // that arrive through a spread, so the type alone is not a guarantee.
+    const { cowsByCell, ...publicLevel } = level
+    void cowsByCell
 
     return {
       ...publicLevel,

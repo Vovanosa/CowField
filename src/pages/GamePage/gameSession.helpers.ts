@@ -3,7 +3,7 @@ import type { MutableRefObject } from 'react'
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
 import type { Difficulty, LevelDefinition } from '../../game/types'
 
-export type CellMark = 'empty' | 'dot' | 'bull'
+export type { CellMark } from '../../game/types'
 export type DragMode = 'add-dot' | 'clear-dot' | null
 
 export type GameDragState = {

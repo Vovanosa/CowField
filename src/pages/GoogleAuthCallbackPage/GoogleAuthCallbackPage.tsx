@@ -1,19 +1,44 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
+import { useAuth } from '../../app/useAuth'
 import { AuthLayout } from '../../components/AuthLayout'
-import { completeGoogleLogin } from '../../game/storage/authSessionStorage'
 
 export function GoogleAuthCallbackPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { completeGoogleLogin, isAuthenticated, isLoading } = useAuth()
+
+  const hasStartedRef = useRef(false)
 
   useEffect(() => {
+    // Wait for the provider to settle before deciding anything.
+    if (isLoading) {
+      return
+    }
+
+    // Already signed in — nothing to complete, and re-running the flow would fail on a spent
+    // verifier and bounce to an error page. Just go home.
+    if (isAuthenticated) {
+      navigate('/', { replace: true })
+      return
+    }
+
+    // Run exactly once. The verifier is one-shot, so a second pass would find nothing and report a
+    // failure over a login that already succeeded.
+    if (hasStartedRef.current) {
+      return
+    }
+
+    hasStartedRef.current = true
+
     const code = searchParams.get('code')
     const error = searchParams.get('error')
+    // Neon's browser client consumes this itself; we only read it to tell a real callback from a
+    // stray visit.
     const sessionVerifier = searchParams.get('neon_auth_session_verifier')
 
     async function finishLogin() {
@@ -40,7 +65,7 @@ export function GoogleAuthCallbackPage() {
     }
 
     void finishLogin()
-  }, [navigate, searchParams, t])
+  }, [completeGoogleLogin, isAuthenticated, isLoading, navigate, searchParams, t])
 
   return (
     <AuthLayout
