@@ -1,3 +1,5 @@
+import type { Difficulty } from '../types'
+
 export const GRID_SIZE = 10
 export const TOTAL_LEVEL_SLOTS = 12
 
@@ -42,3 +44,12 @@ export function getGapColorForId(colorId: number) {
 
   return COLOR_GAP_PALETTE[colorId - 1] ?? 'var(--color-board-gap)'
 }
+
+/**
+ * Every difficulty, in play order.
+ *
+ * Lives here rather than in a storage module because both `levelStorage` and
+ * `difficultyOverviewStorage` need it, and `levelStorage` already imports the latter — putting it in
+ * either one would make the pair circular.
+ */
+export const DIFFICULTIES: readonly Difficulty[] = ['light', 'easy', 'medium', 'hard']

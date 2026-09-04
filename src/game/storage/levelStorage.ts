@@ -13,7 +13,9 @@ import { invalidateDifficultyOverviewCache } from './difficultyOverviewStorage'
 import { requestAuthenticatedJson } from './request'
 
 const API_BASE = buildApiUrl('/api/levels')
-export const DIFFICULTIES: Difficulty[] = ['light', 'easy', 'medium', 'hard']
+// Re-exported so existing call sites keep working; the list itself lives in levels/constants.ts,
+// which both this module and difficultyOverviewStorage can import without a cycle.
+export { DIFFICULTIES } from '../levels/constants'
 
 type LevelApiRecord = {
   difficulty: Difficulty

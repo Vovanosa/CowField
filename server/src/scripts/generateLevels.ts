@@ -8,6 +8,7 @@ import {
 } from '../../../shared/game'
 import { getPrismaClient } from '../db/prismaClient'
 import { PrismaLevelRepository } from '../repositories/PrismaLevelRepository'
+import { DIFFICULTIES } from '../types/level'
 
 /**
  * Bulk-generates levels that are guaranteed to have exactly one solution.
@@ -33,8 +34,6 @@ import { PrismaLevelRepository } from '../repositories/PrismaLevelRepository'
  *
  * The whole batch is written in **one transaction**, so a run can never land half-finished.
  */
-
-const DIFFICULTIES: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 type Options = {
   difficulty: Difficulty

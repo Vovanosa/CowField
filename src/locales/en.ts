@@ -23,8 +23,6 @@ const en = {
   Medium: 'Medium',
   Hard: 'Hard',
   'Home menu': 'Home menu',
-  'Primary navigation': 'Primary navigation',
-  'Open settings': 'Open settings',
   'Puzzle board': 'Puzzle board',
   Play: 'Play',
   About: 'About',
@@ -32,20 +30,12 @@ const en = {
   Settings: 'Settings',
   'Level Select': 'Level Select',
   'Choose a difficulty to play.': 'Choose a difficulty to play.',
-  'Choose a difficulty.': 'Choose a difficulty.',
-  'Each difficulty has its own level list.': 'Each difficulty has its own level list.',
-  'Each difficulty has its own sequence of levels and its own create flow.':
-    'Each difficulty has its own sequence of levels and its own create flow.',
   'Available levels': 'Available levels',
   'Unknown difficulty.': 'Unknown difficulty.',
   'Choose one of the available difficulty groups to browse levels.':
     'Choose one of the available difficulty groups to browse levels.',
   Levels: 'Levels',
   '{{difficulty}} Levels': '{{difficulty}} Levels',
-  'Loading levels...': 'Loading levels...',
-  'Browse this difficulty one page at a time.': 'Browse this difficulty one page at a time.',
-  '{{count}} total levels': '{{count}} total levels',
-  'Showing {{from}}-{{to}}': 'Showing {{from}}-{{to}}',
   Previous: 'Previous',
   Next: 'Next',
   'Page {{page}} of {{totalPages}}': 'Page {{page}} of {{totalPages}}',
@@ -56,12 +46,6 @@ const en = {
   'This level is locked. Complete the previous level first to open it.':
     'This level is locked. Complete the previous level first to open it.',
   'About the game': 'About the game',
-  'A quick guide for new players before the first level.':
-    'A quick guide for new players before the first level.',
-  'A quick guide for new players.':
-    'A quick guide for new players.',
-  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.':
-    'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.',
   'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
     'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
   'How cell marks work': 'How cell marks work',
@@ -87,18 +71,9 @@ const en = {
     'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.',
   'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
     'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
-  'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.':
-    'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.',
-  'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.':
-    'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.',
-  'Adjust player preferences here. These switches stay on this device for every account.':
-    'Adjust player preferences here. These switches stay on this device for every account.',
   'Adjust your preferences here.':
     'Adjust your preferences here.',
-  'Loading settings...': 'Loading settings...',
   'Sound effects': 'Sound effects',
-  'Enable interface and gameplay sound effects.':
-    'Enable interface and gameplay sound effects.',
   'Enable sound effects.':
     'Enable sound effects.',
   Music: 'Music',
@@ -116,7 +91,6 @@ const en = {
   'Automatically place helper dots around confirmed bull placements.':
     'Automatically place helper dots around confirmed bull placements.',
   'Player statistics': 'Player statistics',
-  'Loading statistics...': 'Loading statistics...',
   'Most progress': 'Most progress',
   'No data': 'No data',
   'Completed levels': 'Completed levels',
@@ -129,14 +103,11 @@ const en = {
   'No completed level': 'No completed level',
   '{{count}} completed levels': '{{count}} completed levels',
   'The requested level route is invalid.': 'The requested level route is invalid.',
-  'Loading level...': 'Loading level...',
   'This level does not exist yet.': 'This level does not exist yet.',
   'Create level': 'Create level',
   'Edit level': 'Edit level',
   'Remaining bulls': 'Remaining bulls',
   Timer: 'Timer',
-  'Level completed!': 'Level completed!',
-  'New best time!': 'New best time!',
   Back: 'Back',
   'Failed to load level data.': 'Failed to load level data.',
   'Admin role is required to create or edit levels.':
@@ -184,14 +155,9 @@ const en = {
   Cow: 'Cow',
   'Color {{colorId}}': 'Color {{colorId}}',
   'Level color editor': 'Level color editor',
-  'Failed to load content.': 'Failed to load content.',
-  'Failed to save content.': 'Failed to save content.',
-  'Save text': 'Save text',
-  'Edit text': 'Edit text',
   Profile: 'Profile',
   Guest: 'Guest',
   User: 'User',
-  'Admin view': 'Admin view',
   'Preview role': 'Preview role',
   'Log out': 'Log out',
   Login: 'Login',
@@ -230,16 +196,6 @@ const en = {
     'Account created. Check your email to verify it before logging in.',
   'Verification email sent again.': 'Verification email sent again.',
   'Resend verification email': 'Resend verification email',
-  'Verify email': 'Verify email',
-  'Enter the verification code sent to your email to finish creating your account.':
-    'Enter the verification code sent to your email to finish creating your account.',
-  'Verification code': 'Verification code',
-  'Verify code': 'Verify code',
-  'Verification code sent again.': 'Verification code sent again.',
-  'Resend verification code': 'Resend verification code',
-  'Enter verification code': 'Enter verification code',
-  'Your email has been verified. You can log in now.':
-    'Your email has been verified. You can log in now.',
   'Show password': 'Show password',
   'Hide password': 'Hide password',
   'You are playing as a Guest.': 'You are playing as a Guest.',
@@ -248,23 +204,20 @@ const en = {
   'Too many attempts. Wait a few minutes and try again.':
     'Too many attempts. Wait a few minutes and try again.',
   'Guests cannot access this resource.': 'Guests cannot access this resource.',
+  // Neon Auth's own raw error text. The browser signs in against Neon directly, so these strings
+  // reach `translateAuthMessage` verbatim — without a key here they render as English for everyone.
+  'Invalid email or password': 'Incorrect email or password.',
+  'User already exists': 'An account with that email already exists.',
   'Email not verified': 'Email not verified.',
   'Failed to restore session after login.': 'Failed to restore session after login.',
   'Google login failed.': 'Google login failed.',
   'Neon Auth is not configured.': 'Neon Auth is not configured.',
   'Invalid request payload.': 'Invalid request payload.',
   'Level complete': 'Level complete',
-  'First clear': 'First clear',
-  'Completed again': 'Completed again',
-  'Progress saved.': 'Progress saved.',
-  'Best time set at {{time}}.': 'Best time set at {{time}}.',
   'Best time: {{time}}': 'Best time: {{time}}',
   'New best time.': 'New best time.',
   "Couldn't save your progress. Check your connection and try again.": "Couldn't save your progress. Check your connection and try again.",
   'Try again': 'Try again',
-  '{{delta}} faster than your previous best.': '{{delta}} faster than your previous best.',
-  '{{delta}} slower than your best.': '{{delta}} slower than your best.',
-  'Next level is ready.': 'Next level is ready.',
   'You completed the last available level.': 'You completed the last available level.',
   'Your progress has been saved.': 'Your progress has been saved.',
 

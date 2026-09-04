@@ -1,11 +1,8 @@
-import { randomBytes, randomUUID, scrypt as nodeScrypt } from 'node:crypto'
-import { promisify } from 'node:util'
+import { randomUUID } from 'node:crypto'
 
 import { requireEnvironmentVariable } from '../db/config'
 import type { UserRepository } from '../repositories/interfaces'
 import type { UserRecord } from '../types/auth'
-
-const scrypt = promisify(nodeScrypt)
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
@@ -17,12 +14,6 @@ export function normalizeEmail(email: string) {
  */
 export function getConfiguredAdminEmail() {
   return normalizeEmail(requireEnvironmentVariable('BULLPEN_ADMIN_EMAIL'))
-}
-
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString('hex')
-  const derivedKey = (await scrypt(password, salt, 64)) as Buffer
-  return `${salt}:${derivedKey.toString('hex')}`
 }
 
 /**

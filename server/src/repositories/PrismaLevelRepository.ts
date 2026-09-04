@@ -1,5 +1,6 @@
 import { Difficulty, type PrismaClient } from '@prisma/client'
 
+import { DIFFICULTIES } from '../types/level'
 import type {
   Difficulty as AppDifficulty,
   LevelDifficultySummaryRecord,
@@ -108,7 +109,6 @@ export class PrismaLevelRepository implements LevelRepository {
       },
     })
 
-    const difficulties: AppDifficulty[] = ['light', 'easy', 'medium', 'hard']
     const groupedByDifficulty = new Map(
       groups.map((group) => [
         group.difficulty as AppDifficulty,
@@ -121,7 +121,7 @@ export class PrismaLevelRepository implements LevelRepository {
     )
 
     return {
-      difficulties: difficulties.map(
+      difficulties: DIFFICULTIES.map(
         (difficulty) => groupedByDifficulty.get(difficulty) ?? createEmptyLevelDifficultySummary(difficulty),
       ),
     }
@@ -334,15 +334,5 @@ export class PrismaLevelRepository implements LevelRepository {
     ])
 
     return deleted.count > 0
-  }
-
-  async exists() {
-    const level = await this.prisma.level.findFirst({
-      select: {
-        id: true,
-      },
-    })
-
-    return Boolean(level)
   }
 }

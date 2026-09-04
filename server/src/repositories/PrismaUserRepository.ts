@@ -62,16 +62,6 @@ export class PrismaUserRepository implements UserRepository {
     return user ? toUserRecord(user) : null
   }
 
-  async getByGoogleId(googleId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        googleId,
-      },
-    })
-
-    return user ? toUserRecord(user) : null
-  }
-
   async save(user: UserRecord) {
     const savedUser = await this.prisma.user.upsert({
       where: {

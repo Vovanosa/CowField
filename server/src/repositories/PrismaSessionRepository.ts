@@ -126,12 +126,4 @@ export class PrismaSessionRepository implements SessionRepository {
       },
     })
   }
-
-  async deleteByAccountUserId(accountUserId: string) {
-    await this.prisma.session.deleteMany({
-      where: {
-        userId: accountUserId,
-      },
-    })
-  }
 }

@@ -17,7 +17,6 @@ export interface UserRepository {
   listAll(): Promise<UserRecord[]>
   getByEmail(email: string): Promise<UserRecord | null>
   getById(id: string): Promise<UserRecord | null>
-  getByGoogleId(googleId: string): Promise<UserRecord | null>
   save(user: UserRecord): Promise<UserRecord>
 }
 
@@ -29,7 +28,6 @@ export interface SessionRepository {
   getByToken(token: string): Promise<SessionRecord | null>
   save(session: SessionRecord): Promise<SessionRecord>
   deleteByToken(token: string): Promise<void>
-  deleteByAccountUserId(accountUserId: string): Promise<void>
   /** Bulk sweep of everything already expired. Returns the number of rows deleted. */
   deleteExpired(now?: Date): Promise<number>
 }
@@ -105,7 +103,6 @@ export interface LevelRepository {
     options?: { replacedLevelNumbers?: number[] },
   ): Promise<{ savedCount: number; deletedProgressCount: number }>
   delete(difficulty: Difficulty, levelNumber: number): Promise<boolean>
-  exists(): Promise<boolean>
 }
 
 export type AppRepositories = {

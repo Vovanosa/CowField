@@ -23,8 +23,6 @@
   Medium: 'Середня',
   Hard: 'Складна',
   'Home menu': 'Головне меню',
-  'Primary navigation': 'Основна навігація',
-  'Open settings': 'Відкрити налаштування',
   'Puzzle board': 'Ігрове поле',
   Play: 'Грати',
   About: 'Про гру',
@@ -32,20 +30,12 @@
   Settings: 'Налаштування',
   'Level Select': 'Вибір рівня',
   'Choose a difficulty to play.': 'Оберіть складність для гри.',
-  'Choose a difficulty.': 'Оберіть складність.',
-  'Each difficulty has its own level list.': 'Кожна складність має власний список рівнів.',
-  'Each difficulty has its own sequence of levels and its own create flow.':
-    'Кожна складність має власну послідовність рівнів і власний режим створення.',
   'Available levels': 'Доступні рівні',
   'Unknown difficulty.': 'Невідома складність.',
   'Choose one of the available difficulty groups to browse levels.':
     'Оберіть одну з доступних складностей, щоб переглянути рівні.',
   Levels: 'Рівні',
   '{{difficulty}} Levels': 'Рівні: {{difficulty}}',
-  'Loading levels...': 'Завантаження рівнів...',
-  'Choose a level to play.': 'Оберіть рівень для гри.',
-  '{{count}} total levels': 'Усього рівнів: {{count}}',
-  'Showing {{from}}-{{to}}': 'Показано {{from}}-{{to}}',
   Previous: 'Попередня',
   Next: 'Наступна',
   'Page {{page}} of {{totalPages}}': 'Сторінка {{page}} з {{totalPages}}',
@@ -56,12 +46,6 @@
   'This level is locked. Complete the previous level first to open it.':
     'Цей рівень заблокований. Спочатку пройдіть попередній рівень, щоб його відкрити.',
   'About the game': 'Про гру',
-  'A quick guide for new players before the first level.':
-    'Короткий вступ для нових гравців перед першим рівнем.',
-  'A quick guide for new players.':
-    'Короткий вступ для нових гравців.',
-  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no guessing, just slowly noticing where each bull can and cannot go.':
-    'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без хаотичних здогадок, лише поступове розуміння того, де бик може стояти, а де ні.',
   'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
     'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без стресу, лише поступове розуміння того, де бик може стояти, а де ні.',
   'How cell marks work': 'Як працюють позначки в клітинках',
@@ -87,11 +71,7 @@
     'У налаштуваннях можна зробити гру комфортнішою: увімкнути режим без поспіху, щоб сховати таймер, скористатися автопозначками точками, перейти на темну тему та ввімкнути звукові ефекти або музику з регулюванням гучності. Якщо ви граєте як гість, режим без поспіху вмикається автоматично.',
   'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
     'Найприємніший момент у Bullpen — це коли заплутане поле раптом починає складатися в зрозумну картину. Починайте з малого, довіряйте правилам і дозвольте візерунку з’являтися по одному бику за раз.',
-  'Adjust player preferences here. These switches are remembered by the backend.':
-    'Налаштовуйте параметри гравця тут. Ці перемикачі зберігаються на бекенді.',
-  'Loading settings...': 'Завантаження налаштувань...',
   'Sound effects': 'Звукові ефекти',
-  'Enable interface and gameplay sound effects.': 'Увімкнути звуки інтерфейсу та гри.',
   'Enable sound effects.': 'Увімкнути звукові ефекти.',
   Music: 'Музика',
   'Enable background music during play.': 'Увімкнути фонову музику під час гри.',
@@ -106,7 +86,6 @@
   'Automatically place helper dots around confirmed bull placements.':
     'Автоматично ставити допоміжні точки навколо підтверджених биків.',
   'Player statistics': 'Статистика гравця',
-  'Loading statistics...': 'Завантаження статистики...',
   'Most progress': 'Найбільший прогрес',
   'No data': 'Немає даних',
   'Completed levels': 'Пройдено рівнів',
@@ -119,14 +98,11 @@
   'No completed level': 'Немає пройденого рівня',
   '{{count}} completed levels': '{{count}} пройдених рівнів',
   'The requested level route is invalid.': 'Запитаний маршрут рівня недійсний.',
-  'Loading level...': 'Завантаження рівня...',
   'This level does not exist yet.': 'Цей рівень ще не існує.',
   'Create level': 'Створити рівень',
   'Edit level': 'Редагувати рівень',
   'Remaining bulls': 'Залишилося биків',
   Timer: 'Таймер',
-  'Level completed!': 'Рівень завершено!',
-  'New best time!': 'Новий найкращий час!',
   Back: 'Назад',
   'Failed to load level data.': 'Не вдалося завантажити дані рівня.',
   'Admin role is required to create or edit levels.':
@@ -174,14 +150,9 @@
   Cow: 'Корова',
   'Color {{colorId}}': 'Колір {{colorId}}',
   'Level color editor': 'Редактор кольорів рівня',
-  'Failed to load content.': 'Не вдалося завантажити вміст.',
-  'Failed to save content.': 'Не вдалося зберегти вміст.',
-  'Save text': 'Зберегти текст',
-  'Edit text': 'Редагувати текст',
   Profile: 'Профіль',
   Guest: 'Гість',
   User: 'Користувач',
-  'Admin view': 'Режим адміністратора',
   'Preview role': 'Режим перегляду',
   'Log out': 'Вийти',
   Login: 'Вхід',
@@ -202,15 +173,8 @@
   'Confirm password': 'Підтвердіть пароль',
   'Back to login': 'Назад до входу',
   'Reset password': 'Скидання пароля',
-  'Enter your email to start the password reset flow.':
-    'Введіть свою електронну пошту, щоб розпочати скидання пароля.',
-  'If the account exists, a reset email flow has been started.':
-    'Якщо акаунт існує, процес скидання пароля вже розпочато.',
   'Send reset link': 'Надіслати посилання для скидання',
-  'I already have a reset token': 'У мене вже є токен скидання',
   'Your password has been updated.': 'Ваш пароль оновлено.',
-  'Paste your reset token from the email flow and choose a new password.':
-    'Вставте токен скидання з листа та виберіть новий пароль.',
   'Reset token': 'Токен скидання',
   'New password': 'Новий пароль',
   'Save new password': 'Зберегти новий пароль',
@@ -219,16 +183,10 @@
   'Hide password': 'Сховати пароль',
   'Continue with Google': 'Продовжити з Google',
   'Completing Google login...': 'Завершення входу через Google...',
-  'Adjust player preferences here. These switches stay on this device for every account.':
-    'Налаштовуйте параметри гравця тут. Вони зберігаються локально на цьому пристрої для всіх акаунтів.',
   'Adjust your preferences here.':
     'Налаштуйте свої параметри тут.',
   'Switch to dark mode': 'Увімкнути темну тему',
   'Switch to light mode': 'Увімкнути світлу тему',
-  'Bullpen is a calm logic puzzle about placing bulls so every row, column, and colored pen matches its target while no bulls touch, even diagonally.':
-    'Bullpen — це спокійна логічна гра, де треба розмістити биків так, щоб кожен ряд, стовпець і кольоровий загін відповідав своєму ліміту, а бики не торкалися навіть по діагоналі.',
-  'Use dots as optional notes, take your time, and work level by level through handcrafted boards designed for a steady, relaxed pace.':
-    'Використовуйте точки як нотатки, грайте без поспіху і проходьте рівні по одному на вручну створених дошках для рівного і розслабленого темпу.',
   'Enter your email and we will send you a password reset link.':
     'Введіть свою електронну пошту, і ми надішлемо вам посилання для скидання пароля.',
   'If the account exists, a reset link has been sent to that email address.':
@@ -240,38 +198,24 @@
     'Акаунт створено. Перевірте пошту та підтвердьте адресу перед входом.',
   'Verification email sent again.': 'Лист для підтвердження надіслано повторно.',
   'Resend verification email': 'Надіслати лист для підтвердження ще раз',
-  'Verify email': 'Підтвердження пошти',
-  'Enter the verification code sent to your email to finish creating your account.':
-    'Введіть код підтвердження з листа, щоб завершити створення акаунта.',
-  'Verification code': 'Код підтвердження',
-  'Verify code': 'Підтвердити код',
-  'Verification code sent again.': 'Код підтвердження надіслано повторно.',
-  'Resend verification code': 'Надіслати код ще раз',
-  'Enter verification code': 'Ввести код підтвердження',
-  'Your email has been verified. You can log in now.':
-    'Пошту підтверджено. Тепер можна увійти.',
   'Incorrect email or password.': 'Неправильна електронна пошта або пароль.',
   'Too many requests. Try again in a moment.': 'Занадто багато запитів. Спробуйте за мить.',
   'Too many attempts. Wait a few minutes and try again.':
     'Занадто багато спроб. Почекайте кілька хвилин і спробуйте знову.',
   'Guests cannot access this resource.': 'Гості не мають доступу до цього розділу.',
+  // Neon Auth's own raw error text — see the note in en.ts.
+  'Invalid email or password': 'Неправильна електронна пошта або пароль.',
+  'User already exists': 'Обліковий запис із такою електронною поштою вже існує.',
   'Email not verified': 'Електронну пошту ще не підтверджено.',
   'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
   'Neon Auth is not configured.': 'Neon Auth не налаштовано.',
   'Invalid request payload.': 'Некоректні дані запиту.',
   'Level complete': 'Рівень пройдено',
-  'First clear': 'Перше проходження',
-  'Completed again': 'Пройдено знову',
-  'Progress saved.': 'Прогрес збережено.',
-  'Best time set at {{time}}.': 'Найкращий час встановлено: {{time}}.',
   'Best time: {{time}}': 'Найкращий час: {{time}}',
   'New best time.': 'Новий найкращий час.',
   "Couldn't save your progress. Check your connection and try again.": 'Не вдалося зберегти прогрес. Перевірте з’єднання та спробуйте ще раз.',
   'Try again': 'Спробувати ще раз',
-  '{{delta}} faster than your previous best.': 'На {{delta}} швидше за ваш попередній рекорд.',
-  '{{delta}} slower than your best.': 'На {{delta}} повільніше за ваш рекорд.',
-  'Next level is ready.': 'Наступний рівень уже готовий.',
   'You completed the last available level.': 'Ви пройшли останній доступний рівень.',
   'Your progress has been saved.': 'Ваш прогрес збережено.',
 

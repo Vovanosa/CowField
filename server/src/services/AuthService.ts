@@ -1,5 +1,4 @@
-import { randomBytes, randomUUID, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto'
-import { promisify } from 'node:util'
+import { randomBytes, randomUUID } from 'node:crypto'
 import type {
   LoginInput,
   RegisterInput,
@@ -10,10 +9,7 @@ import type {
   SessionRepository,
   UserRepository,
 } from '../repositories/interfaces'
-import {
-  hashPassword,
-  normalizeEmail,
-} from '../auth/adminAccount'
+import { normalizeEmail } from '../auth/adminAccount'
 import {
   extractNeonUser,
   extractNeonToken,
@@ -26,8 +22,6 @@ import {
 } from '../auth/neonAuthClient'
 import { verifyNeonJwt } from '../auth/neonJwt'
 import { getSessionExpiry } from '../auth/sessionExpiry'
-
-const scrypt = promisify(nodeScrypt)
 
 type AuthSessionPayload = {
   token: string
@@ -92,23 +86,6 @@ function decodeJwtPayload(token: string): NeonJwtPayload | null {
   } catch {
     return null
   }
-}
-
-async function verifyPassword(password: string, passwordHash: string) {
-  const [salt, hash] = passwordHash.split(':')
-
-  if (!salt || !hash) {
-    return false
-  }
-
-  const derivedKey = (await scrypt(password, salt, 64)) as Buffer
-  const expectedHash = Buffer.from(hash, 'hex')
-
-  if (derivedKey.length !== expectedHash.length) {
-    return false
-  }
-
-  return timingSafeEqual(derivedKey, expectedHash)
 }
 
 function createActorKey(userId: string | null, role: 'admin' | 'user' | 'guest') {
@@ -195,7 +172,6 @@ export class AuthService {
     this.neonAuthUrl = neonAuthUrl?.trim() || null
   }
 
-
   private async createSessionPayload(
     role: 'admin' | 'user' | 'guest',
     accountUserId: string | null,
@@ -226,42 +202,6 @@ export class AuthService {
       email: session.email,
       displayName: session.displayName,
     }
-  }
-
-  async register(input: RegisterInput) {
-    const email = normalizeEmail(input.email)
-    const existingUser = await this.userRepository.getByEmail(email)
-
-    if (existingUser) {
-      throw new HttpError(409, 'An account with that email already exists.')
-    }
-
-    const timestamp = new Date().toISOString()
-    const user: UserRecord = {
-      id: randomUUID(),
-      email,
-      passwordHash: await hashPassword(input.password),
-      googleId: null,
-      role: 'user',
-      displayName: deriveDisplayNameFromEmail(email),
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }
-
-    await this.userRepository.save(user)
-
-    return this.createSessionPayload(user.role, user.id, user.email, user.displayName)
-  }
-
-  async login(input: LoginInput) {
-    const email = normalizeEmail(input.email)
-    const user = await this.userRepository.getByEmail(email)
-
-    if (!user?.passwordHash || !(await verifyPassword(input.password, user.passwordHash))) {
-      throw new HttpError(401, 'Incorrect email or password.')
-    }
-
-    return this.createSessionPayload(user.role, user.id, user.email, user.displayName)
   }
 
   async createGuestSession() {

@@ -1,3 +1,4 @@
+import { DIFFICULTIES } from '../levels/constants'
 import type { Difficulty } from '../types'
 import { getStoredSessionRole } from './authSessionStorage'
 import { buildApiUrl } from './apiBase'
@@ -24,7 +25,6 @@ type LevelsOverviewResponse = {
 
 const PROGRESS_API_BASE = buildApiUrl('/api/progress')
 const LEVELS_API_BASE = buildApiUrl('/api/levels')
-const DIFFICULTIES: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 let cachedOverview: DifficultyOverviewResponse | null = null
 let inFlightOverviewPromise: Promise<DifficultyOverviewResponse> | null = null
