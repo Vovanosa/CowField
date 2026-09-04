@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useRole } from '../../app/role'
+import { reportUnexpectedError } from '../../app/reportUnexpectedError'
+import { EmptyState } from '../../components/EmptyState'
 import { StatCard } from '../../components/StatCard'
-import { PageHeader, Panel } from '../../components/ui'
+import { Button, PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getPlayerStatistics } from '../../game/storage/statisticsStorage'
@@ -32,6 +34,16 @@ function formatFastestLevel(
 
 export function StatisticsPage() {
   const [statistics, setStatistics] = useState<PlayerStatisticsSummary | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  // A flag, not a message: translating at render time means the error re-reads in the new
+  // language when the player switches it, and keeps `t` out of the effect's dependencies.
+  const [hasLoadError, setHasLoadError] = useState(false)
+  // Bumping this re-runs the load effect, which is all "Try again" needs to do — the statistics
+  // cache is only written on success, so a retry really does re-request.
+  const [reloadKey, setReloadKey] = useState(0)
+  // Only once the retry has finished failing: while a retry is in flight the page shows its
+  // skeletons again rather than a stale error next to a dead button.
+  const showLoadError = hasLoadError && !isLoading
   const { isGuest } = useRole()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
@@ -41,21 +53,37 @@ export function StatisticsPage() {
     let isActive = true
 
     async function loadStatistics() {
-      const nextStatistics = await getPlayerStatistics()
+      try {
+        const nextStatistics = await getPlayerStatistics()
 
-      if (!isActive) {
-        return
+        if (!isActive) {
+          return
+        }
+
+        setStatistics(nextStatistics)
+        setHasLoadError(false)
+      } catch (error) {
+        reportUnexpectedError(error, 'player statistics')
+
+        if (isActive) {
+          // Without this the page stayed on its skeletons forever and, before that, silently
+          // showed a page full of zeroes as if the player had never completed anything.
+          setHasLoadError(true)
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
-
-      setStatistics(nextStatistics)
     }
 
+    setIsLoading(true)
     void loadStatistics()
 
     return () => {
       isActive = false
     }
-  }, [])
+  }, [reloadKey])
 
   const overviewItems = useMemo(() => {
     if (!statistics) {
@@ -108,84 +136,97 @@ export function StatisticsPage() {
           title={t('Player statistics')}
         />
 
-        <div className={styles.overviewGrid}>
-          {statistics
-            ? overviewItems.map((item) => (
-                <StatCard
-                  key={item.title}
-                  title={item.title}
-                  value={item.value}
-                  icon={item.icon}
-                  detail={'suffix' in item ? item.suffix : undefined}
-                  inlineDetail={'inlineDetail' in item ? item.inlineDetail : false}
-                />
-              ))
-            : Array.from({ length: 4 }, (_, index) => (
-                <Panel key={`overview-skeleton-${index}`} className={styles.overviewSkeleton}>
-                  <span aria-hidden="true" />
-                </Panel>
-              ))}
-        </div>
+        {showLoadError ? null : (
+          <div className={styles.overviewGrid}>
+            {statistics
+              ? overviewItems.map((item) => (
+                  <StatCard
+                    key={item.title}
+                    title={item.title}
+                    value={item.value}
+                    icon={item.icon}
+                    detail={'suffix' in item ? item.suffix : undefined}
+                    inlineDetail={'inlineDetail' in item ? item.inlineDetail : false}
+                  />
+                ))
+              : Array.from({ length: 4 }, (_, index) => (
+                  <Panel key={`overview-skeleton-${index}`} className={styles.overviewSkeleton}>
+                    <span aria-hidden="true" />
+                  </Panel>
+                ))}
+          </div>
+        )}
       </section>
 
-      <section className={styles.sectionBlock}>
-        <div className={styles.sectionHeading}>
-          <h2>{t('Performance breakdown by difficulty:')}</h2>
-        </div>
+      {showLoadError ? (
+        <EmptyState
+          message={t("Couldn't load your statistics. Check your connection and try again.")}
+          actions={
+            <Button variant="primary" onClick={() => setReloadKey((key) => key + 1)}>
+              {t('Try again')}
+            </Button>
+          }
+        />
+      ) : (
+        <section className={styles.sectionBlock}>
+          <div className={styles.sectionHeading}>
+            <h2>{t('Performance breakdown by difficulty:')}</h2>
+          </div>
 
-        <div className={styles.difficultyGrid}>
-          {statistics
-            ? statistics.byDifficulty.map((difficultyStatistics) => (
-                <Panel
-                  key={difficultyStatistics.difficulty}
-                  as="article"
-                  className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]}`}
-                >
-                  <div className={styles.difficultyCardTop}>
-                    <div className={styles.inlinePair}>
-                      <p className={styles.difficultyLabel}>{t('Difficulty')}</p>
-                      <p className={styles.difficultyTitleInline}>
-                        {getDifficultyLabel(t, difficultyStatistics.difficulty)}
-                      </p>
-                    </div>
-                    <div className={styles.inlinePair}>
-                      <p className={styles.completedInline}>{t('Completed levels')}</p>
-                      <strong className={styles.completedInlineValue}>
-                        {difficultyStatistics.completedLevels}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className={styles.metricStack}>
-                    <div className={styles.metricSplitRow}>
-                      <div className={styles.metricBlock}>
-                        <p className={styles.metricLabel}>{t('Fastest level')}</p>
-                        <strong className={styles.metricValue}>
-                          {isTakeYourTimeEnabled
-                            ? t('Hidden')
-                            : formatFastestLevel(difficultyStatistics.fastestLevel, t)}
-                        </strong>
+          <div className={styles.difficultyGrid}>
+            {statistics
+              ? statistics.byDifficulty.map((difficultyStatistics) => (
+                  <Panel
+                    key={difficultyStatistics.difficulty}
+                    as="article"
+                    className={`${styles.difficultyCard} ${difficultyCardClassNames[difficultyStatistics.difficulty]}`}
+                  >
+                    <div className={styles.difficultyCardTop}>
+                      <div className={styles.inlinePair}>
+                        <p className={styles.difficultyLabel}>{t('Difficulty')}</p>
+                        <p className={styles.difficultyTitleInline}>
+                          {getDifficultyLabel(t, difficultyStatistics.difficulty)}
+                        </p>
                       </div>
-
-                      <div className={styles.metricBlock}>
-                        <p className={styles.metricLabel}>{t('Average per level')}</p>
-                        <strong className={styles.metricValue}>
-                          {isTakeYourTimeEnabled
-                            ? t('Hidden')
-                            : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
+                      <div className={styles.inlinePair}>
+                        <p className={styles.completedInline}>{t('Completed levels')}</p>
+                        <strong className={styles.completedInlineValue}>
+                          {difficultyStatistics.completedLevels}
                         </strong>
                       </div>
                     </div>
-                  </div>
-                </Panel>
-              ))
-            : Array.from({ length: 4 }, (_, index) => (
-                <Panel key={`difficulty-skeleton-${index}`} className={styles.difficultySkeleton}>
-                  <span aria-hidden="true" />
-                </Panel>
-              ))}
-        </div>
-      </section>
+
+                    <div className={styles.metricStack}>
+                      <div className={styles.metricSplitRow}>
+                        <div className={styles.metricBlock}>
+                          <p className={styles.metricLabel}>{t('Fastest level')}</p>
+                          <strong className={styles.metricValue}>
+                            {isTakeYourTimeEnabled
+                              ? t('Hidden')
+                              : formatFastestLevel(difficultyStatistics.fastestLevel, t)}
+                          </strong>
+                        </div>
+
+                        <div className={styles.metricBlock}>
+                          <p className={styles.metricLabel}>{t('Average per level')}</p>
+                          <strong className={styles.metricValue}>
+                            {isTakeYourTimeEnabled
+                              ? t('Hidden')
+                              : formatElapsedTime(difficultyStatistics.averageTimeSeconds)}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </Panel>
+                ))
+              : Array.from({ length: 4 }, (_, index) => (
+                  <Panel key={`difficulty-skeleton-${index}`} className={styles.difficultySkeleton}>
+                    <span aria-hidden="true" />
+                  </Panel>
+                ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

@@ -1,0 +1,11 @@
+.screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60svh;
+  padding: var(--space-8) var(--space-5);
+}
+
+.panel {
+  width: min(100%, 480px);
+}

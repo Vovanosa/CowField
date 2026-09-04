@@ -25,14 +25,39 @@ type BetterAuthSessionResponse = {
       name?: string
     } | null
   } | null
-  error?: {
-    message: string
-  } | null
+  error?: NeonAuthErrorPayload | null
+}
+
+type NeonAuthErrorPayload = {
+  message: string
+  /** Better Auth reports the upstream HTTP status here; it is the only reliable signal of what
+   * kind of failure this was, since the messages are free text. */
+  status?: number
+  code?: string
 }
 
 type PasswordResetResponse = {
   data?: unknown
-  error?: { message: string } | null
+  error?: NeonAuthErrorPayload | null
+}
+
+/**
+ * Carries Better Auth's HTTP status through to the caller.
+ *
+ * These used to be thrown as a bare `Error(message)`, which threw the status away — so an upstream
+ * 429 arrived at `mapNeonAuthError` indistinguishable from a genuine fault and came out of our API
+ * as a **500**. Matching on the message text alone is not enough: it is free-form upstream copy.
+ */
+export class NeonAuthRequestError extends Error {
+  public readonly status: number | null
+  public readonly code: string | null
+
+  constructor(payload: NeonAuthErrorPayload) {
+    super(payload.message)
+    this.name = 'NeonAuthRequestError'
+    this.status = typeof payload.status === 'number' ? payload.status : null
+    this.code = typeof payload.code === 'string' ? payload.code : null
+  }
 }
 
 type NeonAuthClient = {
@@ -172,7 +197,7 @@ export async function signInWithNeonPassword(email: string, password: string) {
   const response = await auth.signIn.email({ email, password }) as BetterAuthSessionResponse
 
   if (response.error) {
-    throw new Error(response.error.message)
+    throw new NeonAuthRequestError(response.error)
   }
 
   return response.data?.session ?? response.data ?? null
@@ -196,7 +221,7 @@ export async function signUpWithNeonPassword(
   }) as BetterAuthSessionResponse
 
   if (response.error) {
-    throw new Error(response.error.message)
+    throw new NeonAuthRequestError(response.error)
   }
 
   return response.data?.session ?? response.data ?? null
@@ -214,7 +239,7 @@ export async function requestNeonPasswordReset(email: string, redirectTo: string
       })
 
   if (response.error) {
-    throw new Error(response.error.message)
+    throw new NeonAuthRequestError(response.error)
   }
 
   return response.data
@@ -228,7 +253,7 @@ export async function resetNeonPassword(token: string, newPassword: string) {
   })
 
   if (response.error) {
-    throw new Error(response.error.message)
+    throw new NeonAuthRequestError(response.error)
   }
 
   return response.data

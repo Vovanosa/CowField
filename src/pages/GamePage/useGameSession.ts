@@ -5,6 +5,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 
+import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { playSoundEffect, startMusic, stopMusic } from '../../game/audio/audioManager'
 import {
   clearMoveHistory,
@@ -58,6 +59,11 @@ export function useGameSession({
 }: UseGameSessionArgs) {
   const [level, setLevel] = useState<LevelDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  // A flag, not a message: translating at render time means the error re-reads in the new
+  // language when the player switches it, and keeps `t` out of this hook entirely.
+  const [hasLoadError, setHasLoadError] = useState(false)
+  // Bumping this re-runs the load effect, which is all a retry needs to do.
+  const [reloadKey, setReloadKey] = useState(0)
   const [cellMarks, setCellMarks] = useState<CellMark[]>([])
   const [levelProgress, setLevelProgress] = useState<LevelProgress | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
@@ -110,30 +116,45 @@ export function useGameSession({
     resetGameDragState(dragStateRef)
 
     async function loadLevel() {
-      const previousLevelProgressPromise =
-        currentLevelNumber > 1
-          ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
-          : Promise.resolve(null)
+      try {
+        const previousLevelProgressPromise =
+          currentLevelNumber > 1
+            ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
+            : Promise.resolve(null)
 
-      const [nextLevel, nextProgress, previousLevelProgress] = await Promise.all([
-        getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
-        getLevelProgress(difficultyKey, currentLevelNumber),
-        previousLevelProgressPromise,
-      ])
+        const [nextLevel, nextProgress, previousLevelProgress] = await Promise.all([
+          getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
+          getLevelProgress(difficultyKey, currentLevelNumber),
+          previousLevelProgressPromise,
+        ])
 
-      if (!isActive) {
-        return
+        if (!isActive) {
+          return
+        }
+
+        setLevel(nextLevel)
+        setLevelProgress(nextProgress)
+        setHasNextLevel(nextLevel?.hasNextLevel ?? false)
+        setIsUnlocked(currentLevelNumber === 1 || previousLevelProgress?.bestTimeSeconds !== null)
+        setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
+        setActiveCellIndex(null)
+        setHasLoadError(false)
+      } catch (error) {
+        reportUnexpectedError(error, `game level (${difficultyKey} ${currentLevelNumber})`)
+
+        if (isActive) {
+          // A failed load used to leave `isLoading` true forever — a permanent spinner where the
+          // "level does not exist" empty state should have appeared.
+          setHasLoadError(true)
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
-
-      setLevel(nextLevel)
-      setLevelProgress(nextProgress)
-      setHasNextLevel(nextLevel?.hasNextLevel ?? false)
-      setIsUnlocked(currentLevelNumber === 1 || previousLevelProgress?.bestTimeSeconds !== null)
-      setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
-      setActiveCellIndex(null)
-      setIsLoading(false)
     }
 
+    setIsLoading(true)
     void loadLevel()
 
     return () => {
@@ -144,7 +165,7 @@ export function useGameSession({
         void recordBullPlacements(pendingBullPlacementsRef.current, true)
       }
     }
-  }, [difficulty, levelNumber, isGuest])
+  }, [difficulty, levelNumber, isGuest, reloadKey])
 
   useEffect(() => {
     function stopDragging() {
@@ -230,6 +251,11 @@ export function useGameSession({
       stopMusic()
     }
   }, [])
+
+  /** Re-runs the level load after a failed one. */
+  function handleRetryLoad() {
+    setReloadKey((key) => key + 1)
+  }
 
   const solutionState = level ? getSolutionState(level, cellMarks) : null
 
@@ -580,6 +606,8 @@ export function useGameSession({
   return {
     level,
     isLoading,
+    hasLoadError,
+    handleRetryLoad,
     cellMarks,
     elapsedSeconds,
     isBoardLocked,

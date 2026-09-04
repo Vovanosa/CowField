@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import { useRole } from '../../app/role'
+import { reportUnexpectedError } from '../../app/reportUnexpectedError'
+import { EmptyState } from '../../components/EmptyState'
 import { LevelCard } from '../../components/LevelCard'
 import { Button, PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
@@ -58,6 +60,15 @@ function DifficultyLevelsPageScreen() {
     return window.innerWidth
   })
   const [isLoading, setIsLoading] = useState(true)
+  // A flag, not a message: translating at render time means the error re-reads in the new
+  // language when the player switches it, and keeps `t` out of the effect's dependencies.
+  const [hasLoadError, setHasLoadError] = useState(false)
+  // Bumping this re-runs the load effect, which is all "Try again" needs to do — the page cache is
+  // only written on success, so a retry really does re-request.
+  const [reloadKey, setReloadKey] = useState(0)
+  // Only once the retry has finished failing: while a retry is in flight the page shows its
+  // skeletons again rather than a stale error next to a dead button.
+  const showLoadError = hasLoadError && !isLoading
   const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
@@ -84,25 +95,38 @@ function DifficultyLevelsPageScreen() {
     let isActive = true
 
     async function loadLevels() {
-      setIsLoading(true)
+      try {
+        const nextData = await getDifficultyLevelsPageData(difficultyKey)
 
-      const nextData = await getDifficultyLevelsPageData(difficultyKey)
+        if (!isActive) {
+          return
+        }
 
-      if (!isActive) {
-        return
+        setLevels(nextData.levels)
+        setProgressByLevelNumber(nextData.progressByLevelNumber)
+        setHasLoadError(false)
+      } catch (error) {
+        reportUnexpectedError(error, `levels page (${difficultyKey})`)
+
+        if (isActive) {
+          setHasLoadError(true)
+        }
+      } finally {
+        // `finally`, not the success path: without it a failed request left the card skeletons up
+        // permanently and reported nothing.
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
-
-      setLevels(nextData.levels)
-      setProgressByLevelNumber(nextData.progressByLevelNumber)
-      setIsLoading(false)
     }
 
+    setIsLoading(true)
     void loadLevels()
 
     return () => {
       isActive = false
     }
-  }, [difficulty])
+  }, [difficulty, reloadKey])
 
   const normalizedPageSize = getPageSize(viewportWidth)
   const levelItems = [
@@ -143,60 +167,71 @@ function DifficultyLevelsPageScreen() {
         title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
       />
 
-      <section className={styles.levelsGrid}>
-        {isLoading
-          ? Array.from({ length: normalizedPageSize }, (_, index) => (
-              <Panel key={`level-skeleton-${index}`} className={styles.levelCardSkeleton}>
-                <div className={styles.levelCardSkeletonBody} aria-hidden="true">
-                  <span className={styles.levelCardSkeletonNumber} />
-                  <span className={styles.levelCardSkeletonTime} />
-                </div>
-              </Panel>
-            ))
-          : null}
+      {showLoadError ? (
+        <EmptyState
+          message={t("Couldn't load these levels. Check your connection and try again.")}
+          actions={
+            <Button variant="primary" onClick={() => setReloadKey((key) => key + 1)}>
+              {t('Try again')}
+            </Button>
+          }
+        />
+      ) : (
+        <section className={styles.levelsGrid}>
+          {isLoading
+            ? Array.from({ length: normalizedPageSize }, (_, index) => (
+                <Panel key={`level-skeleton-${index}`} className={styles.levelCardSkeleton}>
+                  <div className={styles.levelCardSkeletonBody} aria-hidden="true">
+                    <span className={styles.levelCardSkeletonNumber} />
+                    <span className={styles.levelCardSkeletonTime} />
+                  </div>
+                </Panel>
+              ))
+            : null}
 
-        {!isLoading
-          ? visibleItems.map((item) =>
-              item.type === 'create' ? (
-                <LevelCard
-                  key={`create-${difficulty}`}
-                  createTo={`/levels/${difficulty}/create`}
-                  createLabel={t('Create level')}
-                />
-              ) : (
-                <LevelCard
-                  key={item.level.id}
-                  levelNumber={item.level.levelNumber}
-                  bestTime={
-                    !isTakeYourTimeEnabled
-                      ? formatElapsedTime(
-                          progressByLevelNumber[item.level.levelNumber]?.bestTimeSeconds ?? null,
-                        )
-                      : null
-                  }
-                  isLocked={
-                    !isAdmin &&
-                    item.level.levelNumber > 1 &&
-                    (progressByLevelNumber[item.level.levelNumber - 1]?.bestTimeSeconds ?? null) ===
-                      null
-                  }
-                  openTo={`/game/${item.level.difficulty}/${item.level.levelNumber}`}
-                  openLabel={t('Open level {{levelNumber}}', { levelNumber: item.level.levelNumber })}
-                  editTo={
-                    isAdmin
-                      ? `/levels/${item.level.difficulty}/${item.level.levelNumber}/edit`
-                      : undefined
-                  }
-                  editLabel={
-                    isAdmin
-                      ? t('Edit level {{levelNumber}}', { levelNumber: item.level.levelNumber })
-                      : undefined
-                  }
-                />
-              ),
-            )
-          : null}
-      </section>
+          {!isLoading
+            ? visibleItems.map((item) =>
+                item.type === 'create' ? (
+                  <LevelCard
+                    key={`create-${difficulty}`}
+                    createTo={`/levels/${difficulty}/create`}
+                    createLabel={t('Create level')}
+                  />
+                ) : (
+                  <LevelCard
+                    key={item.level.id}
+                    levelNumber={item.level.levelNumber}
+                    bestTime={
+                      !isTakeYourTimeEnabled
+                        ? formatElapsedTime(
+                            progressByLevelNumber[item.level.levelNumber]?.bestTimeSeconds ?? null,
+                          )
+                        : null
+                    }
+                    isLocked={
+                      !isAdmin &&
+                      item.level.levelNumber > 1 &&
+                      (progressByLevelNumber[item.level.levelNumber - 1]?.bestTimeSeconds ?? null) ===
+                        null
+                    }
+                    openTo={`/game/${item.level.difficulty}/${item.level.levelNumber}`}
+                    openLabel={t('Open level {{levelNumber}}', { levelNumber: item.level.levelNumber })}
+                    editTo={
+                      isAdmin
+                        ? `/levels/${item.level.difficulty}/${item.level.levelNumber}/edit`
+                        : undefined
+                    }
+                    editLabel={
+                      isAdmin
+                        ? t('Edit level {{levelNumber}}', { levelNumber: item.level.levelNumber })
+                        : undefined
+                    }
+                  />
+                ),
+              )
+            : null}
+        </section>
+      )}
 
       {totalPages > 1 ? (
         <div className={styles.pagination}>

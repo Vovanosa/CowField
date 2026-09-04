@@ -18,6 +18,7 @@ import {
   extractNeonUser,
   extractNeonToken,
   getNeonAuthFrontendOrigin,
+  NeonAuthRequestError,
   requestNeonPasswordReset,
   resetNeonPassword,
   signInWithNeonPassword,
@@ -125,6 +126,27 @@ function getErrorMessage(error: unknown) {
   return 'Unexpected server error.'
 }
 
+/**
+ * The upstream HTTP status behind a Neon Auth failure, or `null` if there isn't one.
+ *
+ * Two shapes reach here. Neon's SDK **throws** a plain `Error` for any non-2xx, with `status` and
+ * `statusText` attached as own properties — that is the common path. It can also *return*
+ * `{ error }` on a 2xx, which `neonAuthClient` wraps in `NeonAuthRequestError`. Reading `status`
+ * structurally covers both without depending on which one fired.
+ */
+function getUpstreamStatus(error: unknown): number | null {
+  if (error instanceof NeonAuthRequestError) {
+    return error.status
+  }
+
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    const { status } = error as { status?: unknown }
+    return typeof status === 'number' ? status : null
+  }
+
+  return null
+}
+
 function mapNeonAuthError(error: unknown): never {
   const message = getErrorMessage(error)
 
@@ -142,6 +164,13 @@ function mapNeonAuthError(error: unknown): never {
 
   if (message === 'Invalid origin') {
     throw new HttpError(500, 'Mobile auth origin is not configured correctly.')
+  }
+
+  // Neon throttles sign-in attempts too, at roughly the same rate we do. Without this the upstream
+  // 429 fell through to the default below and reached the player as a **500** — "our server broke"
+  // instead of "slow down", which is both untrue and unactionable.
+  if (getUpstreamStatus(error) === 429) {
+    throw new HttpError(429, 'Too many attempts. Wait a few minutes and try again.')
   }
 
   throw error instanceof HttpError ? error : new HttpError(500, message)

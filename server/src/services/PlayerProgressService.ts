@@ -11,14 +11,6 @@ import type { ProgressOverviewRecord } from '../types/progress'
 const levelsOverviewDifficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 /**
- * Guests never get backend progress rows — their progress is client-local — so the ownership and
- * unlock checks below have nothing to verify against for them.
- */
-function isGuestActor(actorKey: string) {
-  return actorKey.startsWith('guest:')
-}
-
-/**
  * The "no progress recorded yet" placeholder for a level the player has never touched.
  *
  * `updatedAt` is `null`, not `''`: there is no timestamp, and an empty string formats as an Invalid
@@ -94,6 +86,9 @@ export class PlayerProgressService {
    *
    * The client enforces unlock order too (`src/game/progression.ts`), but that is a UX affordance,
    * not a guarantee — this endpoint is reachable directly.
+   *
+   * Guests do not reach this: the route is behind `createRequireNonGuestMiddleware`, because they
+   * hold no backend rows for the checks below to read.
    */
   private async assertCompletionIsReachable(
     actorKey: string,
@@ -104,10 +99,6 @@ export class PlayerProgressService {
 
     if (!level) {
       throw new HttpError(404, 'Level not found.')
-    }
-
-    if (isGuestActor(actorKey)) {
-      return
     }
 
     const previousLevelNumber = await this.levelRepository.getPreviousLevelNumber(

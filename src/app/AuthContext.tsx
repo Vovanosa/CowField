@@ -19,6 +19,7 @@ import { invalidateDifficultyOverviewCache } from '../game/storage/difficultyOve
 import { invalidatePlayerStatisticsCache } from '../game/storage/statisticsStorage'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
+import { reportUnexpectedError } from './reportUnexpectedError'
 
 const ADMIN_PREVIEW_ROLE_STORAGE_KEY = 'cowfield.admin-preview-role'
 
@@ -45,14 +46,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
     let isActive = true
 
     async function loadSession() {
-      const currentSession = await getCurrentSession()
+      try {
+        const currentSession = await getCurrentSession()
 
-      if (!isActive) {
-        return
+        if (!isActive) {
+          return
+        }
+
+        setSession(currentSession)
+      } catch (error) {
+        // `getCurrentSession` swallows its own request failures, so reaching here means something
+        // unexpected (blocked local storage, for instance). Treat it as signed out rather than
+        // leaving `isLoading` true, which every route guard reads as "render nothing" — a blank app.
+        reportUnexpectedError(error, 'session bootstrap')
+
+        if (isActive) {
+          setSession(null)
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
-
-      setSession(currentSession)
-      setIsLoading(false)
     }
 
     void loadSession()

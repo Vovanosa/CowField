@@ -33,9 +33,13 @@ function buildHeaders(init?: HeadersInit) {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  // `headers` has to be the LAST key. With `...init` after it, a caller passing its own `headers`
+  // silently dropped every built one, including `Authorization` — it only ever worked because each
+  // such caller happened to spell out `Content-Type` too. `buildHeaders` already folds
+  // `init.headers` in, so nothing is lost. Same order as `requestAuthenticatedJson` in `./request.ts`.
   const response = await fetch(`${AUTH_API_BASE}${path}`, {
-    headers: buildHeaders(init?.headers),
     ...init,
+    headers: buildHeaders(init?.headers),
   })
 
   if (!response.ok) {

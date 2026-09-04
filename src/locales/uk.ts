@@ -251,6 +251,10 @@
   'Your email has been verified. You can log in now.':
     'Пошту підтверджено. Тепер можна увійти.',
   'Incorrect email or password.': 'Неправильна електронна пошта або пароль.',
+  'Too many requests. Try again in a moment.': 'Занадто багато запитів. Спробуйте за мить.',
+  'Too many attempts. Wait a few minutes and try again.':
+    'Занадто багато спроб. Почекайте кілька хвилин і спробуйте знову.',
+  'Guests cannot access this resource.': 'Гості не мають доступу до цього розділу.',
   'Email not verified': 'Електронну пошту ще не підтверджено.',
   'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
@@ -270,6 +274,19 @@
   'Next level is ready.': 'Наступний рівень уже готовий.',
   'You completed the last available level.': 'Ви пройшли останній доступний рівень.',
   'Your progress has been saved.': 'Ваш прогрес збережено.',
+
+  // Error boundaries and failed page loads.
+  'Something went wrong. Reloading the page usually fixes it.':
+    'Щось пішло не так. Зазвичай допомагає перезавантаження сторінки.',
+  'Reload the page': 'Перезавантажити сторінку',
+  "Couldn't load your progress. Check your connection and try again.":
+    'Не вдалося завантажити прогрес. Перевірте з’єднання та спробуйте ще раз.',
+  "Couldn't load these levels. Check your connection and try again.":
+    'Не вдалося завантажити рівні. Перевірте з’єднання та спробуйте ще раз.',
+  "Couldn't load your statistics. Check your connection and try again.":
+    'Не вдалося завантажити статистику. Перевірте з’єднання та спробуйте ще раз.',
+  "Couldn't load this level. Check your connection and try again.":
+    'Не вдалося завантажити рівень. Перевірте з’єднання та спробуйте ще раз.',
 } as const
 
 export default uk

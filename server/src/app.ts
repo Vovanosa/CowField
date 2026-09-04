@@ -16,6 +16,9 @@ import { AuthService } from './services/AuthService'
 import { LevelService } from './services/LevelService'
 import { PlayerProgressService } from './services/PlayerProgressService'
 import { PlayerStatisticsService } from './services/PlayerStatisticsService'
+import { createRateLimitMiddleware } from './middleware/rateLimit'
+import { createRequestLoggerMiddleware } from './middleware/requestLogger'
+import { createSecurityHeadersMiddleware } from './middleware/securityHeaders'
 import { createRepositories } from './repositories/createRepositories'
 import { getPrismaClient } from './db/prismaClient'
 
@@ -33,6 +36,18 @@ function getAllowedOrigins() {
 
 export function createApp() {
   const app = express()
+
+  // Tells nobody anything useful and advertises the stack to a scanner.
+  app.disable('x-powered-by')
+
+  // The rate limiter keys on `request.ip`, which behind a proxy is the proxy's own address — every
+  // caller would then share one bucket and lock each other out. Set `TRUST_PROXY` (Express's
+  // `trust proxy` value: `1`, `loopback`, a CIDR, ...) when the API runs behind one. Left unset
+  // deliberately: trusting `X-Forwarded-For` when nothing strips it lets a caller forge its own key.
+  if (process.env.TRUST_PROXY) {
+    app.set('trust proxy', process.env.TRUST_PROXY)
+  }
+
   const allowedOrigins = new Set(getAllowedOrigins())
   const repositories = createRepositories()
   const levelService = new LevelService(repositories.levelRepository)
@@ -56,6 +71,8 @@ export function createApp() {
   const playerProgressController = new PlayerProgressController(playerProgressService)
   const playerStatisticsController = new PlayerStatisticsController(playerStatisticsService)
 
+  app.use(createSecurityHeadersMiddleware())
+  app.use(createRequestLoggerMiddleware())
   app.use(
     cors({
       origin(origin, callback) {
@@ -71,6 +88,17 @@ export function createApp() {
     }),
   )
   app.use(express.json({ limit: '1mb' }))
+
+  // A loose backstop over the whole API, after CORS so preflights do not spend anyone's budget.
+  // Ten requests a second sustained is an order of magnitude more than playing generates, so this
+  // should never fire for a real player — the tight limits that matter are on the credential
+  // endpoints in `authRoutes`.
+  app.use(
+    createRateLimitMiddleware({
+      windowMs: 60_000,
+      maxRequests: 600,
+    }),
+  )
 
   app.get('/api/health', async (_request, response) => {
     await getPrismaClient().$queryRaw`SELECT 1`
@@ -108,6 +136,10 @@ export function createApp() {
         })
         return
       }
+
+      // An unexpected 500 used to leave no trace at all — the client got a generic message and the
+      // server said nothing. The stack is the only way to find out what actually broke.
+      console.error('Unhandled request error:', error)
 
       response.status(500).json({
         message: 'Unexpected server error.',

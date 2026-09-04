@@ -244,6 +244,10 @@ const en = {
   'Hide password': 'Hide password',
   'You are playing as a Guest.': 'You are playing as a Guest.',
   'Incorrect email or password.': 'Incorrect email or password.',
+  'Too many requests. Try again in a moment.': 'Too many requests. Try again in a moment.',
+  'Too many attempts. Wait a few minutes and try again.':
+    'Too many attempts. Wait a few minutes and try again.',
+  'Guests cannot access this resource.': 'Guests cannot access this resource.',
   'Email not verified': 'Email not verified.',
   'Failed to restore session after login.': 'Failed to restore session after login.',
   'Google login failed.': 'Google login failed.',
@@ -263,6 +267,19 @@ const en = {
   'Next level is ready.': 'Next level is ready.',
   'You completed the last available level.': 'You completed the last available level.',
   'Your progress has been saved.': 'Your progress has been saved.',
+
+  // Error boundaries and failed page loads.
+  'Something went wrong. Reloading the page usually fixes it.':
+    'Something went wrong. Reloading the page usually fixes it.',
+  'Reload the page': 'Reload the page',
+  "Couldn't load your progress. Check your connection and try again.":
+    "Couldn't load your progress. Check your connection and try again.",
+  "Couldn't load these levels. Check your connection and try again.":
+    "Couldn't load these levels. Check your connection and try again.",
+  "Couldn't load your statistics. Check your connection and try again.":
+    "Couldn't load your statistics. Check your connection and try again.",
+  "Couldn't load this level. Check your connection and try again.":
+    "Couldn't load this level. Check your connection and try again.",
 } as const
 
 export default en

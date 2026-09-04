@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, type ComponentType, type ReactNode } from 'r
 import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from './AppShell'
+import { RouteErrorElement } from './RouteErrorElement'
 import { useAuth } from './useAuth'
 import { AboutPage } from '../pages/AboutPage'
 import { DifficultyLevelsPage } from '../pages/DifficultyLevelsPage'
@@ -99,6 +100,7 @@ function PublicShell() {
 const router = createBrowserRouter([
   {
     element: <PublicShell />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         path: '/auth/google/callback',
@@ -129,55 +131,65 @@ const router = createBrowserRouter([
   },
   {
     element: <RequireSession />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         path: '/',
         element: <AppShell />,
+        // Catches a throw in the shell itself, where there is no outlet left to render into.
+        errorElement: <RouteErrorElement />,
         children: [
           {
-            index: true,
-            element: <HomePage />,
-          },
-          {
-            path: 'levels',
-            element: <LevelsPage />,
-          },
-          {
-            path: 'levels/:difficulty',
-            element: <DifficultyLevelsPage />,
-          },
-          {
-            path: 'levels/:difficulty/create',
-            element: withSuspense(<CreateLevelPage />),
-          },
-          {
-            path: 'levels/:difficulty/:levelNumber/edit',
-            element: withSuspense(<CreateLevelPage />),
-          },
-          {
-            path: 'game/:difficulty/:levelNumber',
-            element: withSuspense(<GamePage />),
-          },
-          {
-            path: 'about',
-            element: <AboutPage />,
-          },
-          {
-            element: <RequireNonGuest />,
+            // A pathless layout route, so a throw from a page renders inside the shell's
+            // `<Outlet />` and leaves the header and navigation usable.
+            errorElement: <RouteErrorElement />,
             children: [
               {
-                path: 'statistics',
-                element: <StatisticsPage />,
+                index: true,
+                element: <HomePage />,
+              },
+              {
+                path: 'levels',
+                element: <LevelsPage />,
+              },
+              {
+                path: 'levels/:difficulty',
+                element: <DifficultyLevelsPage />,
+              },
+              {
+                path: 'levels/:difficulty/create',
+                element: withSuspense(<CreateLevelPage />),
+              },
+              {
+                path: 'levels/:difficulty/:levelNumber/edit',
+                element: withSuspense(<CreateLevelPage />),
+              },
+              {
+                path: 'game/:difficulty/:levelNumber',
+                element: withSuspense(<GamePage />),
+              },
+              {
+                path: 'about',
+                element: <AboutPage />,
+              },
+              {
+                element: <RequireNonGuest />,
+                children: [
+                  {
+                    path: 'statistics',
+                    element: <StatisticsPage />,
+                  },
+                ],
+              },
+              {
+                path: 'settings',
+                element: <SettingsPage />,
+              },
+              {
+                path: '*',
+                element: <Navigate to="/" replace />,
               },
             ],
-          },
-          {
-            path: 'settings',
-            element: <SettingsPage />,
-          },
-          {
-            path: '*',
-            element: <Navigate to="/" replace />,
           },
         ],
       },

@@ -80,3 +80,25 @@ export function requireNonGuest(request: Request) {
 
   return actor
 }
+
+/**
+ * `requireNonGuest` as route middleware.
+ *
+ * Guests hold no backend rows at all, so any endpoint that writes player data is meaningless for
+ * them — and worse than meaningless when the repository quietly no-ops and the route answers `201`
+ * as though it saved something.
+ */
+export function createRequireNonGuestMiddleware() {
+  return function requireNonGuestMiddleware(
+    request: Request,
+    _response: Response,
+    next: NextFunction,
+  ) {
+    try {
+      requireNonGuest(request)
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+}

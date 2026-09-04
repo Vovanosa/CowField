@@ -26,6 +26,8 @@ function GamePageScreen() {
   const {
     level,
     isLoading,
+    hasLoadError,
+    handleRetryLoad,
     cellMarks,
     elapsedSeconds,
     isBoardLocked,
@@ -99,6 +101,29 @@ function GamePageScreen() {
             </div>
           </div>
         </Panel>
+      </div>
+    )
+  }
+
+  // Checked before the `!level` branch below: a failed request also leaves `level` null, and
+  // telling the player the level does not exist is the wrong answer to a dropped connection.
+  if (hasLoadError) {
+    return (
+      <div className={styles.page}>
+        <GameRouteHeader
+          backTo={`/levels/${difficulty}`}
+          backLabel={t('Back to levels')}
+          levelLabel={routeLevelLabel}
+        />
+        <EmptyState
+          className={styles.emptyState}
+          message={t("Couldn't load this level. Check your connection and try again.")}
+          actions={
+            <Button variant="primary" onClick={handleRetryLoad}>
+              {t('Try again')}
+            </Button>
+          }
+        />
       </div>
     )
   }
