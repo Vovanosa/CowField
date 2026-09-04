@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { difficultySchema } from './level'
+import { difficultyStatisticsSummarySchema } from './statistics'
 
 export const levelProgressRecordSchema = z.object({
   difficulty: difficultySchema,
@@ -13,13 +14,19 @@ export const levelProgressRecordSchema = z.object({
 
 export type LevelProgressRecord = z.infer<typeof levelProgressRecordSchema>
 
-export const overallProgressStatisticsSummarySchema = z.object({
+/**
+ * Everything the statistics page reads out of `level_progress`, fetched together.
+ *
+ * One shape rather than an overall summary plus four per-difficulty ones, because the repository
+ * now answers all of it from a single `groupBy` — the total is a sum of the per-difficulty counts,
+ * so splitting them apart only bought extra queries.
+ */
+export const progressStatisticsSummariesSchema = z.object({
   totalCompletedLevels: z.number().int().nonnegative(),
+  byDifficulty: z.array(difficultyStatisticsSummarySchema),
 })
 
-export type OverallProgressStatisticsSummary = z.infer<
-  typeof overallProgressStatisticsSummarySchema
->
+export type ProgressStatisticsSummaries = z.infer<typeof progressStatisticsSummariesSchema>
 
 export const difficultyOverviewRecordSchema = z.object({
   difficulty: difficultySchema,

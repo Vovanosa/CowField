@@ -1,13 +1,8 @@
-import type { Difficulty } from '../types/level'
-import type {
-  PlayerStatisticsSummary,
-} from '../types/statistics'
+import type { PlayerStatisticsSummary } from '../types/statistics'
 import type {
   PlayerProgressRepository,
   PlayerStatisticsRepository,
 } from '../repositories/interfaces'
-
-const difficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']
 
 export class PlayerStatisticsService {
   private readonly progressRepository: PlayerProgressRepository
@@ -21,22 +16,23 @@ export class PlayerStatisticsService {
     this.statisticsRepository = statisticsRepository
   }
 
+  /**
+   * Three queries, down from ten.
+   *
+   * The nine `level_progress` reads this used to fan out (one overall count plus an `aggregate` and
+   * a `findFirst` per difficulty) are now two inside `getStatisticsSummaries`.
+   */
   async getSummary(actorKey: string): Promise<PlayerStatisticsSummary> {
-    const [statisticsRecord, overallSummary, byDifficulty] = await Promise.all([
+    const [statisticsRecord, progressSummaries] = await Promise.all([
       this.statisticsRepository.get(actorKey),
-      this.progressRepository.getOverallStatisticsSummary(actorKey),
-      Promise.all(
-        difficulties.map((difficulty) =>
-          this.progressRepository.getDifficultyStatisticsSummary(actorKey, difficulty),
-        ),
-      ),
+      this.progressRepository.getStatisticsSummaries(actorKey),
     ])
 
     return {
-      totalCompletedLevels: overallSummary.totalCompletedLevels,
+      totalCompletedLevels: progressSummaries.totalCompletedLevels,
       totalBullPlacements: statisticsRecord.totalBullPlacements,
       totalCompletionTimeSeconds: statisticsRecord.totalCompletionTimeSeconds,
-      byDifficulty,
+      byDifficulty: progressSummaries.byDifficulty,
     }
   }
 

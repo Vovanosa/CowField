@@ -57,10 +57,13 @@ model Session {
   displayName String     @map("display_name")
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
+  /// Absolute expiry, set once at creation. `getByToken` refuses and deletes anything past it.
+  expiresAt   DateTime   @map("expires_at")
   user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([actorKey], map: "sessions_actor_key_idx")
   @@index([userId], map: "sessions_user_id_idx")
+  @@index([expiresAt], map: "sessions_expires_at_idx")
   @@map("sessions")
 }
 

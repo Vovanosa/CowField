@@ -9,12 +9,9 @@ import type {
 import type {
   DifficultyProgressSummaryRecord,
   LevelProgressRecord,
-  OverallProgressStatisticsSummary,
+  ProgressStatisticsSummaries,
 } from '../types/progress'
-import type {
-  DifficultyStatisticsSummary,
-  PlayerStatisticsRecord,
-} from '../types/statistics'
+import type { PlayerStatisticsRecord } from '../types/statistics'
 
 export interface UserRepository {
   listAll(): Promise<UserRecord[]>
@@ -25,10 +22,16 @@ export interface UserRepository {
 }
 
 export interface SessionRepository {
+  /**
+   * Returns `null` for an expired session as well as a missing one, and deletes the expired row as
+   * it goes. Does **not** write on a successful lookup.
+   */
   getByToken(token: string): Promise<SessionRecord | null>
   save(session: SessionRecord): Promise<SessionRecord>
   deleteByToken(token: string): Promise<void>
   deleteByAccountUserId(accountUserId: string): Promise<void>
+  /** Bulk sweep of everything already expired. Returns the number of rows deleted. */
+  deleteExpired(now?: Date): Promise<number>
 }
 
 export interface PlayerProgressRepository {
@@ -37,11 +40,16 @@ export interface PlayerProgressRepository {
     actorKey: string,
     difficulty: Difficulty,
   ): Promise<DifficultyProgressSummaryRecord>
-  getDifficultyStatisticsSummary(
-    actorKey: string,
-    difficulty: Difficulty,
-  ): Promise<DifficultyStatisticsSummary>
-  getOverallStatisticsSummary(actorKey: string): Promise<OverallProgressStatisticsSummary>
+  /**
+   * All four difficulties in one query. Prefer this over four `getDifficultySummary` calls; the
+   * single-difficulty version is for the endpoint that really only wants one.
+   */
+  getDifficultySummaries(actorKey: string): Promise<DifficultyProgressSummaryRecord[]>
+  /**
+   * Everything the statistics page needs from `level_progress`, in two queries rather than nine.
+   * The overall total is summed from the same `groupBy`, so it costs nothing extra.
+   */
+  getStatisticsSummaries(actorKey: string): Promise<ProgressStatisticsSummaries>
   getByDifficultyAndNumber(
     actorKey: string,
     difficulty: Difficulty,

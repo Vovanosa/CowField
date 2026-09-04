@@ -8,8 +8,6 @@ import type {
 } from '../repositories/interfaces'
 import type { ProgressOverviewRecord } from '../types/progress'
 
-const levelsOverviewDifficulties: Difficulty[] = ['light', 'easy', 'medium', 'hard']
-
 /**
  * The "no progress recorded yet" placeholder for a level the player has never touched.
  *
@@ -45,16 +43,14 @@ export class PlayerProgressService {
     return this.repository.getDifficultySummary(actorKey, difficulty)
   }
 
+  /**
+   * Two queries, down from five: one `groupBy` over levels and one over the player's progress.
+   * This used to fan out a separate count per difficulty.
+   */
   async getOverview(actorKey: string): Promise<ProgressOverviewRecord> {
-    const levelsOverviewPromise = this.levelRepository.getOverview()
-    const progressSummariesPromise = Promise.all(
-      levelsOverviewDifficulties.map((difficulty) =>
-        this.repository.getDifficultySummary(actorKey, difficulty),
-      ),
-    )
     const [levelsOverview, progressSummaries] = await Promise.all([
-      levelsOverviewPromise,
-      progressSummariesPromise,
+      this.levelRepository.getOverview(),
+      this.repository.getDifficultySummaries(actorKey),
     ])
 
     const progressByDifficulty = new Map(

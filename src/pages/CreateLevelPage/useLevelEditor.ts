@@ -346,23 +346,22 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     setIsGenerating(true)
     isGeneratingRef.current = true
 
-    // The generator is synchronous and searches until the board has a single solution, which takes
-    // a couple of seconds at worst on medium and hard. Let the browser paint the busy state before
-    // handing it the main thread, or the button never visibly changes.
-    await new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => {
-        window.setTimeout(resolve, 0)
-      })
-    })
+    // The search runs in a worker now, so the main thread stays free: the busy state paints and
+    // animates, and the page keeps responding. It used to run here and freeze the tab for up to six
+    // seconds on medium, which is why this needed a requestAnimationFrame just to get the label out
+    // before the browser locked up.
+    let generatedDraft: LevelDraft | null = null
 
-    const generatedDraft = generateLevelDraft(
-      levelNumber,
-      t('Level {{levelNumber}}', { levelNumber }),
-      draftDifficulty,
-    )
-
-    isGeneratingRef.current = false
-    setIsGenerating(false)
+    try {
+      generatedDraft = await generateLevelDraft(
+        levelNumber,
+        t('Level {{levelNumber}}', { levelNumber }),
+        draftDifficulty,
+      )
+    } finally {
+      isGeneratingRef.current = false
+      setIsGenerating(false)
+    }
 
     if (!generatedDraft) {
       setToast(

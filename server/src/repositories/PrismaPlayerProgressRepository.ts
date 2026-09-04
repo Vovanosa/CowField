@@ -1,10 +1,10 @@
 import { Difficulty, type PrismaClient } from '@prisma/client'
 
-import type { Difficulty as AppDifficulty } from '../types/level'
+import { DIFFICULTIES, type Difficulty as AppDifficulty } from '../types/level'
 import type {
   DifficultyProgressSummaryRecord,
   LevelProgressRecord,
-  OverallProgressStatisticsSummary,
+  ProgressStatisticsSummaries,
 } from '../types/progress'
 import type { DifficultyStatisticsSummary } from '../types/statistics'
 import type { PlayerProgressRepository } from './interfaces'
@@ -12,6 +12,18 @@ import { resolveActorReference } from './prismaActor'
 
 function toPrismaDifficulty(difficulty: AppDifficulty): Difficulty {
   return difficulty as Difficulty
+}
+
+/** A difficulty the player has not completed anything in. `groupBy` omits those rows entirely. */
+function createEmptyDifficultyStatisticsSummary(
+  difficulty: AppDifficulty,
+): DifficultyStatisticsSummary {
+  return {
+    difficulty,
+    completedLevels: 0,
+    fastestLevel: null,
+    averageTimeSeconds: null,
+  }
 }
 
 function toLevelProgressRecord(progress: {
@@ -66,30 +78,78 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     }
   }
 
-  async getDifficultyStatisticsSummary(
-    actorKey: string,
-    difficulty: AppDifficulty,
-  ): Promise<DifficultyStatisticsSummary> {
+  /**
+   * Completed counts for every difficulty in **one** query.
+   *
+   * Replaces four separate `getDifficultySummary` calls. The single-difficulty version above stays
+   * for `GET /api/progress/:difficulty/summary`, which genuinely only wants one.
+   */
+  async getDifficultySummaries(actorKey: string): Promise<DifficultyProgressSummaryRecord[]> {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return DIFFICULTIES.map((difficulty) => ({ difficulty, completedCount: 0 }))
+    }
+
+    const groups = await this.prisma.levelProgress.groupBy({
+      by: ['difficulty'],
+      where: {
+        userId: actor.userId,
+        bestTimeSeconds: {
+          not: null,
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    })
+
+    const countByDifficulty = new Map(
+      groups.map((group) => [group.difficulty as AppDifficulty, group._count._all]),
+    )
+
+    // Rebuilt from `DIFFICULTIES` rather than returned as-is: `groupBy` omits a difficulty the
+    // player has never completed, and every caller expects all four present.
+    return DIFFICULTIES.map((difficulty) => ({
+      difficulty,
+      completedCount: countByDifficulty.get(difficulty) ?? 0,
+    }))
+  }
+
+  /**
+   * Everything the statistics page needs from `level_progress`, in **two** queries.
+   *
+   * This replaces `getOverallStatisticsSummary` plus four `getDifficultyStatisticsSummary` calls —
+   * nine queries, since each of those four did an `aggregate` *and* a `findFirst`. The overall
+   * completed count comes out of the same `groupBy` as the per-difficulty ones, so it costs nothing
+   * extra.
+   *
+   * The second query exists because `groupBy` can give the *minimum* best time but not the level
+   * number it belongs to. `distinct` on a sorted `findMany` returns the first row per difficulty,
+   * which — ordered by time then level number — is exactly the fastest level, ties broken by the
+   * lower number.
+   */
+  async getStatisticsSummaries(actorKey: string): Promise<ProgressStatisticsSummaries> {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
     if (!actor.userId) {
       return {
-        difficulty,
-        completedLevels: 0,
-        fastestLevel: null,
-        averageTimeSeconds: null,
+        totalCompletedLevels: 0,
+        byDifficulty: DIFFICULTIES.map(createEmptyDifficultyStatisticsSummary),
       }
     }
 
-    const [aggregate, fastestRecord] = await Promise.all([
-      this.prisma.levelProgress.aggregate({
-        where: {
-          difficulty: toPrismaDifficulty(difficulty),
-          userId: actor.userId,
-          bestTimeSeconds: {
-            not: null,
-          },
-        },
+    const completedFilter = {
+      userId: actor.userId,
+      bestTimeSeconds: {
+        not: null,
+      },
+    }
+
+    const [groups, fastestRows] = await Promise.all([
+      this.prisma.levelProgress.groupBy({
+        by: ['difficulty'],
+        where: completedFilter,
         _count: {
           _all: true,
         },
@@ -97,73 +157,56 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
           bestTimeSeconds: true,
         },
       }),
-      this.prisma.levelProgress.findFirst({
-        where: {
-          difficulty: toPrismaDifficulty(difficulty),
-          userId: actor.userId,
-          bestTimeSeconds: {
-            not: null,
-          },
-        },
-        orderBy: [
-          {
-            bestTimeSeconds: 'asc',
-          },
-          {
-            levelNumber: 'asc',
-          },
-        ],
+      this.prisma.levelProgress.findMany({
+        where: completedFilter,
+        orderBy: [{ difficulty: 'asc' }, { bestTimeSeconds: 'asc' }, { levelNumber: 'asc' }],
+        distinct: ['difficulty'],
         select: {
+          difficulty: true,
           levelNumber: true,
           bestTimeSeconds: true,
         },
       }),
     ])
 
-    const completedLevels = aggregate._count._all
+    const groupByDifficulty = new Map(groups.map((group) => [group.difficulty as AppDifficulty, group]))
+    const fastestByDifficulty = new Map(
+      fastestRows.map((row) => [row.difficulty as AppDifficulty, row]),
+    )
 
-    return {
-      difficulty,
-      completedLevels,
-      fastestLevel:
-        fastestRecord && fastestRecord.bestTimeSeconds !== null
-          ? {
-              levelNumber: fastestRecord.levelNumber,
-              timeSeconds: fastestRecord.bestTimeSeconds,
-            }
-          : null,
-      averageTimeSeconds:
-        completedLevels > 0 && aggregate._avg.bestTimeSeconds !== null
-          ? Math.round(aggregate._avg.bestTimeSeconds)
-          : null,
-    }
-  }
+    const byDifficulty = DIFFICULTIES.map((difficulty) => {
+      const group = groupByDifficulty.get(difficulty)
 
-  async getOverallStatisticsSummary(
-    actorKey: string,
-  ): Promise<OverallProgressStatisticsSummary> {
-    const actor = await resolveActorReference(this.prisma, actorKey)
-
-    if (!actor.userId) {
-      return {
-        totalCompletedLevels: 0,
+      if (!group) {
+        return createEmptyDifficultyStatisticsSummary(difficulty)
       }
-    }
 
-    // Time played is no longer derived here. It used to be `_sum(bestTimeSeconds)`, which fell
-    // whenever a player improved a level; it is now a lifetime counter on
-    // `player_statistics_totals`, added to by every completion.
-    const totalCompletedLevels = await this.prisma.levelProgress.count({
-      where: {
-        userId: actor.userId,
-        bestTimeSeconds: {
-          not: null,
-        },
-      },
+      const completedLevels = group._count._all
+      const fastest = fastestByDifficulty.get(difficulty)
+
+      return {
+        difficulty,
+        completedLevels,
+        fastestLevel:
+          fastest && fastest.bestTimeSeconds !== null
+            ? {
+                levelNumber: fastest.levelNumber,
+                timeSeconds: fastest.bestTimeSeconds,
+              }
+            : null,
+        averageTimeSeconds:
+          completedLevels > 0 && group._avg.bestTimeSeconds !== null
+            ? Math.round(group._avg.bestTimeSeconds)
+            : null,
+      } satisfies DifficultyStatisticsSummary
     })
 
     return {
-      totalCompletedLevels,
+      totalCompletedLevels: byDifficulty.reduce(
+        (total, summary) => total + summary.completedLevels,
+        0,
+      ),
+      byDifficulty,
     }
   }
 

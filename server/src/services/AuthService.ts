@@ -25,6 +25,7 @@ import {
   signUpWithNeonPassword,
 } from '../auth/neonAuthClient'
 import { verifyNeonJwt } from '../auth/neonJwt'
+import { getSessionExpiry } from '../auth/sessionExpiry'
 
 const scrypt = promisify(nodeScrypt)
 
@@ -213,6 +214,7 @@ export class AuthService {
       displayName,
       createdAt: timestamp,
       updatedAt: timestamp,
+      expiresAt: getSessionExpiry(role).toISOString(),
     }
 
     await this.sessionRepository.save(session)
@@ -291,6 +293,7 @@ export class AuthService {
       displayName: user.displayName,
       createdAt: timestamp,
       updatedAt: timestamp,
+      expiresAt: getSessionExpiry(user.role).toISOString(),
     }
 
     await this.sessionRepository.save(session)
@@ -453,14 +456,13 @@ export class AuthService {
   }
 
   async getSessionByToken(token: string) {
+    // A read, and only a read. This used to re-`save` the row with a fresh `updatedAt` on every
+    // single authenticated request — a write per API call, for a column nothing ever read. Session
+    // lifetime is now an absolute `expiresAt` set at creation, which needs no touching here; the
+    // repository refuses and deletes an expired row itself.
     const session = await this.sessionRepository.getByToken(token)
 
     if (session) {
-      await this.sessionRepository.save({
-        ...session,
-        updatedAt: new Date().toISOString(),
-      })
-
       return {
         token: session.token,
         actorKey: session.actorKey,

@@ -22,7 +22,11 @@ export const sessionRecordSchema = z.object({
   email: z.string().email().nullable(),
   displayName: z.string(),
   createdAt: z.string(),
+  // Creation time only. Nothing updates it any more — the per-request write that used to keep it
+  // fresh was pure cost, since no code ever read it.
   updatedAt: z.string(),
+  /** Absolute expiry, set once at creation. See `auth/sessionExpiry.ts`. */
+  expiresAt: z.string(),
 })
 
 export const passwordResetTokenRecordSchema = z.object({

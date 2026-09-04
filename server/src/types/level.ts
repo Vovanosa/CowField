@@ -4,6 +4,14 @@ export const difficultySchema = z.enum(['light', 'easy', 'medium', 'hard'])
 
 export type Difficulty = z.infer<typeof difficultySchema>
 
+/**
+ * Every difficulty, in play order.
+ *
+ * Derived from the schema rather than written out again, so the list and the validator can never
+ * disagree. Use this instead of writing the array out again locally.
+ */
+export const DIFFICULTIES: readonly Difficulty[] = difficultySchema.options
+
 export type LevelRecord = {
   difficulty: Difficulty
   levelNumber: number
