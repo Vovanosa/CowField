@@ -53,10 +53,6 @@
   --page-shell-width: 960px;
 }
 
-.page-shell-full {
-  --page-shell-width: 100%;
-}
-
 @media (max-width: 768px) {
   .app-shell {
     width: 100%;

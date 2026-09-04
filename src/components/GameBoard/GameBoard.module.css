@@ -1,5 +1,12 @@
 .boardPreview {
-  width: min(100%, 640px);
+  /* Height-aware on purpose: the board is square, so capping its width caps its height. Without a
+     height term the board stayed 640px tall on every screen and its bottom row fell below the fold
+     on any viewport shorter than ~928px — most laptops (1366x768 lost 160px).
+     `100cqh` is the height of `.boardStage`, i.e. what the control bar actually left over. It
+     replaced a hardcoded `calc(100svh - 300px)`: that constant was exact for a one-row bar and
+     wrong for a two-row one, which is what Ukrainian labels and the admin buttons produce. The
+     260px floor keeps the board usable when there is genuinely no room, at the cost of scrolling. */
+  width: min(100%, 640px, max(260px, 100cqh));
   margin: 0 auto;
   padding: 10px;
   border-radius: var(--radius-xl);
@@ -61,9 +68,12 @@
     transform var(--transition-fast);
 }
 
-.boardCell:hover {
-  filter: saturate(1.03);
-  box-shadow: inset 0 0 0 999px var(--color-board-cell-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .boardCell:hover {
+    filter: saturate(1.03);
+    box-shadow: inset 0 0 0 999px var(--color-board-cell-hover);
+  }
 }
 
 .boardCell:active {
@@ -79,8 +89,11 @@
   cursor: default;
 }
 
-.boardCell:disabled:hover {
-  filter: none;
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .boardCell:disabled:hover {
+    filter: none;
+  }
 }
 
 .boardCell:disabled:active {
@@ -128,12 +141,6 @@
   50% {
     filter: drop-shadow(0 0 10px rgba(255, 236, 184, 0.45));
     transform: scale(1.03);
-  }
-}
-
-@media (max-width: 960px) {
-  .boardPreview {
-    width: min(100%, 640px);
   }
 }
 

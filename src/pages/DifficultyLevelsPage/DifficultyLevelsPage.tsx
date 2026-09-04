@@ -14,26 +14,14 @@ import { getDifficultyLevelsPageData } from '../../game/storage/difficultyLevels
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { Difficulty, LevelProgress, LevelSummary } from '../../game/types'
 import styles from './DifficultyLevelsPage.module.css'
+import { useGridColumnCount } from './useGridColumnCount'
 
-function getPageSize(viewportWidth: number) {
-  if (viewportWidth <= 640) {
-    return 12
-  }
-
-  if (viewportWidth <= 820) {
-    return 12
-  }
-
-  if (viewportWidth <= 1040) {
-    return 16
-  }
-
-  if (viewportWidth <= 1280) {
-    return 20
-  }
-
-  return 24
-}
+/**
+ * The grid is paginated to whole rows. Multiplying by the *measured* column count keeps that true
+ * at every width; the viewport-keyed ladder this replaces could not, because the grid's container is
+ * capped at 860px and stops tracking the viewport well before the breakpoints did.
+ */
+const ROWS_PER_PAGE = 4
 
 function getVisiblePageButtons(currentPage: number, totalPages: number, maxVisibleButtons: number) {
   const visibleButtons = Math.min(Math.max(maxVisibleButtons, 1), totalPages)
@@ -52,13 +40,9 @@ function DifficultyLevelsPageScreen() {
   const [levels, setLevels] = useState<LevelSummary[]>([])
   const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
   const [currentPage, setCurrentPage] = useState(1)
-  const [viewportWidth, setViewportWidth] = useState(() => {
-    if (typeof window === 'undefined') {
-      return 1280
-    }
-
-    return window.innerWidth
-  })
+  // Held in state rather than a ref so the measuring effect re-runs when the grid mounts and
+  // unmounts — it is not rendered at all in the load-error branch.
+  const [gridElement, setGridElement] = useState<HTMLElement | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   // A flag, not a message: translating at render time means the error re-reads in the new
   // language when the player switches it, and keeps `t` out of the effect's dependencies.
@@ -69,22 +53,11 @@ function DifficultyLevelsPageScreen() {
   // Only once the retry has finished failing: while a retry is in flight the page shows its
   // skeletons again rather than a stale error next to a dead button.
   const showLoadError = hasLoadError && !isLoading
+  const columnCount = useGridColumnCount(gridElement)
   const { isAdmin, isGuest } = useRole()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
-
-  useEffect(() => {
-    function handleResize() {
-      setViewportWidth(window.innerWidth)
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
 
   useEffect(() => {
     if (!isDifficulty(difficulty)) {
@@ -128,7 +101,7 @@ function DifficultyLevelsPageScreen() {
     }
   }, [difficulty, reloadKey])
 
-  const normalizedPageSize = getPageSize(viewportWidth)
+  const normalizedPageSize = columnCount * ROWS_PER_PAGE
   const levelItems = [
     ...levels.map((level) => ({ type: 'level' as const, level })),
     ...(isAdmin ? [{ type: 'create' as const }] : []),
@@ -138,7 +111,9 @@ function DifficultyLevelsPageScreen() {
   const visiblePageButtons = getVisiblePageButtons(
     currentVisiblePage,
     totalPages,
-    viewportWidth <= 640 ? 3 : 5,
+    // Four columns or fewer is where the old `viewportWidth <= 640` test used to trip, so this keeps
+    // the same button count at every width while reading the container instead of the window.
+    columnCount <= 4 ? 3 : 5,
   )
 
   if (!isDifficulty(difficulty)) {
@@ -177,7 +152,7 @@ function DifficultyLevelsPageScreen() {
           }
         />
       ) : (
-        <section className={styles.levelsGrid}>
+        <section className={styles.levelsGrid} ref={setGridElement}>
           {isLoading
             ? Array.from({ length: normalizedPageSize }, (_, index) => (
                 <Panel key={`level-skeleton-${index}`} className={styles.levelCardSkeleton}>

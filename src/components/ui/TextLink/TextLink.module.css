@@ -8,8 +8,11 @@
   transition: transform var(--transition-base);
 }
 
-.link:hover {
-  transform: translateY(-1px);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .link:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .link:focus-visible {

@@ -2,7 +2,28 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  /* The game page is the one screen that must never scroll — a puzzle you cannot see all of is the
+     worst outcome. A definite height here is also what makes `.boardStage` a usable size container.
+     `--game-page-chrome` covers only the app shell around this page, which genuinely is constant:
+     `.app-shell` padding (32 top / 16 bottom), `.app-content` padding (32 each side) and
+     `.app-frame`'s 1px border top and bottom. The control bar's height is *not* constant — it
+     depends on width, language and whether the player is an admin — so the stage below absorbs it
+     instead of it being guessed at. The `@media` block near the end carries the phone values. */
+  --game-page-chrome: 114px;
+  height: calc(100svh - var(--game-page-chrome));
   animation: fade-up-in 240ms var(--ease-emphasized);
+}
+
+.boardStage {
+  flex: 1;
+  /* Without `min-height: 0` a flex item refuses to shrink below its content, and the board would
+     push the page taller instead of fitting inside it. */
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  /* `size`, not `inline-size`: the board needs to read this box's *height* as `100cqh`. Safe here
+     because the stage's size comes from the flex line, never from its contents. */
+  container-type: size;
 }
 
 .topbar {
@@ -39,8 +60,11 @@
 .loadingPanel {
   display: flex;
   flex-direction: column;
+  /* Mirrors `.boardPanel` so the skeleton occupies exactly the space the real board will, and the
+     layout does not jump when the level arrives. */
+  flex: 1;
+  min-height: 0;
   gap: var(--space-5);
-  min-height: 720px;
 }
 
 .loadingUndoButton {
@@ -73,13 +97,20 @@
   animation: shimmer 1.8s linear infinite;
 }
 
+/* Same stage treatment as the real board, so `100cqh` below resolves against the same leftover
+   height and the skeleton is exactly the size of the board that replaces it. */
 .loadingBoardShell {
-  display: flex;
-  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
 }
 
 .loadingBoard {
-  width: min(100%, 660px);
+  /* Same formula as `.boardPreview`. It was 660px against the board's 640px, and the fixed 720px
+     `min-height` on the panel above made the jump worse on short screens. */
+  width: min(100%, 640px, max(260px, 100cqh));
   padding: 10px;
   border-radius: 28px;
   background:
@@ -107,11 +138,20 @@
   background: rgba(255, 246, 226, 0.08);
 }
 
-.layout {
-  display: block;
+/* Passes the page's leftover height down to the panel. Replaces the `display: block` wrapper that
+   was deleted as dead — it is load-bearing now. */
+.boardLayout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 .boardPanel {
+  /* A flex column so the stage below can claim the height the control bar leaves. */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   padding: var(--space-6);
 }
 
@@ -155,6 +195,12 @@
   min-width: 160px;
 }
 
+/* Hidden while the pills have room for their words; the narrow-screen block below swaps the label
+   out for this icon. */
+.boardStatIcon {
+  display: none;
+}
+
 .boardToolbar {
   display: flex;
   align-items: center;
@@ -163,8 +209,9 @@
 
 .boardUndoButton {
   position: relative;
-  min-width: 40px;
-  min-height: 40px;
+  /* 44px to match the `.boardStat` pills beside it, which already use the comfortable touch size. */
+  min-width: 44px;
+  min-height: 44px;
   padding: 0;
   justify-content: center;
 }
@@ -393,27 +440,46 @@
     background: transparent;
     box-shadow: none;
   }
+
+  /* `.app-shell` drops to 16/20 padding and `.app-content` to 20 at this width, so the frame chrome
+     really is smaller here — measured, same as the base value. */
+  .page {
+    --game-page-chrome: 78px;
+  }
 }
 
 @media (max-width: 640px) {
-  .topbar {
-    flex-wrap: wrap;
+  /* Board first. The puzzle is the content and the control bar is chrome, so the board sits directly
+     under the level title and can never be pushed down the screen by however many rows the bar
+     needs. */
+  .boardPanel {
+    flex-direction: column;
+  }
+
+  /* Anchored to the top of the stage rather than centred: a square board on a tall phone always
+     leaves spare height, and it reads better as one deliberate gap above the controls than as two
+     gaps floating the board in the middle. The controls landing at the bottom is a bonus — that is
+     the thumb zone. */
+  .boardStage {
+    place-items: start center;
   }
 
   .boardPanelHeader {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-3);
-    margin-bottom: var(--space-4);
+    order: 2;
+    /* One wrapping row rather than a column. With the labels collapsed to icons the whole bar fits
+       on a single line from ~430px up and breaks to a second only when it genuinely cannot — where
+       the old column layout spent a row per control unconditionally, five of them on a 312px
+       admin screen. */
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    margin-bottom: 0;
   }
 
   .boardControlsRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .boardUndoButton {
-    align-self: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
 
   .boardUndoButton::after {
@@ -421,29 +487,63 @@
   }
 
   .boardStatsRow {
-    display: flex;
-    align-items: flex-start;
     justify-content: flex-start;
     flex-wrap: wrap;
+    gap: var(--space-2);
     margin-left: 0;
   }
 
   .boardToolbar {
     justify-content: flex-start;
     flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* The icon takes over from the words: a pill that reads "🐄 6" says the same thing as
+     "Remaining bulls 6" in a third of the width. */
+  .boardStatIcon {
+    display: block;
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    color: var(--color-accent-strong);
+  }
+
+  .boardPanelLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .boardStat {
     flex: 0 0 auto;
-    width: auto;
+    gap: var(--space-2);
+    padding: 0 12px;
   }
 
+  /* A 160px floor is meaningless once the pill is an icon and a number. */
   .boardStatCompact {
-    min-width: 160px;
+    min-width: 0;
   }
 
   .boardActionButton,
   .boardResetButton {
     width: auto;
+  }
+
+  /* Squared here as well as in `Button.module.css` on purpose: `.boardResetButton` sets its own
+     padding, and which module wins a same-specificity tie depends on bundle order — stating it in
+     both places makes the result independent of that. It must also come *after* the `width: auto`
+     rule above, which Restart matches too and would otherwise win on source order. */
+  .boardIconAction {
+    width: 48px;
+    min-width: 48px;
+    padding: 0;
+    gap: 0;
   }
 }

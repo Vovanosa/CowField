@@ -16,8 +16,11 @@
   flex-shrink: 0;
 }
 
-.switch:hover:not(:disabled) {
-  box-shadow: 0 8px 18px rgba(120, 88, 30, 0.12);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .switch:hover:not(:disabled) {
+    box-shadow: 0 8px 18px rgba(120, 88, 30, 0.12);
+  }
 }
 
 .switch:active:not(:disabled) {

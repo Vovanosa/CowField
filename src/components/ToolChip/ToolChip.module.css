@@ -11,9 +11,12 @@
     box-shadow var(--transition-fast);
 }
 
-.chip:hover {
-  transform: translateY(-1px);
-  border-color: var(--color-border-stronger);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .chip:hover {
+    transform: translateY(-1px);
+    border-color: var(--color-border-stronger);
+  }
 }
 
 .active {

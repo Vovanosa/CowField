@@ -65,8 +65,8 @@ const en = {
     'Dots are just notes and never count as bulls.',
   'You win with correct bull placement only.':
     'You win with correct bull placement only.',
-  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong, and once you have placed the required number of bulls, the game can show which ones break the rules. You do not need to clean up every unused cell before finishing a level.':
-    'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong, and once you have placed the required number of bulls, the game can show which ones break the rules. You do not need to clean up every unused cell before finishing a level.',
+  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.':
+    'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.',
   'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
     'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.',
   'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':

@@ -16,11 +16,17 @@
 
 .dialog {
   width: min(100%, 420px);
+  /* The backdrop is `position: fixed` and cannot scroll, so anything taller than the viewport used
+     to be clipped where no one could reach it. Measured headroom on a landscape phone was as little
+     as 15px, so cap the height and let the dialog scroll itself instead. */
+  max-height: calc(100svh - (2 * var(--space-5)));
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   transform-origin: center;
-  overflow: hidden;
+  /* Explicitly `hidden` on the inline axis: it was plain `overflow: hidden` before, and setting only
+     `overflow-y` would have let the inline axis compute to `auto` and show a stray scrollbar. */
+  overflow: hidden auto;
   animation: dialog-panel-in 320ms var(--ease-emphasized);
 }
 

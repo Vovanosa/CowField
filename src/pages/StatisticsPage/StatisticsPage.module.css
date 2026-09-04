@@ -127,6 +127,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Wraps rather than relying on a viewport breakpoint. Both halves are `white-space: nowrap`, and
+     the card is only ~350px wide once the grid holds two columns on a mid-sized screen — narrow
+     enough that the row overflowed the card by 31px while a viewport-keyed rule still thought it had
+     room. Wrapping keys off the actual space, so it also survives a longer translation. */
+  flex-wrap: wrap;
   gap: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid rgba(148, 112, 38, 0.08);
@@ -195,10 +200,21 @@
   line-height: 1.5;
 }
 
+/* `.metricSplitRow` is nested inside a difficulty card, so its own space runs out long before the
+   page's does — it keeps the wider collapse point. A container query would be the right tool for it
+   if this ever needs to be more precise. */
 @media (max-width: 960px) {
-  .overviewGrid,
-  .difficultyGrid,
   .metricSplitRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* These two used to collapse at 960px, but the page container is only 856px wide at that viewport —
+   two ~420px columns still fit comfortably. 640px is where the container (536px) genuinely stops
+   holding two readable columns. */
+@media (max-width: 640px) {
+  .overviewGrid,
+  .difficultyGrid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

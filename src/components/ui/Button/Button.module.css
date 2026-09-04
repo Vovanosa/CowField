@@ -17,8 +17,11 @@
     opacity var(--transition-base);
 }
 
-.button:hover {
-  transform: translateY(-1px);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .button:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .button:focus-visible {
@@ -51,9 +54,12 @@
   border-color: var(--color-danger-border);
 }
 
-.danger:hover {
-  background: var(--color-danger-surface-hover);
-  border-color: var(--color-danger-border-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .danger:hover {
+    background: var(--color-danger-surface-hover);
+    border-color: var(--color-danger-border-hover);
+  }
 }
 
 .ghost {
@@ -70,6 +76,35 @@
 .iconOnly {
   width: 48px;
   padding: 0;
+}
+
+.label {
+  min-width: 0;
+}
+
+/* Below 640px a `collapseLabelOnNarrow` button keeps only its icon. The label is taken out of the
+   visual flow rather than removed, so the accessible name is unchanged and no `aria-label` is
+   needed. Content-sized pills are the reason: on a 312px screen the content box is 246px and no two
+   labelled controls can share a row, so the board's control bar collapsed into five stacked rows. */
+@media (max-width: 640px) {
+  .collapseLabel {
+    width: 48px;
+    min-width: 48px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .collapseLabel .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 .sm {

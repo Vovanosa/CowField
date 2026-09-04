@@ -65,8 +65,8 @@
     'Точки — це лише нотатки, вони ніколи не рахуються як бики.',
   'You win with correct bull placement only.':
     'Перемога залежить тільки від правильного розташування биків.',
-  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong, and once you have placed the required number of bulls, the game can show which ones break the rules. You do not need to clean up every unused cell before finishing a level.':
-    'Зручний спосіб грати — ставити точки як підказки для себе, поки ви перевіряєте ідеї. Биків можна ставити навіть у неправильні місця, а коли потрібну кількість уже розміщено, гра покаже, які з них порушують правила. Перед завершенням рівня не потрібно зачищати всі невикористані клітинки.',
+  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.':
+    'Зручний спосіб грати — ставити точки як підказки для себе, поки ви перевіряєте ідеї. Биків можна ставити навіть у неправильні місця: бик, який порушує правило, підсвічується відразу, тож ви це побачите й рухатиметеся далі. Перед завершенням рівня не потрібно зачищати всі невикористані клітинки.',
   'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
     'У налаштуваннях можна зробити гру комфортнішою: увімкнути режим без поспіху, щоб сховати таймер, скористатися автопозначками точками, перейти на темну тему та ввімкнути звукові ефекти або музику з регулюванням гучності. Якщо ви граєте як гість, режим без поспіху вмикається автоматично.',
   'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':

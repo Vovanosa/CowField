@@ -28,9 +28,12 @@
   min-height: 48px;
 }
 
-.button:hover {
-  border-color: var(--color-border-stronger);
-  background: var(--color-input-surface-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .button:hover {
+    border-color: var(--color-border-stronger);
+    background: var(--color-input-surface-hover);
+  }
 }
 
 .button:focus,

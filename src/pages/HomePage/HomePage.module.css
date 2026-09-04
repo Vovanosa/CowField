@@ -80,8 +80,11 @@
   animation: fade-up-in 320ms var(--ease-emphasized) both;
 }
 
-.homeMenuButton:hover {
-  transform: translateY(-2px);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .homeMenuButton:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .homeMenuButtonDisabled {

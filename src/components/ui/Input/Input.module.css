@@ -13,9 +13,12 @@
     background-color var(--transition-base);
 }
 
-.input:hover {
-  border-color: var(--color-border-stronger);
-  background: var(--color-input-surface-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .input:hover {
+    border-color: var(--color-border-stronger);
+    background: var(--color-input-surface-hover);
+  }
 }
 
 .input::placeholder {

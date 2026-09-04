@@ -129,9 +129,12 @@
     box-shadow var(--transition-fast);
 }
 
-.editorCell:hover {
-  filter: saturate(1.03);
-  box-shadow: inset 0 0 0 999px var(--color-board-cell-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .editorCell:hover {
+    filter: saturate(1.03);
+    box-shadow: inset 0 0 0 999px var(--color-board-cell-hover);
+  }
 }
 
 .editorCell:active {

@@ -14,6 +14,12 @@ type SharedProps = {
   trailingIcon?: ReactNode
   fullWidth?: boolean
   iconOnly?: boolean
+  /**
+   * Below 640px, show only the icon. The label stays in the DOM and is merely taken out of the
+   * visual flow, so the button's accessible name is unchanged and no `aria-label` is needed. For
+   * buttons in a crowded bar — five content-sized pills cannot share a 246px row.
+   */
+  collapseLabelOnNarrow?: boolean
   className?: string
 }
 
@@ -30,17 +36,19 @@ type ButtonAsLinkProps = SharedProps &
 export type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps
 
 function getButtonClassName({
-  variant = 'secondary',
-  size = 'md',
-  fullWidth = false,
-  iconOnly = false,
+  variant,
+  size,
+  fullWidth,
+  iconOnly,
+  collapseLabelOnNarrow,
   className,
   disabled = false,
 }: {
-  variant?: ButtonVariant
-  size?: ButtonSize
-  fullWidth?: boolean
-  iconOnly?: boolean
+  variant: ButtonVariant
+  size: ButtonSize
+  fullWidth: boolean
+  iconOnly: boolean
+  collapseLabelOnNarrow: boolean
   className?: string
   disabled?: boolean
 }) {
@@ -50,6 +58,7 @@ function getButtonClassName({
     styles[size],
     fullWidth ? styles.fullWidth : '',
     iconOnly ? styles.iconOnly : '',
+    collapseLabelOnNarrow ? styles.collapseLabel : '',
     disabled ? styles.buttonDisabled : '',
     className ?? '',
   ]
@@ -57,20 +66,37 @@ function getButtonClassName({
     .join(' ')
 }
 
-export function Button(props: ButtonProps) {
-  const {
-    children,
-    variant = 'secondary',
-    size = 'md',
-    leadingIcon,
-    trailingIcon,
-    fullWidth = false,
-    iconOnly = false,
-    className,
-  } = props
+/**
+ * Wrapped so CSS can target the label on its own — a bare text node cannot be hidden. Icon-only
+ * buttons pass `{null}`, which gets no wrapper at all.
+ */
+function renderLabel(children: ReactNode) {
+  if (children === null || children === undefined || children === false || children === '') {
+    return null
+  }
 
+  return <span className={styles.label}>{children}</span>
+}
+
+export function Button(props: ButtonProps) {
+  // Each branch destructures the presentational props *with* a rest element, so only genuine
+  // DOM/link attributes are spread onto the element. Reading them without a rest, as this used to,
+  // left `variant`, `iconOnly`, `leadingIcon` and friends in the spread and passed them straight
+  // through to the underlying `<a>`/`<button>`.
   if ('to' in props) {
-    const { to, ...linkProps } = props as ButtonAsLinkProps
+    const {
+      to,
+      children,
+      variant = 'secondary',
+      size = 'md',
+      leadingIcon,
+      trailingIcon,
+      fullWidth = false,
+      iconOnly = false,
+      collapseLabelOnNarrow = false,
+      className,
+      ...linkProps
+    } = props as ButtonAsLinkProps
 
     return (
       <Link
@@ -81,17 +107,31 @@ export function Button(props: ButtonProps) {
           size,
           fullWidth,
           iconOnly,
+          collapseLabelOnNarrow,
           className,
         })}
       >
         {leadingIcon}
-        {children}
+        {renderLabel(children)}
         {trailingIcon}
       </Link>
     )
   }
 
-  const { type = 'button', disabled = false, ...buttonProps } = props as ButtonAsButtonProps
+  const {
+    children,
+    variant = 'secondary',
+    size = 'md',
+    leadingIcon,
+    trailingIcon,
+    fullWidth = false,
+    iconOnly = false,
+    collapseLabelOnNarrow = false,
+    className,
+    type = 'button',
+    disabled = false,
+    ...buttonProps
+  } = props as ButtonAsButtonProps
 
   return (
     <button
@@ -103,12 +143,13 @@ export function Button(props: ButtonProps) {
         size,
         fullWidth,
         iconOnly,
+        collapseLabelOnNarrow,
         className,
         disabled,
       })}
     >
       {leadingIcon}
-      {children}
+      {renderLabel(children)}
       {trailingIcon}
     </button>
   )

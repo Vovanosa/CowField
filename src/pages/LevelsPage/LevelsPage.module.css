@@ -63,10 +63,13 @@
     var(--color-surface);
 }
 
-.difficultyLinkChip:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-difficulty-hard-border);
-  box-shadow: var(--shadow-raised);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .difficultyLinkChip:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-difficulty-hard-border);
+    box-shadow: var(--shadow-raised);
+  }
 }
 
 .difficultyLinkLabel {

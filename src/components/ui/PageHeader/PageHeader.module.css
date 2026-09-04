@@ -10,10 +10,6 @@
 }
 
 .pageIntro {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-6);
   margin-bottom: var(--space-2);
 }
 
@@ -37,19 +33,12 @@
   line-height: 1.7;
 }
 
-.pageIntroActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
 @media (max-width: 720px) {
   .header {
     gap: var(--space-3);
   }
 
   .pageIntro {
-    flex-direction: column;
     margin-bottom: var(--space-5);
   }
 }

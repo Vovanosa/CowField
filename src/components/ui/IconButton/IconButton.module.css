@@ -14,8 +14,11 @@
     opacity var(--transition-base);
 }
 
-.iconButton:hover {
-  transform: translateY(-1px);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .iconButton:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .iconButton:focus-visible {
@@ -36,9 +39,12 @@
   box-shadow: var(--shadow-soft);
 }
 
-.secondary:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .secondary:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
+  }
 }
 
 .ghost {
@@ -48,8 +54,11 @@
   box-shadow: none;
 }
 
-.ghost:hover {
-  background: var(--color-accent-soft);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .ghost:hover {
+    background: var(--color-accent-soft);
+  }
 }
 
 .sm {

@@ -9,9 +9,12 @@
   animation: fade-up-in 260ms var(--ease-emphasized) both;
 }
 
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-raised);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-raised);
+  }
 }
 
 .locked {
@@ -21,9 +24,12 @@
   box-shadow: var(--shadow-soft);
 }
 
-.locked:hover {
-  transform: none;
-  box-shadow: var(--shadow-soft);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .locked:hover {
+    transform: none;
+    box-shadow: var(--shadow-soft);
+  }
 }
 
 .linkOverlay {
@@ -100,10 +106,13 @@
     border-color var(--transition-fast);
 }
 
-.editLink:hover {
-  transform: translateY(-1px);
-  background: var(--color-surface-strong);
-  border-color: var(--color-border-hover);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .editLink:hover {
+    transform: translateY(-1px);
+    background: var(--color-surface-strong);
+    border-color: var(--color-border-hover);
+  }
 }
 
 .createCard {

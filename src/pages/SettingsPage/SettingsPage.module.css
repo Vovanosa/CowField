@@ -43,8 +43,11 @@
     transform var(--transition-fast);
 }
 
-.languageOption:hover {
-  transform: translateY(-1px);
+/* Hover-only affordance: guarded so it cannot stick after a tap on a touch device. */
+@media (hover: hover) {
+  .languageOption:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .languageOption:focus-visible {
