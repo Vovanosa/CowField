@@ -13,17 +13,6 @@ function createProgressKey(difficulty: Difficulty, levelNumber: number) {
   return `${difficulty}:${levelNumber}`
 }
 
-function createEmptyProgress(difficulty: Difficulty, levelNumber: number): LevelProgress {
-  return {
-    difficulty,
-    levelNumber,
-    bestTimeSeconds: null,
-    completedAt: null,
-    // Null, not '': nothing has been recorded, and '' formats as an Invalid Date.
-    updatedAt: null,
-  }
-}
-
 function isLevelProgress(value: unknown): value is LevelProgress {
   if (!value || typeof value !== 'object') {
     return false
@@ -85,18 +74,24 @@ function writeGuestProgressRecord(record: GuestProgressRecord) {
   }
 }
 
-export async function getGuestProgressByDifficulty(difficulty: Difficulty) {
+/**
+ * A guest's best times for a difficulty, in the **same shape the API answers with** — which is what
+ * lets `resources/progress.ts` swap backends behind a single branch instead of every caller asking.
+ *
+ * The stored record keeps whole `LevelProgress` entries; that is local data with no wire cost, and
+ * rewriting it would mean migrating every existing guest's localStorage for nothing.
+ */
+export async function getGuestBestTimes(difficulty: Difficulty) {
   const record = readGuestProgressRecord()
+  const bestTimes: Record<number, number> = {}
 
-  return Object.values(record)
-    .filter((progress) => progress.difficulty === difficulty)
-    .sort((left, right) => left.levelNumber - right.levelNumber)
-}
+  for (const progress of Object.values(record)) {
+    if (progress.difficulty === difficulty && progress.bestTimeSeconds !== null) {
+      bestTimes[progress.levelNumber] = progress.bestTimeSeconds
+    }
+  }
 
-export async function getGuestLevelProgress(difficulty: Difficulty, levelNumber: number) {
-  const record = readGuestProgressRecord()
-
-  return record[createProgressKey(difficulty, levelNumber)] ?? createEmptyProgress(difficulty, levelNumber)
+  return bestTimes
 }
 
 export async function completeGuestLevelProgress(

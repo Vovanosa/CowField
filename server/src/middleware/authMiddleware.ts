@@ -4,8 +4,13 @@ import { HttpError } from '../errors/HttpError'
 import { AuthService } from '../services/AuthService'
 import type { SessionRole } from '../types/auth'
 
+/**
+ * The caller, as every controller sees them.
+ *
+ * No `token`: nothing server-side reads it back off the actor — the middleware already used it to
+ * get here.
+ */
 export type AuthenticatedActor = {
-  token: string
   actorKey: string
   role: SessionRole
   email: string | null

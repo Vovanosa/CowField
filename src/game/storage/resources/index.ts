@@ -23,11 +23,10 @@ export {
 } from './levelsView'
 export {
   completeLevelProgress,
-  getLevelProgress,
-  getProgressByDifficulty,
-  getProgressMapByDifficulty,
+  getBestTime,
+  getBestTimes,
   invalidateProgress,
-  peekLevelProgress,
+  peekBestTime,
   type CompleteLevelResult,
 } from './progress'
 export {

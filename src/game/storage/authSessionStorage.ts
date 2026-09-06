@@ -1,4 +1,4 @@
-import type { AuthSession } from '../types'
+import type { AuthSession, GuestSessionResponse } from '../types'
 import {
   ApiError,
   buildApiUrl,
@@ -54,6 +54,7 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 async function resetAuthState() {
   clearStoredSessionToken()
   clearBearerToken()
+  inFlightSessionLookup = null
 
   try {
     await signOutNeon()
@@ -96,16 +97,17 @@ export async function register(email: string, password: string) {
 }
 
 export async function loginAsGuest() {
-  const session = await requestJson<AuthSession>('/guest', {
+  // The only response that carries a token, because a guest's credential exists nowhere else.
+  const { token, ...session } = await requestJson<GuestSessionResponse>('/guest', {
     method: 'POST',
   })
 
   // A guest's stored token takes precedence over any cached Neon JWT, but drop the cache anyway so
   // nothing from a previous account can be sent if the guest token is later cleared.
   clearBearerToken()
-  setStoredSessionToken(session.token)
+  setStoredSessionToken(token)
   setStoredSessionRole(session.role)
-  return session
+  return session satisfies AuthSession
 }
 
 type SessionLookupOptions = {
@@ -115,6 +117,18 @@ type SessionLookupOptions = {
    */
   force?: boolean
 }
+
+/**
+ * The session lookup currently in flight, so two callers cannot both ask.
+ *
+ * `AuthProvider` runs its restore effect once — but React's `StrictMode` deliberately mounts,
+ * unmounts and remounts in development, which invoked it twice and produced **two `/me` requests on
+ * every refresh**. Every other resource in the layer already dedupes through `createResource`; this
+ * one sits outside it because it is what establishes *who* the caller is, so it needs its own.
+ *
+ * Not a cache — there is no stored result and no TTL. It only collapses concurrent callers.
+ */
+let inFlightSessionLookup: Promise<AuthSession | null> | null = null
 
 /**
  * Restores the session by asking our API who the current bearer is.
@@ -130,7 +144,25 @@ type SessionLookupOptions = {
  * and silent. Now a failure to reach the server leaves the browser's memory of the session intact,
  * and the next load picks it back up.
  */
-export async function getCurrentSession({ force = false }: SessionLookupOptions = {}) {
+export async function getCurrentSession(options: SessionLookupOptions = {}) {
+  // A forced lookup follows a sign-in, so it must not join a request that started before it and
+  // would answer for whoever was signed in a moment ago.
+  if (!options.force && inFlightSessionLookup) {
+    return inFlightSessionLookup
+  }
+
+  const lookup = loadCurrentSession(options).finally(() => {
+    if (inFlightSessionLookup === lookup) {
+      inFlightSessionLookup = null
+    }
+  })
+
+  inFlightSessionLookup = lookup
+
+  return lookup
+}
+
+async function loadCurrentSession({ force = false }: SessionLookupOptions) {
   const storedRole = getStoredSessionRole()
 
   // Guests authenticate purely with the stored backend token; no token means no guest session.

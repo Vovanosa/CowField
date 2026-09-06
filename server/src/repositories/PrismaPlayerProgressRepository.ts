@@ -176,24 +176,46 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     }
   }
 
-  async listByDifficulty(actorKey: string, difficulty: AppDifficulty) {
+  /**
+   * A difficulty's best times, keyed by level number.
+   *
+   * Only completed rows, and only the two columns anything renders. This used to select whole rows
+   * and hand back a full record each — the difficulty repeated per row, plus `completedAt` and
+   * `updatedAt`, which no screen reads.
+   */
+  async getBestTimesByDifficulty(actorKey: string, difficulty: AppDifficulty) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
     if (!actor.userId) {
-      return []
+      return {}
     }
 
     const records = await this.prisma.levelProgress.findMany({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
         userId: actor.userId,
+        bestTimeSeconds: {
+          not: null,
+        },
+      },
+      select: {
+        levelNumber: true,
+        bestTimeSeconds: true,
       },
       orderBy: {
         levelNumber: 'asc',
       },
     })
 
-    return records.map(toLevelProgressRecord)
+    const bestTimes: Record<number, number> = {}
+
+    for (const record of records) {
+      if (record.bestTimeSeconds !== null) {
+        bestTimes[record.levelNumber] = record.bestTimeSeconds
+      }
+    }
+
+    return bestTimes
   }
 
   async listByLevelNumbers(

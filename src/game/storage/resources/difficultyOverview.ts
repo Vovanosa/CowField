@@ -2,7 +2,7 @@ import { DIFFICULTIES } from '../../levels/constants'
 import type { Difficulty } from '../../types'
 import { createResource } from '../cache'
 import { buildApiUrl, isGuestSession, requestAuthenticatedJson } from '../http'
-import { getGuestProgressByDifficulty } from '../guestProgressStorage'
+import { getGuestBestTimes } from '../guestProgressStorage'
 
 type DifficultyOverviewItem = {
   difficulty: Difficulty
@@ -35,13 +35,14 @@ async function loadGuestOverview(): Promise<DifficultyOverviewResponse> {
   const levelsOverview = await requestAuthenticatedJson<LevelsOverviewResponse>(
     `${LEVELS_API_BASE}/overview`,
   )
-  const guestProgressByDifficulty = await Promise.all(
-    DIFFICULTIES.map((difficulty) => getGuestProgressByDifficulty(difficulty)),
+  const guestBestTimes = await Promise.all(
+    DIFFICULTIES.map((difficulty) => getGuestBestTimes(difficulty)),
   )
+  // A key exists only for a level that has been finished, so the count is the size of the map.
   const completedByDifficulty = new Map<Difficulty, number>(
-    guestProgressByDifficulty.map((progress, index) => [
+    guestBestTimes.map((bestTimes, index) => [
       DIFFICULTIES[index],
-      progress.filter((entry) => entry.bestTimeSeconds !== null).length,
+      Object.keys(bestTimes).length,
     ]),
   )
 

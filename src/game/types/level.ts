@@ -2,17 +2,17 @@ export type CellMark = 'empty' | 'dot' | 'bull'
 
 export type Difficulty = 'light' | 'easy' | 'medium' | 'hard'
 
-export type LevelSummary = {
-  id: string
-  levelNumber: number
-  title: string
+/**
+ * A playable board.
+ *
+ * Deliberately only what is rendered. There is no `title`, `createdAt`, `updatedAt` or `id` here:
+ * the API stopped sending them, because no screen showed them. A React key is
+ * `` `${difficulty}-${levelNumber}` ``, which the caller can build.
+ */
+export type LevelDefinition = {
   difficulty: Difficulty
+  levelNumber: number
   gridSize: number
-  createdAt: string
-  updatedAt: string
-}
-
-export type LevelDefinition = LevelSummary & {
   pensByCell: number[]
   /**
    * The next level in this difficulty, or null when this is the last one.
@@ -24,11 +24,10 @@ export type LevelDefinition = LevelSummary & {
   nextLevelNumber: number | null
 }
 
+/** The editor additionally shows the title and the authored solution. Admins only. */
 export type LevelEditorDefinition = LevelDefinition & {
+  title: string
   cowsByCell: boolean[]
 }
 
-export type LevelDraft = Omit<
-  LevelEditorDefinition,
-  'id' | 'createdAt' | 'updatedAt' | 'nextLevelNumber'
->
+export type LevelDraft = Omit<LevelEditorDefinition, 'nextLevelNumber'>

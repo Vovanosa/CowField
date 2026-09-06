@@ -4,9 +4,8 @@ import { DIFFICULTIES } from '../types/level'
 import type {
   Difficulty as AppDifficulty,
   LevelDifficultySummaryRecord,
-  LevelListPageRecord,
+  LevelCatalogueRecord,
   LevelRecord,
-  LevelSummaryRecord,
   LevelsOverviewRecord,
 } from '../types/level'
 import type { LevelRepository } from './interfaces'
@@ -33,24 +32,6 @@ function toLevelRecord(level: {
     gridSize: level.gridSize,
     colorsByCell: level.pensByCell as number[],
     cowsByCell: level.cowsByCell as boolean[],
-    createdAt: level.createdAt.toISOString(),
-    updatedAt: level.updatedAt.toISOString(),
-  }
-}
-
-function toLevelSummaryRecord(level: {
-  difficulty: Difficulty
-  levelNumber: number
-  title: string
-  gridSize: number
-  createdAt: Date
-  updatedAt: Date
-}): LevelSummaryRecord {
-  return {
-    difficulty: level.difficulty,
-    levelNumber: level.levelNumber,
-    title: level.title,
-    gridSize: level.gridSize,
     createdAt: level.createdAt.toISOString(),
     updatedAt: level.updatedAt.toISOString(),
   }
@@ -134,29 +115,24 @@ export class PrismaLevelRepository implements LevelRepository {
    * fetched everything and then re-sliced it, and the levels page pages the grid itself from what it
    * already holds. Two of the three pagination implementations in the project were dead code.
    */
-  async listByDifficulty(difficulty: AppDifficulty): Promise<LevelListPageRecord> {
+  async listByDifficulty(difficulty: AppDifficulty): Promise<LevelCatalogueRecord> {
+    // `select: { levelNumber: true }` is the whole point — the level cards render a number and a
+    // best time, so a row's title, grid size and timestamps never leave the database.
     const levels = await this.prisma.level.findMany({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
       },
       select: {
-        difficulty: true,
         levelNumber: true,
-        title: true,
-        gridSize: true,
-        createdAt: true,
-        updatedAt: true,
       },
       orderBy: {
         levelNumber: 'asc',
       },
     })
 
-    // The count came from a second query purely to fill a paging envelope. The list is the count.
     return {
       difficulty,
-      levels: levels.map(toLevelSummaryRecord),
-      totalCount: levels.length,
+      levelNumbers: levels.map((level) => level.levelNumber),
     }
   }
   async getByDifficultyAndNumber(difficulty: AppDifficulty, levelNumber: number) {

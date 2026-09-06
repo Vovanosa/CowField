@@ -4,9 +4,8 @@ export type {
   LevelDefinition,
   LevelEditorDefinition,
   LevelDraft,
-  LevelSummary,
 } from './level'
-export type { LevelProgress } from './progress'
-export type { AuthRole, AuthSession } from './auth'
+export type { BestTimesByLevel, LevelProgress } from './progress'
+export type { AuthRole, AuthSession, GuestSessionResponse } from './auth'
 export type { PlayerSettings } from './settings'
 export type { DifficultyStatisticsSummary, PlayerStatisticsSummary } from './statistics'

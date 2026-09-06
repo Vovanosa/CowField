@@ -44,8 +44,8 @@ export class PlayerProgressService {
     }
   }
 
-  async listByDifficulty(actorKey: string, difficulty: Difficulty) {
-    return this.repository.listByDifficulty(actorKey, difficulty)
+  async getBestTimesByDifficulty(actorKey: string, difficulty: Difficulty) {
+    return this.repository.getBestTimesByDifficulty(actorKey, difficulty)
   }
 
   /**

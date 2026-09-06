@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 
-import type { SessionRecord, UserRecord } from '../types/auth'
+import type { GuestSession, SessionRecord, UserRecord } from '../types/auth'
 import type {
   SessionRepository,
   UserRepository,
@@ -9,8 +9,13 @@ import { normalizeEmail } from '../auth/adminAccount'
 import { verifyNeonJwt, type NeonJwtClaims } from '../auth/neonJwt'
 import { getSessionExpiry } from '../auth/sessionExpiry'
 
-type AuthSessionPayload = {
-  token: string
+/**
+ * What the API resolves a bearer token into, for its own use.
+ *
+ * `actorKey` addresses the player in every repository call, so it belongs here — but it is not part
+ * of any response. Neither is the token: nothing server-side reads it back off the actor.
+ */
+type ResolvedActor = {
   actorKey: string
   role: 'admin' | 'user' | 'guest'
   email: string | null
@@ -141,7 +146,7 @@ export class AuthService {
     this.neonAuthUrl = neonAuthUrl?.trim() || null
   }
 
-  async createGuestSession(): Promise<AuthSessionPayload> {
+  async createGuestSession(): Promise<GuestSession> {
     const timestamp = new Date().toISOString()
     const session: SessionRecord = {
       token: randomBytes(32).toString('hex'),
@@ -157,9 +162,9 @@ export class AuthService {
 
     await this.sessionRepository.save(session)
 
+    // The token is the point of this response: a guest's credential exists nowhere else.
     return {
       token: session.token,
-      actorKey: session.actorKey,
       role: session.role,
       email: session.email,
       displayName: session.displayName,
@@ -232,12 +237,11 @@ export class AuthService {
       }
 
       return {
-        token: session.token,
         actorKey: session.actorKey,
         role: session.role,
         email: session.email,
         displayName: session.displayName,
-      }
+      } satisfies ResolvedActor
     }
 
     // Otherwise it must be a Neon-issued JWT, verified against Neon's JWKS. There is deliberately
@@ -252,12 +256,11 @@ export class AuthService {
     const user = await this.syncNeonUser(claims)
 
     return {
-      token,
       actorKey: `user:${user.id}`,
       role: user.role,
       email: user.email,
       displayName: user.displayName,
-    }
+    } satisfies ResolvedActor
   }
 
   async logout(token: string) {

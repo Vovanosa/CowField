@@ -38,6 +38,30 @@ export const passwordResetTokenRecordSchema = z.object({
   expiresAt: z.string(),
 })
 
+/**
+ * Who the caller is, as `GET /api/auth/me` reports it.
+ *
+ * **No token.** The caller sent one in the `Authorization` header to get here; echoing it back put
+ * a ~1.1 KB JWT in the response body — and in a body the browser was caching, which is not where a
+ * bearer token belongs. `actorKey` is not here either: it is a server-side addressing detail
+ * (`user:<id>` / `guest:<uuid>`) that nothing on the client has ever read.
+ */
+export type AuthIdentity = {
+  role: SessionRole
+  email: string | null
+  displayName: string
+}
+
+/**
+ * `POST /api/auth/guest` additionally returns the token it just minted.
+ *
+ * This is the one response that legitimately carries a credential: a guest's token exists nowhere
+ * else, and the client has no other way to learn it.
+ */
+export type GuestSession = AuthIdentity & {
+  token: string
+}
+
 export type AccountRole = z.infer<typeof accountRoleSchema>
 export type SessionRole = z.infer<typeof sessionRoleSchema>
 export type UserRecord = z.infer<typeof userRecordSchema>

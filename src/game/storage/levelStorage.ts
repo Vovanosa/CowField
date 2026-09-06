@@ -3,7 +3,6 @@ import type {
   LevelDefinition,
   LevelDraft,
   LevelEditorDefinition,
-  LevelSummary,
 } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
 import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
@@ -38,13 +37,9 @@ export type DifficultyLevelSummary = DifficultyLevelSummaryResponse
 
 function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
   return {
-    id: `${record.difficulty}-${record.levelNumber}`,
-    levelNumber: record.levelNumber,
-    title: record.title,
     difficulty: record.difficulty,
+    levelNumber: record.levelNumber,
     gridSize: record.gridSize,
-    createdAt: record.createdAt,
-    updatedAt: record.updatedAt,
     pensByCell: record.colorsByCell,
     nextLevelNumber: record.nextLevelNumber,
   }
@@ -53,6 +48,7 @@ function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
 function fromEditorApiRecord(record: LevelDetailApiRecord): LevelEditorDefinition {
   return {
     ...fromApiRecord(record),
+    title: record.title ?? `Level ${record.levelNumber}`,
     cowsByCell:
       record.cowsByCell ??
       Array.from({ length: record.gridSize * record.gridSize }, () => false),
@@ -98,7 +94,7 @@ export function createEmptyLevelDraft(
  * and the levels page's own grid paging — and only the third ever ran, because nothing passed the
  * options. The whole catalogue is ~25KB and is now fetched once per session.
  */
-export async function getLevelsByDifficulty(difficulty: Difficulty): Promise<LevelSummary[]> {
+export async function getLevelsByDifficulty(difficulty: Difficulty): Promise<number[]> {
   return getLevelCatalogue(difficulty)
 }
 

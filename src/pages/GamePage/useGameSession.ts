@@ -20,10 +20,10 @@ import {
 import { getLevelByDifficultyAndNumber } from '../../game/storage/levelStorage'
 import {
   completeLevelProgress,
-  getLevelProgress,
+  getBestTime,
   recordBullPlacements,
 } from '../../game/storage/resources'
-import type { LevelDefinition, LevelProgress } from '../../game/types'
+import type { LevelDefinition } from '../../game/types'
 import {
   applyAutoPlacedDots,
   createEmptyBoard,
@@ -72,7 +72,9 @@ export function useGameSession({
   // Bumping this re-runs the load effect, which is all a retry needs to do.
   const [reloadKey, setReloadKey] = useState(0)
   const [cellMarks, setCellMarks] = useState<CellMark[]>([])
-  const [levelProgress, setLevelProgress] = useState<LevelProgress | null>(null)
+  // The best time on record for this level, or null if it has never been finished. That is the
+  // whole of what the API sends and the whole of what this screen shows.
+  const [bestTimeSeconds, setBestTimeSeconds] = useState<number | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [runStartedAt, setRunStartedAt] = useState<number | null>(null)
   const [isBoardLocked, setIsBoardLocked] = useState(false)
@@ -86,7 +88,7 @@ export function useGameSession({
   const cellMarksRef = useRef<CellMark[]>([])
   const runStartedAtRef = useRef<number | null>(null)
   const elapsedSecondsRef = useRef(0)
-  const levelProgressRef = useRef<LevelProgress | null>(null)
+  const bestTimeSecondsRef = useRef<number | null>(null)
   const pendingBullPlacementsRef = useRef(0)
   const hasFlushedBullPlacementsRef = useRef(false)
   const dragStateRef = useRef(createGameDragState())
@@ -104,8 +106,8 @@ export function useGameSession({
   }, [elapsedSeconds])
 
   useEffect(() => {
-    levelProgressRef.current = levelProgress
-  }, [levelProgress])
+    bestTimeSecondsRef.current = bestTimeSeconds
+  }, [bestTimeSeconds])
 
   useEffect(() => {
     if (!isDifficulty(difficulty) || !levelNumber) {
@@ -127,12 +129,13 @@ export function useGameSession({
         // Both progress reads are lookups in the one cached collection for this difficulty, not
         // requests. They used to be a request each — and the rows were already inside the collection
         // the levels page had just fetched. The unlock rule itself is unchanged: the level before
-        // this one by number, exactly as `getUnlockedLevelNumbers` computes it for the levels page.
-        const [nextLevel, nextProgress, previousLevelProgress] = await Promise.all([
+        // this one by number, the same rule the levels page applies when it decides which cards are
+        // locked.
+        const [nextLevel, nextBestTime, previousBestTime] = await Promise.all([
           getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
-          getLevelProgress(difficultyKey, currentLevelNumber),
+          getBestTime(difficultyKey, currentLevelNumber),
           currentLevelNumber > 1
-            ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
+            ? getBestTime(difficultyKey, currentLevelNumber - 1)
             : Promise.resolve(null),
         ])
 
@@ -141,9 +144,9 @@ export function useGameSession({
         }
 
         setLevel(nextLevel)
-        setLevelProgress(nextProgress)
+        setBestTimeSeconds(nextBestTime)
         setNextLevelNumber(nextLevel?.nextLevelNumber ?? null)
-        setIsUnlocked(currentLevelNumber === 1 || previousLevelProgress?.bestTimeSeconds !== null)
+        setIsUnlocked(currentLevelNumber === 1 || previousBestTime !== null)
         setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
         setActiveCellIndex(null)
         setHasLoadError(false)
@@ -281,7 +284,7 @@ export function useGameSession({
     setIsBoardLocked(true)
     setElapsedSeconds(completionTimeSeconds)
     setRunStartedAt(null)
-    const previousBestTime = levelProgressRef.current?.bestTimeSeconds
+    const previousBestTime = bestTimeSecondsRef.current
 
     setCompletionModal({
       isOpen: true,
@@ -321,7 +324,7 @@ export function useGameSession({
           : undefined,
       )
 
-      setLevelProgress(response.progress)
+      setBestTimeSeconds(response.bestTimeSeconds)
       setCompletionModal((currentModal) =>
         currentModal
           ? {
@@ -329,7 +332,7 @@ export function useGameSession({
               isNewBest: response.isNewBest,
               isFirstClear: currentModal.isFirstClear,
               timeSeconds: completionTimeSeconds,
-              bestTimeSeconds: response.progress.bestTimeSeconds ?? currentModal.bestTimeSeconds,
+              bestTimeSeconds: response.bestTimeSeconds ?? currentModal.bestTimeSeconds,
               previousBestTimeSeconds: currentModal.previousBestTimeSeconds,
               saveState: 'saved',
             }

@@ -15,6 +15,16 @@ export const levelProgressRecordSchema = z.object({
 export type LevelProgressRecord = z.infer<typeof levelProgressRecordSchema>
 
 /**
+ * A difficulty's progress as `levelNumber → bestTimeSeconds`, completed levels only.
+ *
+ * The list this replaced sent a full row per completed level — the difficulty repeated on every one,
+ * plus `completedAt` and `updatedAt`, which no screen reads. The only thing rendered is the best
+ * time on a level card, and an **absent key already means "not played"**, which is exactly what the
+ * client assumed anyway.
+ */
+export type BestTimesByLevelRecord = Record<number, number>
+
+/**
  * Everything the statistics page reads out of `level_progress`, fetched together.
  *
  * One shape rather than an overall summary plus four per-difficulty ones, because the repository

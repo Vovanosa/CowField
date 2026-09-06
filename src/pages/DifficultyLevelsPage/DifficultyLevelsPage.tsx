@@ -12,7 +12,7 @@ import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getDifficultyLevelsPageData } from '../../game/storage/resources'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
-import type { Difficulty, LevelProgress, LevelSummary } from '../../game/types'
+import type { BestTimesByLevel, Difficulty } from '../../game/types'
 import styles from './DifficultyLevelsPage.module.css'
 import { useGridColumnCount } from './useGridColumnCount'
 
@@ -37,8 +37,8 @@ function isDifficulty(value: string | undefined): value is Difficulty {
 
 function DifficultyLevelsPageScreen() {
   const { difficulty } = useParams()
-  const [levels, setLevels] = useState<LevelSummary[]>([])
-  const [progressByLevelNumber, setProgressByLevelNumber] = useState<Record<number, LevelProgress>>({})
+  const [levelNumbers, setLevelNumbers] = useState<number[]>([])
+  const [bestTimes, setBestTimes] = useState<BestTimesByLevel>({})
   const [currentPage, setCurrentPage] = useState(1)
   // Held in state rather than a ref so the measuring effect re-runs when the grid mounts and
   // unmounts — it is not rendered at all in the load-error branch.
@@ -75,8 +75,8 @@ function DifficultyLevelsPageScreen() {
           return
         }
 
-        setLevels(nextData.levels)
-        setProgressByLevelNumber(nextData.progressByLevelNumber)
+        setLevelNumbers(nextData.levelNumbers)
+        setBestTimes(nextData.bestTimes)
         setHasLoadError(false)
       } catch (error) {
         reportUnexpectedError(error, `levels page (${difficultyKey})`)
@@ -103,7 +103,7 @@ function DifficultyLevelsPageScreen() {
 
   const normalizedPageSize = columnCount * ROWS_PER_PAGE
   const levelItems = [
-    ...levels.map((level) => ({ type: 'level' as const, level })),
+    ...levelNumbers.map((levelNumber) => ({ type: 'level' as const, levelNumber })),
     ...(isAdmin ? [{ type: 'create' as const }] : []),
   ]
   const totalPages = Math.max(Math.ceil(levelItems.length / normalizedPageSize), 1)
@@ -174,31 +174,28 @@ function DifficultyLevelsPageScreen() {
                   />
                 ) : (
                   <LevelCard
-                    key={item.level.id}
-                    levelNumber={item.level.levelNumber}
+                    key={`${difficulty}-${item.levelNumber}`}
+                    levelNumber={item.levelNumber}
                     bestTime={
                       !isTakeYourTimeEnabled
-                        ? formatElapsedTime(
-                            progressByLevelNumber[item.level.levelNumber]?.bestTimeSeconds ?? null,
-                          )
+                        ? formatElapsedTime(bestTimes[item.levelNumber] ?? null)
                         : null
                     }
+                    // An absent entry is exactly "not finished", which is what the API now says by
+                    // omitting the level rather than sending a row with a null time.
                     isLocked={
                       !isAdmin &&
-                      item.level.levelNumber > 1 &&
-                      (progressByLevelNumber[item.level.levelNumber - 1]?.bestTimeSeconds ?? null) ===
-                        null
+                      item.levelNumber > 1 &&
+                      bestTimes[item.levelNumber - 1] === undefined
                     }
-                    openTo={`/game/${item.level.difficulty}/${item.level.levelNumber}`}
-                    openLabel={t('Open level {{levelNumber}}', { levelNumber: item.level.levelNumber })}
+                    openTo={`/game/${difficulty}/${item.levelNumber}`}
+                    openLabel={t('Open level {{levelNumber}}', { levelNumber: item.levelNumber })}
                     editTo={
-                      isAdmin
-                        ? `/levels/${item.level.difficulty}/${item.level.levelNumber}/edit`
-                        : undefined
+                      isAdmin ? `/levels/${difficulty}/${item.levelNumber}/edit` : undefined
                     }
                     editLabel={
                       isAdmin
-                        ? t('Edit level {{levelNumber}}', { levelNumber: item.level.levelNumber })
+                        ? t('Edit level {{levelNumber}}', { levelNumber: item.levelNumber })
                         : undefined
                     }
                   />

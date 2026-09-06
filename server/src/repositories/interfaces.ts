@@ -2,11 +2,12 @@ import type { SessionRecord, UserRecord } from '../types/auth'
 import type {
   Difficulty,
   LevelDifficultySummaryRecord,
-  LevelListPageRecord,
+  LevelCatalogueRecord,
   LevelsOverviewRecord,
   LevelRecord,
 } from '../types/level'
 import type {
+  BestTimesByLevelRecord,
   DifficultyProgressSummaryRecord,
   LevelProgressRecord,
   ProgressStatisticsSummaries,
@@ -33,7 +34,11 @@ export interface SessionRepository {
 }
 
 export interface PlayerProgressRepository {
-  listByDifficulty(actorKey: string, difficulty: Difficulty): Promise<LevelProgressRecord[]>
+  /** A difficulty's best times keyed by level number, completed levels only. */
+  getBestTimesByDifficulty(
+    actorKey: string,
+    difficulty: Difficulty,
+  ): Promise<BestTimesByLevelRecord>
   /**
    * Several specific levels in one query. Used by the completion guard, which needs the level being
    * completed *and* the one before it — two `getByDifficultyAndNumber` calls before this existed.
@@ -92,7 +97,7 @@ export interface LevelRepository {
    * The whole catalogue for a difficulty. There is no paging: the client caches this for the
    * session, ~25KB, and the `page`/`limit` path that existed here was never called by anything.
    */
-  listByDifficulty(difficulty: Difficulty): Promise<LevelListPageRecord>
+  listByDifficulty(difficulty: Difficulty): Promise<LevelCatalogueRecord>
   getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number): Promise<LevelRecord | null>
   /**
    * The level, plus the numbers of its neighbours in this difficulty's ordered list — **one query**

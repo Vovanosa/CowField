@@ -38,11 +38,11 @@ export {
 } from './authSessionStorage'
 export {
   completeLevelProgress,
+  getBestTime,
+  getBestTimes,
   getDifficultyLevelsPageData,
   getDifficultyOverview,
-  getLevelProgress,
   getPlayerStatistics,
-  getProgressByDifficulty,
   recordBullPlacements,
   resetPlayerCaches,
   type DifficultyLevelsPageData,

@@ -43,23 +43,28 @@ export class LevelService {
       throw new HttpError(404, 'Level not found.')
     }
 
-    if (includeAuthoringData) {
-      return {
-        ...level,
-        nextLevelNumber,
-      } satisfies LevelAdminRecord
+    // Built field by field, never by spreading the row. `cowsByCell` is the authored solution and
+    // must never reach a non-admin, and a spread would carry it — plus `title`, `createdAt` and
+    // `updatedAt`, none of which any screen renders during play. `satisfies` does not remove
+    // properties that arrive through a spread, so the type alone would not have been a guarantee.
+    const publicLevel: LevelPublicRecord = {
+      difficulty: level.difficulty,
+      levelNumber: level.levelNumber,
+      gridSize: level.gridSize,
+      colorsByCell: level.colorsByCell,
+      nextLevelNumber,
     }
 
-    // `cowsByCell` is the authored solution. It must never reach a non-admin caller, and stripping
-    // it has to happen at runtime — `satisfies LevelPublicRecord` below does not remove properties
-    // that arrive through a spread, so the type alone is not a guarantee.
-    const { cowsByCell, ...publicLevel } = level
-    void cowsByCell
+    if (!includeAuthoringData) {
+      return publicLevel
+    }
 
+    // The editor is the one place a title and the authored solution are shown.
     return {
       ...publicLevel,
-      nextLevelNumber,
-    } satisfies LevelPublicRecord
+      title: level.title,
+      cowsByCell: level.cowsByCell,
+    } satisfies LevelAdminRecord
   }
 
   async save(input: LevelRecordInput, createdByActorKey?: string) {
@@ -84,17 +89,22 @@ export class LevelService {
       { createdByActorKey },
     )
 
-    // The same shape `getByDifficultyAndNumber` returns, so the editor can seed its cache from the
-    // response instead of reading the level back. A save can create a level, so the neighbours are
-    // resolved *after* the write.
+    // The same shape `getByDifficultyAndNumber` returns for an admin, so the editor can seed its
+    // cache from the response instead of reading the level back. A save can create a level, so the
+    // neighbours are resolved *after* the write.
     const { nextLevelNumber } = await this.repository.getNeighbourLevelNumbers(
       input.difficulty,
       input.levelNumber,
     )
 
     return {
-      ...level,
+      difficulty: level.difficulty,
+      levelNumber: level.levelNumber,
+      gridSize: level.gridSize,
+      colorsByCell: level.colorsByCell,
       nextLevelNumber,
+      title: level.title,
+      cowsByCell: level.cowsByCell,
     } satisfies LevelAdminRecord
   }
 

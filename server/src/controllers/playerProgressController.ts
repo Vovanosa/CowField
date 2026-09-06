@@ -18,11 +18,14 @@ export class PlayerProgressController {
   listByDifficulty = async (request: Request, response: Response) => {
     const params = progressDifficultyParamsSchema.parse(request.params)
     const actor = getAuthenticatedActor(request)
-    const levels = await this.playerProgressService.listByDifficulty(actor.actorKey, params.difficulty)
+    const bestTimes = await this.playerProgressService.getBestTimesByDifficulty(
+      actor.actorKey,
+      params.difficulty,
+    )
 
     response.json({
       difficulty: params.difficulty,
-      levels,
+      bestTimes,
     })
   }
 
