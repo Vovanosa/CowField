@@ -75,3 +75,9 @@
   padding: var(--space-5) var(--space-5) 0;
   color: var(--color-muted);
 }
+
+.storageNote {
+  padding: var(--space-5) var(--space-5) 0;
+  color: var(--color-danger-text);
+  line-height: 1.6;
+}

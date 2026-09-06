@@ -96,7 +96,13 @@
   'Fastest level': 'Найшвидший рівень',
   'Average per level': 'Середній час на рівень',
   'No completed level': 'Немає пройденого рівня',
+  // Ukrainian has three plural forms: 1 рівень, 2–4 рівні, 5+ рівнів. `_other` covers fractions,
+  // which cannot occur here but keeps the set complete.
   '{{count}} completed levels': '{{count}} пройдених рівнів',
+  '{{count}} completed levels_one': '{{count}} пройдений рівень',
+  '{{count}} completed levels_few': '{{count}} пройдені рівні',
+  '{{count}} completed levels_many': '{{count}} пройдених рівнів',
+  '{{count}} completed levels_other': '{{count}} пройдених рівнів',
   'The requested level route is invalid.': 'Запитаний маршрут рівня недійсний.',
   'This level does not exist yet.': 'Цей рівень ще не існує.',
   'Create level': 'Створити рівень',
@@ -125,6 +131,8 @@
   'Validation passed': 'Перевірку пройдено',
   'Exactly one solution.': 'Рівно один розв’язок.',
   'This level has more than one solution.': 'Цей рівень має більше ніж один розв’язок.',
+  // No plural variants here: the Ukrainian wording counts after a colon, which takes the same form
+  // at every count. i18next falls back to this key when it finds no `_one` / `_few` / `_many`.
   'Found {{count}} solutions. A good level has exactly one.':
     'Знайдено розв’язків: {{count}}. Добрий рівень має рівно один.',
   'Found {{count}}+ solutions. A good level has exactly one.':
@@ -179,10 +187,13 @@
   'New password': 'Новий пароль',
   'Save new password': 'Зберегти новий пароль',
   'You are playing as a Guest.': 'Ви граєте як гість.',
+  'This browser is blocking saved data, so these choices will reset when you close the tab.':
+    'Цей браузер блокує збереження даних, тож ці налаштування скинуться, коли ви закриєте вкладку.',
   'Show password': 'Показати пароль',
   'Hide password': 'Сховати пароль',
   'Continue with Google': 'Продовжити з Google',
   'Completing Google login...': 'Завершення входу через Google...',
+  'Verifying your email...': 'Підтвердження вашої пошти...',
   'Adjust your preferences here.':
     'Налаштуйте свої параметри тут.',
   'Switch to dark mode': 'Увімкнути темну тему',
@@ -209,6 +220,9 @@
   'Email not verified': 'Електронну пошту ще не підтверджено.',
   'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
+  'Email verification failed.': 'Не вдалося підтвердити електронну пошту.',
+  'Your email is verified. You can log in now.':
+    'Вашу пошту підтверджено. Тепер ви можете увійти.',
   'Neon Auth is not configured.': 'Neon Auth не налаштовано.',
   'Invalid request payload.': 'Некоректні дані запиту.',
   'Level complete': 'Рівень пройдено',
@@ -218,6 +232,7 @@
   'Try again': 'Спробувати ще раз',
   'You completed the last available level.': 'Ви пройшли останній доступний рівень.',
   'Your progress has been saved.': 'Ваш прогрес збережено.',
+  'Saving your progress...': 'Збереження прогресу...',
 
   // Error boundaries and failed page loads.
   'Something went wrong. Reloading the page usually fixes it.':

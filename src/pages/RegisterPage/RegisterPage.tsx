@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
-import { AuthLayout } from '../../components/AuthLayout'
+import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { GoogleButton } from '../../components/GoogleButton'
 import { Button, Field, Input, TextLink } from '../../components/ui'
@@ -18,34 +18,55 @@ export function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<AuthMessage | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  function toErrorMessage(error: unknown): AuthMessage {
+    return {
+      text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+      tone: 'error',
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (password !== confirmPassword) {
-      setMessage(t('Passwords do not match.'))
+      setMessage({ text: t('Passwords do not match.'), tone: 'error' })
       return
     }
 
     setIsSubmitting(true)
-    setMessage('')
+    setMessage(null)
 
     try {
       await auth.register(email, password)
       navigate('/', { replace: true })
     } catch (error) {
       if (error instanceof Error && error.message === 'EMAIL_VERIFICATION_REQUIRED') {
-        setMessage(t('Account created. Check your email to verify it before logging in.'))
+        // The account exists and the email is on its way — the opposite of a failure, and it used
+        // to be styled in the error colour because any message at all was treated as one.
+        setMessage({
+          text: t('Account created. Check your email to verify it before logging in.'),
+          tone: 'success',
+        })
       } else {
-        setMessage(
-          error instanceof Error
-            ? translateAuthMessage(t, error.message)
-            : t('Request failed.'),
-        )
+        setMessage(toErrorMessage(error))
       }
     } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  /** See `LoginPage.handleGoogleLogin` — success navigates away, so a return here is a failure. */
+  async function handleGoogleLogin() {
+    setIsSubmitting(true)
+    setMessage(null)
+
+    try {
+      await loginWithGoogle()
+    } catch (error) {
+      setMessage(toErrorMessage(error))
       setIsSubmitting(false)
     }
   }
@@ -56,7 +77,6 @@ export function RegisterPage() {
       title={t('Bullpen')}
       description={t('Create a user account with your email and password.')}
       message={message}
-      isErrorMessage={Boolean(message)}
       links={
         <TextLink to="/login">
           {t('Back to login')}
@@ -97,7 +117,7 @@ export function RegisterPage() {
           <Button type="submit" variant="primary" className={styles.authButton} fullWidth disabled={isSubmitting}>
             {isSubmitting ? t('Loading...') : t('Create account')}
           </Button>
-          <GoogleButton onClick={() => void loginWithGoogle()} disabled={isSubmitting} />
+          <GoogleButton onClick={() => void handleGoogleLogin()} disabled={isSubmitting} />
         </form>
     </AuthLayout>
   )

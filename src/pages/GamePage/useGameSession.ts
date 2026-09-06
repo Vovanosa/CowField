@@ -255,6 +255,59 @@ export function useGameSession({
     }
   }, [runStartedAt])
 
+  /**
+   * Stops the clock while the tab is not on screen.
+   *
+   * `runStartedAt` is a wall-clock anchor and elapsed time is `now - anchor`, so "pause" here means
+   * pushing the anchor forward by however long the tab was hidden — the reading is unchanged at the
+   * moment of return and simply carries on from there. Nothing else in the hook has to know: the
+   * interval, the completion time and the undo snapshots all read the same anchor.
+   *
+   * Without it, completion time was the raw span from the first mark. A level left open overnight
+   * became that level's best time *and* went into the lifetime "time played", which is meant to be
+   * time actually spent playing.
+   *
+   * The ref is set alongside the state because `applyCellMarks` computes the completion time from
+   * the ref, and the effect that mirrors state into it does not run until after the next render —
+   * a solve on the very first tap back would otherwise still be charged for the hidden span.
+   */
+  useEffect(() => {
+    if (runStartedAt === null || typeof document === 'undefined') {
+      return
+    }
+
+    let hiddenAtMs: number | null = document.visibilityState === 'hidden' ? Date.now() : null
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        hiddenAtMs = Date.now()
+        return
+      }
+
+      if (hiddenAtMs === null || runStartedAtRef.current === null) {
+        return
+      }
+
+      const hiddenForMs = Date.now() - hiddenAtMs
+      hiddenAtMs = null
+
+      if (hiddenForMs <= 0) {
+        return
+      }
+
+      const resumedStartedAt = runStartedAtRef.current + hiddenForMs
+
+      runStartedAtRef.current = resumedStartedAt
+      setRunStartedAt(resumedStartedAt)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [runStartedAt])
+
   useEffect(() => {
     startMusic('gameLoop')
 
@@ -381,9 +434,10 @@ export function useGameSession({
 
     if (!completionHandledRef.current && nextSolution.isSolved) {
       // Clamped to the API's own bounds (`shared/apiLimits.ts`), at both ends. A sub-second solve
-      // would otherwise report 0; and because the clock does not pause when the tab is hidden, a
-      // level left open for days would otherwise report a number the API refuses — losing the
-      // completion entirely rather than recording an implausible time.
+      // would otherwise report 0; and the upper bound stays as a backstop even now that the clock
+      // pauses on a hidden tab, because a level genuinely left open on screen for a day would
+      // otherwise report a number the API refuses — losing the completion entirely rather than
+      // recording an implausible time.
       handleLevelSolved(
         currentLevel,
         Math.min(
@@ -598,12 +652,16 @@ export function useGameSession({
     completionHandledRef.current = false
     cellMarksRef.current = restoredMarks
     setCellMarks(restoredMarks)
-    // Restore the clock too, not just the board. Each snapshot records these; ignoring them left
-    // the timer frozen after undoing a completion, because runStartedAt stayed null.
+    // Restore the clock too, not just the board — ignoring the snapshot left the timer frozen
+    // after undoing a completion, because runStartedAt stayed null. Only restore the anchor when
+    // there isn't one: undo returns the board, not the time already spent, and a snapshot taken
+    // before the tab was hidden holds an anchor from before the pause shifted it forward.
+    const restoredStartedAt = runStartedAtRef.current ?? previousMove.runStartedAt
+
     elapsedSecondsRef.current = previousMove.elapsedSeconds
-    runStartedAtRef.current = previousMove.runStartedAt
+    runStartedAtRef.current = restoredStartedAt
     setElapsedSeconds(previousMove.elapsedSeconds)
-    setRunStartedAt(previousMove.runStartedAt)
+    setRunStartedAt(restoredStartedAt)
     setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)

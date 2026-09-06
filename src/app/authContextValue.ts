@@ -24,6 +24,8 @@ export type AuthContextValue = {
    * player as signed out and bounce them straight back to `/login`.
    */
   completeGoogleLogin: (code?: string) => Promise<AuthSession>
+  /** Finishes the flow a verification email starts. Same reasoning as `completeGoogleLogin`. */
+  completeEmailVerification: (code?: string) => Promise<AuthSession>
   logout: () => Promise<void>
 }
 

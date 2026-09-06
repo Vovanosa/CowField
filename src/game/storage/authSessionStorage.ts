@@ -44,6 +44,10 @@ export {
   setStoredSessionToken,
 }
 
+function getOrigin() {
+  return typeof window !== 'undefined' ? window.location.origin : ''
+}
+
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   return requestApiJson<T>(`${AUTH_API_BASE}${path}`, {
     ...init,
@@ -84,7 +88,7 @@ export async function login(email: string, password: string) {
 
 export async function register(email: string, password: string) {
   await resetAuthState()
-  await signUpWithNeonPassword(email, password)
+  await signUpWithNeonPassword(email, password, `${getOrigin()}/verify-email`)
   clearBearerToken()
 
   const session = await getCurrentSession({ force: true })
@@ -236,8 +240,7 @@ export async function logout() {
 }
 
 export async function requestPasswordReset(email: string) {
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  await requestNeonPasswordReset(email, `${origin}/reset-password`)
+  await requestNeonPasswordReset(email, `${getOrigin()}/reset-password`)
   return { sent: true } satisfies PasswordResetRequestResponse
 }
 
@@ -250,7 +253,15 @@ function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
-export async function completeGoogleLogin(code?: string) {
+/**
+ * Turns a one-shot callback code into a signed-in session.
+ *
+ * Shared by the two routes Neon can send a browser back to — the Google callback and the email
+ * verification link. Both arrive the same way: a `code` in the query string that has to be
+ * exchanged before anything else can be asked, and the only real difference is what to call the
+ * failure.
+ */
+async function completeCallbackSignIn(code: string | undefined, failureMessage: string) {
   if (code) {
     await exchangeNeonCodeForSession(code)
   }
@@ -271,7 +282,7 @@ export async function completeGoogleLogin(code?: string) {
   }
 
   if (!neonSession) {
-    throw new Error('Google login failed.')
+    throw new Error(failureMessage)
   }
 
   // The session Neon just established is a different identity from anything cached.
@@ -280,19 +291,35 @@ export async function completeGoogleLogin(code?: string) {
   const session = await getCurrentSession({ force: true })
 
   if (!session) {
-    throw new Error('Google login failed.')
+    throw new Error(failureMessage)
   }
 
   return session
 }
 
+export async function completeGoogleLogin(code?: string) {
+  return completeCallbackSignIn(code, 'Google login failed.')
+}
+
+/**
+ * Finishes the flow the link in a verification email starts.
+ *
+ * Verifying is a sign-in: the provider hands back the same one-shot code it does for OAuth, and
+ * spending it is what marks the address confirmed. So the player lands signed in rather than back
+ * at a login form being asked for the password they typed two minutes ago.
+ */
+export async function completeEmailVerification(code?: string) {
+  return completeCallbackSignIn(code, 'Email verification failed.')
+}
+
 export async function loginWithGoogle() {
   await resetAuthState()
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  await signInWithNeonGoogle(`${origin}/auth/google/callback`)
+  await signInWithNeonGoogle(`${getOrigin()}/auth/google/callback`)
 }
 
 export async function resendVerificationEmail(email: string) {
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  await resendNeonSignupVerification(email, `${origin}/verify-email?email=${encodeURIComponent(email)}`)
+  await resendNeonSignupVerification(
+    email,
+    `${getOrigin()}/verify-email?email=${encodeURIComponent(email)}`,
+  )
 }

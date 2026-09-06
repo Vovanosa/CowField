@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
-import { AuthLayout } from '../../components/AuthLayout'
+import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { Button, Field, Input, TextLink } from '../../components/ui'
 import { resetPassword } from '../../game/storage/authSessionStorage'
@@ -15,29 +15,28 @@ export function ResetPasswordPage() {
   const [token, setToken] = useState(searchParams.get('token') ?? '')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<AuthMessage | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (password !== confirmPassword) {
-      setMessage(t('Passwords do not match.'))
+      setMessage({ text: t('Passwords do not match.'), tone: 'error' })
       return
     }
 
     setIsSubmitting(true)
-    setMessage('')
+    setMessage(null)
 
     try {
       await resetPassword(token, password)
-      setMessage(t('Your password has been updated.'))
+      setMessage({ text: t('Your password has been updated.'), tone: 'success' })
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? translateAuthMessage(t, error.message)
-          : t('Request failed.'),
-      )
+      setMessage({
+        text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+        tone: 'error',
+      })
     } finally {
       setIsSubmitting(false)
     }

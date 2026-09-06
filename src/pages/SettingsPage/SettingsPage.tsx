@@ -9,6 +9,7 @@ import { SettingsItem } from '../../components/SettingsItem'
 import { PageHeader, Panel } from '../../components/ui'
 import { playSoundEffect } from '../../game/audio/audioManager'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
+import type { PlayerSettings } from '../../game/types'
 import type { PlayerLanguage } from '../../game/types/settings'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import i18n from '../../i18n'
@@ -73,6 +74,7 @@ export function SettingsPage() {
   const { isGuest } = useAuth()
   const settings = usePlayerSettings()
   const { t } = useTranslation()
+  const [hasStorageFailed, setHasStorageFailed] = useState(false)
   const [areFloatingControlsHidden, setAreFloatingControlsHidden] = useState(() => {
     if (typeof window === 'undefined') {
       return false
@@ -100,6 +102,17 @@ export function SettingsPage() {
     }
   }, [])
 
+  /**
+   * Every change goes through here so the one failure case is handled in one place: the setting
+   * applies to this session regardless, and `isPersisted` says whether it will still be there
+   * tomorrow. Nothing used to read that — the call was `void`-ed and a browser refusing to store
+   * anything reported success.
+   */
+  function applySettingsChange(nextSettings: PlayerSettings) {
+    const result = savePlayerSettings(nextSettings)
+    setHasStorageFailed(!result.isPersisted)
+  }
+
   function handleToggle(key: ToggleSettingKey) {
     if (isGuest && key === 'takeYourTimeEnabled') {
       return
@@ -107,18 +120,16 @@ export function SettingsPage() {
 
     playSoundEffect('uiClick')
 
-    const nextSettings = {
+    applySettingsChange({
       ...settings,
       [key]: !settings[key],
-    }
-
-    void savePlayerSettings(nextSettings)
+    })
   }
 
   function handleVolumeChange(key: VolumeSettingKey, value: number) {
     playSoundEffect('uiClick')
 
-    void savePlayerSettings({
+    applySettingsChange({
       ...settings,
       [key]: value,
     })
@@ -131,7 +142,7 @@ export function SettingsPage() {
 
     playSoundEffect('uiClick')
 
-    void savePlayerSettings({
+    applySettingsChange({
       ...settings,
       language: nextLanguage,
     })
@@ -189,6 +200,11 @@ export function SettingsPage() {
 
       <Panel className={styles.settingsPanel}>
         {isGuest ? <p className={styles.guestNote}>{t('You are playing as a Guest.')}</p> : null}
+        {hasStorageFailed ? (
+          <p className={styles.storageNote} role="status">
+            {t('This browser is blocking saved data, so these choices will reset when you close the tab.')}
+          </p>
+        ) : null}
         <div className={styles.settingsList}>
           {areFloatingControlsHidden ? (
             <SettingsItem

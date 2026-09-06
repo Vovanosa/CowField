@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import {
+  completeEmailVerification as completeEmailVerificationRequest,
   completeGoogleLogin as completeGoogleLoginRequest,
   getCurrentSession,
   login as loginRequest,
@@ -14,6 +15,7 @@ import {
   logout as logoutRequest,
   register as registerRequest,
 } from '../game/storage/authSessionStorage'
+import { readStoredValue, writeStoredValue } from '../game/storage/browserStorage'
 import { resetPlayerCaches } from '../game/storage/resources'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
@@ -22,11 +24,7 @@ import { reportUnexpectedError } from './reportUnexpectedError'
 const ADMIN_PREVIEW_ROLE_STORAGE_KEY = 'cowfield.admin-preview-role'
 
 function getInitialPreviewRole(): AdminPreviewRole {
-  if (typeof window === 'undefined') {
-    return 'admin'
-  }
-
-  return window.localStorage.getItem(ADMIN_PREVIEW_ROLE_STORAGE_KEY) === 'user' ? 'user' : 'admin'
+  return readStoredValue(ADMIN_PREVIEW_ROLE_STORAGE_KEY) === 'user' ? 'user' : 'admin'
 }
 
 /**
@@ -82,10 +80,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   function setPreviewRole(nextRole: AdminPreviewRole) {
     setPreviewRoleState(nextRole)
-
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(ADMIN_PREVIEW_ROLE_STORAGE_KEY, nextRole)
-    }
+    // Purely a convenience across reloads; a browser that refuses to store it just starts on
+    // 'admin' next time, which is the default anyway.
+    writeStoredValue(ADMIN_PREVIEW_ROLE_STORAGE_KEY, nextRole)
   }
 
   const login = useCallback(async (email: string, password: string) => {
@@ -112,6 +109,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const completeGoogleLogin = useCallback(async (code?: string) => {
     resetCachedPlayerData()
     const nextSession = await completeGoogleLoginRequest(code)
+    setSession(nextSession)
+    return nextSession
+  }, [])
+
+  const completeEmailVerification = useCallback(async (code?: string) => {
+    resetCachedPlayerData()
+    const nextSession = await completeEmailVerificationRequest(code)
     setSession(nextSession)
     return nextSession
   }, [])
@@ -143,9 +147,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
       register,
       loginAsGuest,
       completeGoogleLogin,
+      completeEmailVerification,
       logout,
     }
-  }, [completeGoogleLogin, isLoading, login, loginAsGuest, logout, previewRole, register, session])
+  }, [
+    completeEmailVerification,
+    completeGoogleLogin,
+    isLoading,
+    login,
+    loginAsGuest,
+    logout,
+    previewRole,
+    register,
+    session,
+  ])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

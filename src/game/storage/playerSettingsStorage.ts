@@ -1,4 +1,10 @@
-import { getStoredLanguage, normalizeLanguage, setStoredLanguage } from '../../i18n'
+import i18n, {
+  LANGUAGE_STORAGE_KEY,
+  getStoredLanguage,
+  normalizeLanguage,
+  setStoredLanguage,
+} from '../../i18n'
+import { readStoredValue, writeStoredValue } from './browserStorage'
 import type { PlayerSettings } from '../types'
 
 const PLAYER_SETTINGS_STORAGE_KEY = 'cowfield.player-settings'
@@ -18,6 +24,18 @@ const defaultPlayerSettings: PlayerSettings = {
 
 let currentPlayerSettings: PlayerSettings = {
   ...defaultPlayerSettings,
+}
+
+/**
+ * What a save actually achieved.
+ *
+ * `isPersisted` is false when the browser refused the write — site data blocked, or a full quota.
+ * The change still applies to this session either way; the flag exists so the Settings page can say
+ * it will not survive the tab instead of silently pretending it saved.
+ */
+export type PlayerSettingsSaveResult = {
+  settings: PlayerSettings
+  isPersisted: boolean
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -54,11 +72,7 @@ function emitSettingsChanged() {
 }
 
 function readStoredPlayerSettings() {
-  if (typeof window === 'undefined') {
-    return getDefaultPlayerSettings()
-  }
-
-  const rawValue = window.localStorage.getItem(PLAYER_SETTINGS_STORAGE_KEY)
+  const rawValue = readStoredValue(PLAYER_SETTINGS_STORAGE_KEY)
 
   if (!rawValue) {
     return getDefaultPlayerSettings()
@@ -76,40 +90,41 @@ function setCurrentPlayerSettings(settings: PlayerSettings) {
 }
 
 function persistPlayerSettings(settings: PlayerSettings) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.setItem(PLAYER_SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+  return writeStoredValue(PLAYER_SETTINGS_STORAGE_KEY, JSON.stringify(settings))
 }
 
-export function getDefaultPlayerSettings(): PlayerSettings {
-  return defaultPlayerSettings
-}
+/**
+ * Pulls another tab's write into this tab.
+ *
+ * The `storage` event was already being listened for, but all it did was call the React subscriber
+ * — and the snapshot that subscriber then re-read is this module's cache, which nothing refreshed.
+ * So every cross-tab change re-rendered with the identical object and looked inert. Re-reading here
+ * is what the listener was always missing.
+ *
+ * The theme and the language are pulled across too: both are global page state, and a settings page
+ * showing "Ukrainian, dark" over an English page in light mode is worse than not syncing at all.
+ */
+function refreshFromStorage() {
+  const nextSettings = readStoredPlayerSettings()
 
-export function getPlayerSettingsSnapshot(): PlayerSettings {
-  return currentPlayerSettings
-}
+  setCurrentPlayerSettings(nextSettings)
+  applyThemeMode(nextSettings.darkModeEnabled)
 
-export function subscribeToPlayerSettings(listener: () => void) {
-  listeners.add(listener)
-
-  function handleStorage(event: StorageEvent) {
-    if (event.key === PLAYER_SETTINGS_STORAGE_KEY || event.key === null) {
-      listener()
-    }
+  if (i18n.language !== nextSettings.language) {
+    void i18n.changeLanguage(nextSettings.language)
   }
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('storage', handleStorage)
-  }
+  emitSettingsChanged()
+}
 
-  return () => {
-    listeners.delete(listener)
-
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', handleStorage)
-    }
+function handleStorageEvent(event: StorageEvent) {
+  // `key === null` is a `localStorage.clear()` in another tab, which is also a change.
+  if (
+    event.key === PLAYER_SETTINGS_STORAGE_KEY ||
+    event.key === LANGUAGE_STORAGE_KEY ||
+    event.key === null
+  ) {
+    refreshFromStorage()
   }
 }
 
@@ -121,20 +136,73 @@ export function applyThemeMode(isDarkModeEnabled: boolean) {
   document.documentElement.dataset.theme = isDarkModeEnabled ? 'dark' : 'light'
 }
 
+export function getDefaultPlayerSettings(): PlayerSettings {
+  return defaultPlayerSettings
+}
+
+export function getPlayerSettingsSnapshot(): PlayerSettings {
+  return currentPlayerSettings
+}
+
+/**
+ * One window listener for the whole app, not one per subscriber.
+ *
+ * Every React component using `usePlayerSettings` subscribes, and each used to register its own
+ * `storage` handler — so a single cross-tab write would have re-read storage once per mounted
+ * component. Attaching on the first subscriber and detaching on the last keeps it at one.
+ */
+export function subscribeToPlayerSettings(listener: () => void) {
+  const isFirstListener = listeners.size === 0
+
+  listeners.add(listener)
+
+  if (isFirstListener && typeof window !== 'undefined') {
+    window.addEventListener('storage', handleStorageEvent)
+  }
+
+  return () => {
+    listeners.delete(listener)
+
+    if (listeners.size === 0 && typeof window !== 'undefined') {
+      window.removeEventListener('storage', handleStorageEvent)
+    }
+  }
+}
+
 export async function getPlayerSettings() {
   const settings = readStoredPlayerSettings()
   setCurrentPlayerSettings(settings)
   return settings
 }
 
-export async function savePlayerSettings(settings: PlayerSettings) {
+/**
+ * Applies a settings change, and reports whether it was written to disk.
+ *
+ * **In-memory first, storage second.** It used to persist first — and the very first statement was
+ * `setStoredLanguage`, which throws on a browser with site data blocked. The throw left the
+ * in-memory settings untouched and escaped into a `void`-ed call, so the toggle silently snapped
+ * back and *the whole change was discarded*, not just its persistence. Ordering it this way means a
+ * browser that cannot store anything still honours every setting for the life of the tab.
+ *
+ * Synchronous on purpose: nothing here awaits, and returning a promise only invited the `void` that
+ * hid the failure in the first place.
+ */
+export function savePlayerSettings(settings: PlayerSettings): PlayerSettingsSaveResult {
   const normalizedSettings = normalizePlayerSettings(settings)
-  setStoredLanguage(normalizedSettings.language)
-  persistPlayerSettings(normalizedSettings)
+
   setCurrentPlayerSettings(normalizedSettings)
   applyThemeMode(normalizedSettings.darkModeEnabled)
   emitSettingsChanged()
-  return normalizedSettings
+
+  // Both writes are attempted even if the first fails; a partial save is still better than none,
+  // and short-circuiting would make the language the only thing that can block the rest.
+  const isLanguagePersisted = setStoredLanguage(normalizedSettings.language)
+  const areSettingsPersisted = persistPlayerSettings(normalizedSettings)
+
+  return {
+    settings: normalizedSettings,
+    isPersisted: isLanguagePersisted && areSettingsPersisted,
+  }
 }
 
 setCurrentPlayerSettings(readStoredPlayerSettings())

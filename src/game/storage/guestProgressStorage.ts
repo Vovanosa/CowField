@@ -1,3 +1,4 @@
+import { readStoredValue, writeStoredValue } from './browserStorage'
 import type { Difficulty, LevelProgress } from '../types'
 
 const GUEST_PROGRESS_STORAGE_KEY = 'cowfield.guest-level-progress'
@@ -28,17 +29,13 @@ function isLevelProgress(value: unknown): value is LevelProgress {
 }
 
 function readGuestProgressRecord(): GuestProgressRecord {
-  if (typeof window === 'undefined') {
+  const rawValue = readStoredValue(GUEST_PROGRESS_STORAGE_KEY)
+
+  if (!rawValue) {
     return {}
   }
 
   try {
-    const rawValue = window.localStorage.getItem(GUEST_PROGRESS_STORAGE_KEY)
-
-    if (!rawValue) {
-      return {}
-    }
-
     const parsed = JSON.parse(rawValue) as unknown
 
     if (!parsed || typeof parsed !== 'object') {
@@ -62,16 +59,7 @@ function readGuestProgressRecord(): GuestProgressRecord {
  * blocked. Callers must not let that surface as "progress saved".
  */
 function writeGuestProgressRecord(record: GuestProgressRecord) {
-  if (typeof window === 'undefined') {
-    return false
-  }
-
-  try {
-    window.localStorage.setItem(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(record))
-    return true
-  } catch {
-    return false
-  }
+  return writeStoredValue(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(record))
 }
 
 /**

@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
+import { readStoredValue, writeStoredValue } from './game/storage/browserStorage'
 import en from './locales/en'
 import uk from './locales/uk'
 
@@ -20,21 +21,21 @@ export function normalizeLanguage(value: unknown): SupportedLanguage {
   return 'en'
 }
 
+/**
+ * Reads through `browserStorage` rather than touching `window.localStorage` here.
+ *
+ * This runs at **module top level** (`lng` below), which is the first thing to execute when
+ * `main.tsx` pulls in its imports — before the error handlers are registered and before any React
+ * error boundary exists. On a browser that blocks site data the bare property access throws, and
+ * the throw escaped everything: a blank page, nothing rendered, nothing reported.
+ */
 export function getStoredLanguage() {
-  if (typeof window === 'undefined') {
-    return 'en' as SupportedLanguage
-  }
-
-  const storedValue = window.localStorage.getItem(LANGUAGE_STORAGE_KEY)
-  return normalizeLanguage(storedValue)
+  return normalizeLanguage(readStoredValue(LANGUAGE_STORAGE_KEY))
 }
 
+/** Reports whether the choice was actually persisted — see `savePlayerSettings`. */
 export function setStoredLanguage(language: SupportedLanguage) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+  return writeStoredValue(LANGUAGE_STORAGE_KEY, language)
 }
 
 /**

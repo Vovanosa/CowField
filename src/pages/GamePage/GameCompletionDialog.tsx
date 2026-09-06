@@ -33,6 +33,7 @@ export function GameCompletionDialog({
   t,
 }: GameCompletionDialogProps) {
   const hasSaveFailed = saveState === 'failed'
+
   return (
     <Dialog
       title={t('Level complete')}
@@ -59,8 +60,20 @@ export function GameCompletionDialog({
           {!hasNextLevel ? (
             <p className={styles.completionHint}>{t('You completed the last available level.')}</p>
           ) : null}
-          {isTakeYourTimeEnabled && !hasSaveFailed ? (
-            <p className={styles.completionMeta}>{t('Your progress has been saved.')}</p>
+          {/*
+            Follows `saveState`, not "not failed". The dialog opens the instant the board is solved
+            and the write starts then, so "has been saved" was a promise made before the request had
+            an answer — and if it went on to fail, the player had already been told the opposite.
+          */}
+          {isTakeYourTimeEnabled && saveState === 'saving' ? (
+            <p className={styles.completionMeta} role="status">
+              {t('Saving your progress...')}
+            </p>
+          ) : null}
+          {isTakeYourTimeEnabled && saveState === 'saved' ? (
+            <p className={styles.completionMeta} role="status">
+              {t('Your progress has been saved.')}
+            </p>
           ) : null}
           {hasSaveFailed ? (
             <p className={styles.completionHint} role="alert">

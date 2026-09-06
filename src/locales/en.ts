@@ -101,7 +101,12 @@ const en = {
   'Fastest level': 'Fastest level',
   'Average per level': 'Average per level',
   'No completed level': 'No completed level',
+  // i18next picks the `_one` / `_other` variant from `count` and falls back to the bare key, which
+  // is kept so the string still resolves if a variant is ever missing. English has two forms;
+  // Ukrainian has three, and `uk.ts` carries `_few` and `_many` as well.
   '{{count}} completed levels': '{{count}} completed levels',
+  '{{count}} completed levels_one': '{{count}} completed level',
+  '{{count}} completed levels_other': '{{count}} completed levels',
   'The requested level route is invalid.': 'The requested level route is invalid.',
   'This level does not exist yet.': 'This level does not exist yet.',
   'Create level': 'Create level',
@@ -132,7 +137,18 @@ const en = {
   'This level has more than one solution.': 'This level has more than one solution.',
   'Found {{count}} solutions. A good level has exactly one.':
     'Found {{count}} solutions. A good level has exactly one.',
+  'Found {{count}} solutions. A good level has exactly one._one':
+    'Found {{count}} solution. A good level has exactly one.',
+  'Found {{count}} solutions. A good level has exactly one._other':
+    'Found {{count}} solutions. A good level has exactly one.',
+  // "N+" reads as plural at every count, including one, so both variants are the plural wording.
+  // They are still spelled out: without them i18next resolves `_one` to the bare key, and a reader
+  // cannot tell a deliberate choice from a forgotten one.
   'Found {{count}}+ solutions. A good level has exactly one.':
+    'Found {{count}}+ solutions. A good level has exactly one.',
+  'Found {{count}}+ solutions. A good level has exactly one._one':
+    'Found {{count}}+ solutions. A good level has exactly one.',
+  'Found {{count}}+ solutions. A good level has exactly one._other':
     'Found {{count}}+ solutions. A good level has exactly one.',
   'Generate builds a level with exactly one solution.':
     'Generate builds a level with exactly one solution.',
@@ -168,6 +184,7 @@ const en = {
   'Log in': 'Log in',
   'Continue with Google': 'Continue with Google',
   'Completing Google login...': 'Completing Google login...',
+  'Verifying your email...': 'Verifying your email...',
   'Play as guest': 'Play as guest',
   'Statistics is available only for logged users.':
     'Statistics is available only for logged users.',
@@ -199,6 +216,8 @@ const en = {
   'Show password': 'Show password',
   'Hide password': 'Hide password',
   'You are playing as a Guest.': 'You are playing as a Guest.',
+  'This browser is blocking saved data, so these choices will reset when you close the tab.':
+    'This browser is blocking saved data, so these choices will reset when you close the tab.',
   'Incorrect email or password.': 'Incorrect email or password.',
   'Too many requests. Try again in a moment.': 'Too many requests. Try again in a moment.',
   'Too many attempts. Wait a few minutes and try again.':
@@ -211,6 +230,9 @@ const en = {
   'Email not verified': 'Email not verified.',
   'Failed to restore session after login.': 'Failed to restore session after login.',
   'Google login failed.': 'Google login failed.',
+  'Email verification failed.': 'Email verification failed.',
+  'Your email is verified. You can log in now.':
+    'Your email is verified. You can log in now.',
   'Neon Auth is not configured.': 'Neon Auth is not configured.',
   'Invalid request payload.': 'Invalid request payload.',
   'Level complete': 'Level complete',
@@ -220,6 +242,7 @@ const en = {
   'Try again': 'Try again',
   'You completed the last available level.': 'You completed the last available level.',
   'Your progress has been saved.': 'Your progress has been saved.',
+  'Saving your progress...': 'Saving your progress...',
 
   // Error boundaries and failed page loads.
   'Something went wrong. Reloading the page usually fixes it.':

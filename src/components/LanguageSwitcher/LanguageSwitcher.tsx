@@ -50,10 +50,10 @@ export function LanguageSwitcher() {
     }
   }, [])
 
-  async function handleLanguageSelect(nextLanguage: SupportedLanguage) {
+  function handleLanguageSelect(nextLanguage: SupportedLanguage) {
     setLanguage(nextLanguage)
     closeLanguageMenu()
-    void savePlayerSettings({
+    savePlayerSettings({
       ...settings,
       language: nextLanguage,
     })
@@ -61,7 +61,7 @@ export function LanguageSwitcher() {
   }
 
   function handleThemeToggle() {
-    void savePlayerSettings({
+    savePlayerSettings({
       ...settings,
       darkModeEnabled: !settings.darkModeEnabled,
     })
@@ -110,7 +110,7 @@ export function LanguageSwitcher() {
             <DropdownMenuItem
               className={styles.languageOption}
               active={language === 'en'}
-              onClick={() => void handleLanguageSelect('en')}
+              onClick={() => handleLanguageSelect('en')}
               role="menuitemradio"
               aria-checked={language === 'en'}
             >
@@ -120,7 +120,7 @@ export function LanguageSwitcher() {
             <DropdownMenuItem
               className={styles.languageOption}
               active={language === 'uk'}
-              onClick={() => void handleLanguageSelect('uk')}
+              onClick={() => handleLanguageSelect('uk')}
               role="menuitemradio"
               aria-checked={language === 'uk'}
             >

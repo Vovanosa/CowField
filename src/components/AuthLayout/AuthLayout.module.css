@@ -48,6 +48,10 @@
   color: var(--color-danger-text);
 }
 
+.messageSuccess {
+  color: var(--color-success-text);
+}
+
 .links {
   display: flex;
   flex-direction: column;

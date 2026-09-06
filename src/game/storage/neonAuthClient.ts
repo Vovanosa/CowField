@@ -48,9 +48,16 @@ export async function signInWithNeonPassword(email: string, password: string) {
   return response.data
 }
 
-export async function signUpWithNeonPassword(email: string, password: string) {
+export async function signUpWithNeonPassword(
+  email: string,
+  password: string,
+  emailRedirectTo: string,
+) {
   const auth = requireNeonAuth()
-  const response = await auth.signUp({ email, password })
+  // Points the verification link at our own `/verify-email` route, the same place `resend` sends
+  // it. Without this the first email used whatever default the provider is configured with, so the
+  // two paths to the same mailbox could land the player in two different places.
+  const response = await auth.signUp({ email, password, options: { emailRedirectTo } })
 
   if (response.error) {
     throw new Error(response.error.message)

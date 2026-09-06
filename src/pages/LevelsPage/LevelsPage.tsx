@@ -30,16 +30,25 @@ const emptyProgressSummary: DifficultyProgressSummary = {
   percent: 0,
 }
 
+/**
+ * A summary for every difficulty this page renders, whatever the API sent.
+ *
+ * The page always draws all four tiles from `DIFFICULTIES`, but the record used to be built purely
+ * from the response — so a response missing one (a difficulty with no levels, a partial read) left
+ * `summary` undefined and the very next line, `summary.percent`, threw and took the whole page down
+ * with it.
+ */
+function createProgressSummaryRecord() {
+  return Object.fromEntries(
+    DIFFICULTIES.map((difficulty) => [difficulty, emptyProgressSummary]),
+  ) as Record<Difficulty, DifficultyProgressSummary>
+}
+
 export function LevelsPage() {
   const { t } = useTranslation()
   const [progressByDifficulty, setProgressByDifficulty] = useState<
     Record<Difficulty, DifficultyProgressSummary>
-  >({
-    light: emptyProgressSummary,
-    easy: emptyProgressSummary,
-    medium: emptyProgressSummary,
-    hard: emptyProgressSummary,
-  })
+  >(createProgressSummaryRecord)
   const [isLoading, setIsLoading] = useState(true)
   // A flag, not a message: translating at render time means the error re-reads in the new
   // language when the player switches it, and keeps `t` out of the effect's dependencies.
@@ -57,28 +66,24 @@ export function LevelsPage() {
     async function loadDifficultyProgress() {
       try {
         const overview = await getDifficultyOverview()
-        const results = overview.difficulties.map((item) => {
+        const nextProgress = createProgressSummaryRecord()
+
+        for (const item of overview.difficulties) {
           const completed = item.completedCount
           const total = item.totalCount
-          const percent = total > 0 ? Math.round((completed / total) * 100) : 0
 
-          return [
-            item.difficulty,
-            {
-              completed,
-              total,
-              percent,
-            },
-          ] as const
-        })
+          nextProgress[item.difficulty] = {
+            completed,
+            total,
+            percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+          }
+        }
 
         if (!isActive) {
           return
         }
 
-        setProgressByDifficulty(
-          Object.fromEntries(results) as Record<Difficulty, DifficultyProgressSummary>,
-        )
+        setProgressByDifficulty(nextProgress)
         setHasLoadError(false)
       } catch (error) {
         reportUnexpectedError(error, 'levels overview')

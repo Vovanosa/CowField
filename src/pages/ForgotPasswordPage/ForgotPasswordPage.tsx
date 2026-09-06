@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { translateAuthMessage } from '../../app/translateAuthMessage'
-import { AuthLayout } from '../../components/AuthLayout'
+import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { Button, Field, Input, TextLink } from '../../components/ui'
 import { requestPasswordReset } from '../../game/storage/authSessionStorage'
 import styles from '../AuthPage/AuthPage.module.css'
@@ -10,23 +10,27 @@ import styles from '../AuthPage/AuthPage.module.css'
 export function ForgotPasswordPage() {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<AuthMessage | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSubmitting(true)
-    setMessage('')
+    setMessage(null)
 
     try {
       await requestPasswordReset(email)
-      setMessage(t('If the account exists, a reset link has been sent to that email address.'))
+      setMessage({
+        text: t('If the account exists, a reset link has been sent to that email address.'),
+        tone: 'success',
+      })
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? translateAuthMessage(t, error.message)
-          : t('Request failed.'),
-      )
+      // Previously indistinguishable from the success above: this page passed no tone at all, so a
+      // failed request was rendered in the same neutral grey as a sent link.
+      setMessage({
+        text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+        tone: 'error',
+      })
     } finally {
       setIsSubmitting(false)
     }

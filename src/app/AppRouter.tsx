@@ -46,6 +46,11 @@ const ResetPasswordPage = lazyPage(() =>
     default: module.ResetPasswordPage,
   })),
 )
+const VerifyEmailPage = lazyPage(() =>
+  import('../pages/VerifyEmailPage/VerifyEmailPage').then((module) => ({
+    default: module.VerifyEmailPage,
+  })),
+)
 
 function withSuspense(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>
@@ -109,6 +114,12 @@ const router = createBrowserRouter([
       {
         path: '/reset-password',
         element: withSuspense(<ResetPasswordPage />),
+      },
+      {
+        // Outside `PublicOnlyRoute` on purpose, like the OAuth callback: the page decides what an
+        // already-signed-in visitor means, rather than being redirected before it can read the code.
+        path: '/verify-email',
+        element: withSuspense(<VerifyEmailPage />),
       },
       {
         element: <PublicOnlyRoute />,

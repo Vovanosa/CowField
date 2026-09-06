@@ -90,17 +90,24 @@ export function StatisticsPage() {
       return []
     }
 
-    const leadingDifficulty = statistics.byDifficulty.reduce((leader, item) =>
-      item.completedLevels > leader.completedLevels ? item : leader,
+    // Seeded, because a seedless `reduce` on an empty array throws. `byDifficulty` comes from the
+    // API and nothing guarantees it is non-empty — a difficulty with no levels yet is enough.
+    const leadingDifficulty = statistics.byDifficulty.reduce<
+      PlayerStatisticsSummary['byDifficulty'][number] | null
+    >(
+      (leader, item) =>
+        leader === null || item.completedLevels > leader.completedLevels ? item : leader,
+      null,
     )
+    const hasProgress = leadingDifficulty !== null && leadingDifficulty.completedLevels > 0
 
     return [
       {
         title: t('Most progress'),
-        value: leadingDifficulty.completedLevels > 0
+        value: hasProgress
           ? getDifficultyLabel(t, leadingDifficulty.difficulty)
           : t('No data'),
-        suffix: leadingDifficulty.completedLevels > 0
+        suffix: hasProgress
           ? t('{{count}} completed levels', { count: leadingDifficulty.completedLevels })
           : '',
         inlineDetail: true,
