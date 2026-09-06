@@ -23,36 +23,30 @@ export class LevelService {
     return this.repository.listByDifficulty(difficulty)
   }
 
-  async listPageByDifficulty(
-    difficulty: LevelRecordInput['difficulty'],
-    page: number,
-    limit: number,
-  ) {
-    return this.repository.listByDifficulty(difficulty, { page, limit })
-  }
-
+  /**
+   * A level's board, plus **which** level comes next.
+   *
+   * This used to answer a `hasNextLevel` boolean computed from `getDifficultySummary` — a `count()`
+   * and a `findFirst()`, two queries to produce one bit. And a bit was not enough: the client then
+   * assumed the next level was `levelNumber + 1`, so deleting a level from the middle of a
+   * difficulty left an enabled "Next Level" button pointing at a level that does not exist.
+   */
   async getByDifficultyAndNumber(
     difficulty: LevelRecordInput['difficulty'],
     levelNumber: number,
     includeAuthoringData = false,
   ) {
-    const [level, difficultySummary] = await Promise.all([
-      this.repository.getByDifficultyAndNumber(difficulty, levelNumber),
-      this.repository.getDifficultySummary(difficulty),
-    ])
+    const { level, nextLevelNumber } =
+      await this.repository.getByDifficultyAndNumberWithNeighbours(difficulty, levelNumber)
 
     if (!level) {
       throw new HttpError(404, 'Level not found.')
     }
 
-    const hasNextLevel =
-      difficultySummary.highestLevelNumber !== null &&
-      difficultySummary.highestLevelNumber > levelNumber
-
     if (includeAuthoringData) {
       return {
         ...level,
-        hasNextLevel,
+        nextLevelNumber,
       } satisfies LevelAdminRecord
     }
 
@@ -64,7 +58,7 @@ export class LevelService {
 
     return {
       ...publicLevel,
-      hasNextLevel,
+      nextLevelNumber,
     } satisfies LevelPublicRecord
   }
 
@@ -81,7 +75,7 @@ export class LevelService {
     )
     const timestamp = new Date().toISOString()
 
-    return this.repository.save(
+    const level = await this.repository.save(
       {
         ...input,
         createdAt: existing?.createdAt ?? timestamp,
@@ -89,6 +83,19 @@ export class LevelService {
       },
       { createdByActorKey },
     )
+
+    // The same shape `getByDifficultyAndNumber` returns, so the editor can seed its cache from the
+    // response instead of reading the level back. A save can create a level, so the neighbours are
+    // resolved *after* the write.
+    const { nextLevelNumber } = await this.repository.getNeighbourLevelNumbers(
+      input.difficulty,
+      input.levelNumber,
+    )
+
+    return {
+      ...level,
+      nextLevelNumber,
+    } satisfies LevelAdminRecord
   }
 
   async delete(difficulty: LevelRecordInput['difficulty'], levelNumber: number) {

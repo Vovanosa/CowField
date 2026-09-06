@@ -49,41 +49,7 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     this.prisma = prisma
   }
 
-  async getDifficultySummary(
-    actorKey: string,
-    difficulty: AppDifficulty,
-  ): Promise<DifficultyProgressSummaryRecord> {
-    const actor = await resolveActorReference(this.prisma, actorKey)
-
-    if (!actor.userId) {
-      return {
-        difficulty,
-        completedCount: 0,
-      }
-    }
-
-    const completedCount = await this.prisma.levelProgress.count({
-      where: {
-        difficulty: toPrismaDifficulty(difficulty),
-        userId: actor.userId,
-        bestTimeSeconds: {
-          not: null,
-        },
-      },
-    })
-
-    return {
-      difficulty,
-      completedCount,
-    }
-  }
-
-  /**
-   * Completed counts for every difficulty in **one** query.
-   *
-   * Replaces four separate `getDifficultySummary` calls. The single-difficulty version above stays
-   * for `GET /api/progress/:difficulty/summary`, which genuinely only wants one.
-   */
+  /** Completed counts for every difficulty in **one** query. */
   async getDifficultySummaries(actorKey: string): Promise<DifficultyProgressSummaryRecord[]> {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
@@ -230,6 +196,30 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
     return records.map(toLevelProgressRecord)
   }
 
+  async listByLevelNumbers(
+    actorKey: string,
+    difficulty: AppDifficulty,
+    levelNumbers: number[],
+  ) {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId || levelNumbers.length === 0) {
+      return []
+    }
+
+    const records = await this.prisma.levelProgress.findMany({
+      where: {
+        difficulty: toPrismaDifficulty(difficulty),
+        userId: actor.userId,
+        levelNumber: {
+          in: levelNumbers,
+        },
+      },
+    })
+
+    return records.map(toLevelProgressRecord)
+  }
+
   async getByDifficultyAndNumber(actorKey: string, difficulty: AppDifficulty, levelNumber: number) {
     const actor = await resolveActorReference(this.prisma, actorKey)
 
@@ -284,6 +274,79 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
         updatedAt: writtenAt,
       },
     })
+
+    return toLevelProgressRecord(savedRecord)
+  }
+
+  /**
+   * The progress row and both lifetime counters, in one transaction and one round trip.
+   *
+   * `$transaction([...])` rather than the interactive form on purpose: the two statements do not
+   * depend on each other's results, so the array form sends them as a single batch — atomic, and
+   * without the extra `BEGIN`/`COMMIT` round trips an interactive transaction costs.
+   *
+   * This replaces three writes spread across two HTTP requests, with nothing tying them together.
+   */
+  async saveCompletion(
+    actorKey: string,
+    completion: {
+      progress: LevelProgressRecord
+      timeSeconds: number
+      bullPlacements: number
+    },
+  ) {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId) {
+      return completion.progress
+    }
+
+    const { progress, timeSeconds, bullPlacements } = completion
+    const writtenAt = new Date()
+
+    const [savedRecord] = await this.prisma.$transaction([
+      this.prisma.levelProgress.upsert({
+        where: {
+          userId_difficulty_levelNumber: {
+            userId: actor.userId,
+            difficulty: toPrismaDifficulty(progress.difficulty),
+            levelNumber: progress.levelNumber,
+          },
+        },
+        update: {
+          actorType: actor.actorType,
+          userId: actor.userId,
+          bestTimeSeconds: progress.bestTimeSeconds,
+          completedAt: progress.completedAt ? new Date(progress.completedAt) : null,
+          updatedAt: writtenAt,
+        },
+        create: {
+          actorType: actor.actorType,
+          userId: actor.userId,
+          difficulty: toPrismaDifficulty(progress.difficulty),
+          levelNumber: progress.levelNumber,
+          bestTimeSeconds: progress.bestTimeSeconds,
+          completedAt: progress.completedAt ? new Date(progress.completedAt) : null,
+          updatedAt: writtenAt,
+        },
+      }),
+      // Both counters in one upsert. They were two, each resolving the same actor and touching the
+      // same row. `increment` rather than read-modify-write, so concurrent completions cannot lose
+      // one another's contribution.
+      this.prisma.playerStatisticsTotal.upsert({
+        where: { userId: actor.userId },
+        update: {
+          totalCompletionTimeSeconds: { increment: timeSeconds },
+          ...(bullPlacements > 0 ? { totalBullPlacements: { increment: bullPlacements } } : {}),
+        },
+        create: {
+          actorType: actor.actorType,
+          userId: actor.userId,
+          totalCompletionTimeSeconds: timeSeconds,
+          totalBullPlacements: bullPlacements,
+        },
+      }),
+    ])
 
     return toLevelProgressRecord(savedRecord)
   }

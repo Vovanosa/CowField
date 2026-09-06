@@ -48,8 +48,8 @@ export function getGapColorForId(colorId: number) {
 /**
  * Every difficulty, in play order.
  *
- * Lives here rather than in a storage module because both `levelStorage` and
- * `difficultyOverviewStorage` need it, and `levelStorage` already imports the latter — putting it in
- * either one would make the pair circular.
+ * Lives here rather than in a storage module because several of them need it — `levelStorage` and
+ * `resources/difficultyOverview` among others — and they already import each other, so putting it in
+ * any one of them would make the group circular.
  */
 export const DIFFICULTIES: readonly Difficulty[] = ['light', 'easy', 'medium', 'hard']

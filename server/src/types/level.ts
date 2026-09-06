@@ -32,17 +32,16 @@ export type LevelDifficultySummaryRecord = {
 export type LevelsOverviewRecord = {
   difficulties: LevelDifficultySummaryRecord[]
 }
+/** The whole catalogue for a difficulty. No paging envelope: the list is the count. */
 export type LevelListPageRecord = {
   difficulty: Difficulty
   levels: LevelSummaryRecord[]
   totalCount: number
-  page: number
-  limit: number
-  totalPages: number
 }
+/** The next level in this difficulty, or null when this is the last one. Was a boolean. */
 export type LevelPublicRecord = Omit<LevelRecord, 'cowsByCell'> & {
-  hasNextLevel: boolean
+  nextLevelNumber: number | null
 }
 export type LevelAdminRecord = LevelRecord & {
-  hasNextLevel: boolean
+  nextLevelNumber: number | null
 }

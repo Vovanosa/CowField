@@ -2,7 +2,6 @@ import type { Request, Response } from 'express'
 
 import {
   difficultyParamsSchema,
-  levelListQuerySchema,
   levelParamsSchema,
   levelRecordInputSchema,
 } from '../schemas/levelSchemas'
@@ -16,14 +15,16 @@ export class LevelController {
     this.levelService = levelService
   }
 
+  // No `?page`/`?limit`. Nothing ever sent them: the client fetched the whole catalogue and then
+  // re-sliced it locally, and the levels page pages its grid from what it already holds.
   listByDifficulty = async (request: Request, response: Response) => {
     const params = difficultyParamsSchema.parse(request.params)
-    const query = levelListQuerySchema.parse(request.query)
-    const levels =
-      query.page !== undefined && query.limit !== undefined
-        ? await this.levelService.listPageByDifficulty(params.difficulty, query.page, query.limit)
-        : await this.levelService.listByDifficulty(params.difficulty)
+    const levels = await this.levelService.listByDifficulty(params.difficulty)
 
+    // The catalogue changes only when an admin adds, renames or deletes a level, so a browser may
+    // reuse it across reloads — but it must revalidate, because that admin edit has to show up
+    // promptly for everyone. Express's ETag turns the revalidation into a 304 with no body.
+    response.setHeader('Cache-Control', 'private, no-cache')
     response.json(levels)
   }
 
@@ -43,12 +44,18 @@ export class LevelController {
   getByDifficultyAndNumber = async (request: Request, response: Response) => {
     const params = levelParamsSchema.parse(request.params)
     const actor = getAuthenticatedActor(request)
+    const isAdmin = actor.role === 'admin'
     const level = await this.levelService.getByDifficultyAndNumber(
       params.difficulty,
       params.levelNumber,
-      actor.role === 'admin',
+      isAdmin,
     )
 
+    // A board cannot change under a player: only an admin rewrites one. `private` because the
+    // response is per-role — an admin's copy carries `cowsByCell` — so it must never sit in a shared
+    // cache. Admins get `no-store` instead: they are the ones editing, and a stale board in the
+    // editor would be a data-loss bug rather than a slow reload.
+    response.setHeader('Cache-Control', isAdmin ? 'no-store' : 'private, max-age=600')
     response.json(level)
   }
 

@@ -7,6 +7,7 @@ export {
   clearStoredSessionToken,
   getStoredSessionRole,
   getStoredSessionToken,
+  isGuestSession,
   setStoredSessionRole,
   setStoredSessionToken,
 } from './sessionToken'

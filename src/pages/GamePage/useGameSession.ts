@@ -18,8 +18,11 @@ import {
   pushMoveHistoryEntry,
 } from '../../game/storage/moveHistoryStorage'
 import { getLevelByDifficultyAndNumber } from '../../game/storage/levelStorage'
-import { completeLevelProgress, getLevelProgress } from '../../game/storage/progressStorage'
-import { recordBullPlacements } from '../../game/storage/statisticsStorage'
+import {
+  completeLevelProgress,
+  getLevelProgress,
+  recordBullPlacements,
+} from '../../game/storage/resources'
 import type { LevelDefinition, LevelProgress } from '../../game/types'
 import {
   applyAutoPlacedDots,
@@ -74,7 +77,7 @@ export function useGameSession({
   const [runStartedAt, setRunStartedAt] = useState<number | null>(null)
   const [isBoardLocked, setIsBoardLocked] = useState(false)
   const [completionModal, setCompletionModal] = useState<CompletionModalState | null>(null)
-  const [hasNextLevel, setHasNextLevel] = useState(false)
+  const [nextLevelNumber, setNextLevelNumber] = useState<number | null>(null)
   const [isUnlocked, setIsUnlocked] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
   const [activeCellIndex, setActiveCellIndex] = useState<number | null>(null)
@@ -121,15 +124,16 @@ export function useGameSession({
 
     async function loadLevel() {
       try {
-        const previousLevelProgressPromise =
-          currentLevelNumber > 1
-            ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
-            : Promise.resolve(null)
-
+        // Both progress reads are lookups in the one cached collection for this difficulty, not
+        // requests. They used to be a request each — and the rows were already inside the collection
+        // the levels page had just fetched. The unlock rule itself is unchanged: the level before
+        // this one by number, exactly as `getUnlockedLevelNumbers` computes it for the levels page.
         const [nextLevel, nextProgress, previousLevelProgress] = await Promise.all([
           getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
           getLevelProgress(difficultyKey, currentLevelNumber),
-          previousLevelProgressPromise,
+          currentLevelNumber > 1
+            ? getLevelProgress(difficultyKey, currentLevelNumber - 1)
+            : Promise.resolve(null),
         ])
 
         if (!isActive) {
@@ -138,7 +142,7 @@ export function useGameSession({
 
         setLevel(nextLevel)
         setLevelProgress(nextProgress)
-        setHasNextLevel(nextLevel?.hasNextLevel ?? false)
+        setNextLevelNumber(nextLevel?.nextLevelNumber ?? null)
         setIsUnlocked(currentLevelNumber === 1 || previousLevelProgress?.bestTimeSeconds !== null)
         setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
         setActiveCellIndex(null)
@@ -304,16 +308,18 @@ export function useGameSession({
     hasFlushedBullPlacementsRef.current = true
 
     try {
-      const [response] = await Promise.all([
-        completeLevelProgress(
-          currentLevel.difficulty,
-          currentLevel.levelNumber,
-          completionTimeSeconds,
-        ),
+      // One request, not two. The bull-placement count rides along with the completion instead of
+      // firing a parallel `POST /api/statistics/bull-placement`, which the server now folds into the
+      // same transaction. That endpoint still exists for the `pagehide` flush, which genuinely has
+      // nothing to travel with.
+      const response = await completeLevelProgress(
+        currentLevel.difficulty,
+        currentLevel.levelNumber,
+        completionTimeSeconds,
         !isGuest && pendingBullPlacements > 0
-          ? recordBullPlacements(pendingBullPlacements)
-          : Promise.resolve(null),
-      ])
+          ? { bullPlacements: pendingBullPlacements }
+          : undefined,
+      )
 
       setLevelProgress(response.progress)
       setCompletionModal((currentModal) =>
@@ -622,7 +628,7 @@ export function useGameSession({
     elapsedSeconds,
     isBoardLocked,
     completionModal,
-    hasNextLevel,
+    nextLevelNumber,
     isUnlocked,
     canUndo,
     activeCellIndex,

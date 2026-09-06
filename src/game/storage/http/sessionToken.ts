@@ -62,3 +62,14 @@ export function setStoredSessionRole(role: AuthSession['role']) {
 
   window.localStorage.setItem(SESSION_ROLE_STORAGE_KEY, role)
 }
+
+/**
+ * Whether player data lives on this device rather than on the server.
+ *
+ * Asked **once per resource load**, not once per call site. It used to be four separate
+ * `getStoredSessionRole() === 'guest'` branches inside `progressStorage`, one in front of each
+ * function, so every caller re-decided which backend it was talking to.
+ */
+export function isGuestSession() {
+  return getStoredSessionRole() === 'guest'
+}

@@ -14,11 +14,21 @@ export type LevelSummary = {
 
 export type LevelDefinition = LevelSummary & {
   pensByCell: number[]
-  hasNextLevel: boolean
+  /**
+   * The next level in this difficulty, or null when this is the last one.
+   *
+   * Was a `hasNextLevel` boolean, which cost the server a count() plus a findFirst() to compute and
+   * told the client nothing about *which* level was next — so "Next Level" navigated to
+   * `levelNumber + 1` and dead-ended on the gap a deleted level leaves behind.
+   */
+  nextLevelNumber: number | null
 }
 
 export type LevelEditorDefinition = LevelDefinition & {
   cowsByCell: boolean[]
 }
 
-export type LevelDraft = Omit<LevelEditorDefinition, 'id' | 'createdAt' | 'updatedAt' | 'hasNextLevel'>
+export type LevelDraft = Omit<
+  LevelEditorDefinition,
+  'id' | 'createdAt' | 'updatedAt' | 'nextLevelNumber'
+>

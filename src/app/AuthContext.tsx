@@ -14,9 +14,7 @@ import {
   logout as logoutRequest,
   register as registerRequest,
 } from '../game/storage/authSessionStorage'
-import { invalidateDifficultyLevelsPageCache } from '../game/storage/difficultyLevelsPageStorage'
-import { invalidateDifficultyOverviewCache } from '../game/storage/difficultyOverviewStorage'
-import { invalidatePlayerStatisticsCache } from '../game/storage/statisticsStorage'
+import { resetPlayerCaches } from '../game/storage/resources'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
 import { reportUnexpectedError } from './reportUnexpectedError'
@@ -31,10 +29,15 @@ function getInitialPreviewRole(): AdminPreviewRole {
   return window.localStorage.getItem(ADMIN_PREVIEW_ROLE_STORAGE_KEY) === 'user' ? 'user' : 'admin'
 }
 
+/**
+ * Every cache that belongs to the player who is signing in or out.
+ *
+ * One call rather than a list to keep in step — the list lives in the storage layer, beside the
+ * caches themselves. It used to be three explicit invalidations here, and adding a fourth cache
+ * meant remembering to add it in two places.
+ */
 function resetCachedPlayerData() {
-  invalidateDifficultyLevelsPageCache()
-  invalidateDifficultyOverviewCache()
-  invalidatePlayerStatisticsCache()
+  resetPlayerCaches()
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {

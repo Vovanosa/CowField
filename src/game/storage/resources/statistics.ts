@@ -1,7 +1,7 @@
-import { MAX_BULL_PLACEMENTS_PER_REQUEST } from '../../../shared/apiLimits'
-import type { PlayerStatisticsSummary } from '../types'
-import { createResource } from './cache'
-import { buildApiUrl, requestAuthenticatedJson } from './http'
+import { MAX_BULL_PLACEMENTS_PER_REQUEST } from '../../../../shared/apiLimits'
+import type { PlayerStatisticsSummary } from '../../types'
+import { createResource } from '../cache'
+import { buildApiUrl, requestAuthenticatedJson } from '../http'
 
 const API_BASE = buildApiUrl('/api/statistics')
 

@@ -4,43 +4,21 @@ import type { Difficulty } from '../types/level'
 import type {
   LevelRepository,
   PlayerProgressRepository,
-  PlayerStatisticsRepository,
 } from '../repositories/interfaces'
 import type { ProgressOverviewRecord } from '../types/progress'
 
-/**
- * The "no progress recorded yet" placeholder for a level the player has never touched.
- *
- * `updatedAt` is `null`, not `''`: there is no timestamp, and an empty string formats as an Invalid
- * Date on the client and would throw inside Prisma if this object ever reached `save`.
- */
-function createEmptyProgress(difficulty: Difficulty, levelNumber: number) {
-  return {
-    difficulty,
-    levelNumber,
-    bestTimeSeconds: null,
-    completedAt: null,
-    updatedAt: null,
-  }
-}
+// The "no progress recorded yet" placeholder used to be synthesised here, for
+// `GET /api/progress/:difficulty/:levelNumber`. That endpoint is gone: the client holds the whole
+// collection for a difficulty and a lookup miss *is* the placeholder. See
+// `src/game/storage/resources/progress.ts`.
 
 export class PlayerProgressService {
   private readonly repository: PlayerProgressRepository
   private readonly levelRepository: LevelRepository
-  private readonly statisticsRepository: PlayerStatisticsRepository
 
-  constructor(
-    repository: PlayerProgressRepository,
-    levelRepository: LevelRepository,
-    statisticsRepository: PlayerStatisticsRepository,
-  ) {
+  constructor(repository: PlayerProgressRepository, levelRepository: LevelRepository) {
     this.repository = repository
     this.levelRepository = levelRepository
-    this.statisticsRepository = statisticsRepository
-  }
-
-  async getDifficultySummary(actorKey: string, difficulty: Difficulty) {
-    return this.repository.getDifficultySummary(actorKey, difficulty)
   }
 
   /**
@@ -70,83 +48,75 @@ export class PlayerProgressService {
     return this.repository.listByDifficulty(actorKey, difficulty)
   }
 
-  async getByDifficultyAndNumber(actorKey: string, difficulty: Difficulty, levelNumber: number) {
-    return (
-      (await this.repository.getByDifficultyAndNumber(actorKey, difficulty, levelNumber)) ??
-      createEmptyProgress(difficulty, levelNumber)
-    )
-  }
-
   /**
-   * Rejects a completion the player could not legitimately have reached.
+   * Records a completion.
    *
-   * The client enforces unlock order too (`src/game/progression.ts`), but that is a UX affordance,
-   * not a guarantee — this endpoint is reachable directly.
+   * **Three queries**, down from six across two requests: the level's neighbours, this level's and
+   * the previous level's progress together, and one transactional write covering the progress row
+   * and both lifetime counters.
    *
-   * Guests do not reach this: the route is behind `createRequireNonGuestMiddleware`, because they
-   * hold no backend rows for the checks below to read.
+   * The unlock check is not a formality — the client enforces order too
+   * (`src/game/progression.ts`), but that is a UX affordance and this endpoint is reachable
+   * directly. Guests never arrive here: the route is behind `createRequireNonGuestMiddleware`,
+   * because they hold no backend rows for any of this to read or write.
    */
-  private async assertCompletionIsReachable(
-    actorKey: string,
-    difficulty: Difficulty,
-    levelNumber: number,
-  ) {
-    const level = await this.levelRepository.getByDifficultyAndNumber(difficulty, levelNumber)
-
-    if (!level) {
-      throw new HttpError(404, 'Level not found.')
-    }
-
-    const previousLevelNumber = await this.levelRepository.getPreviousLevelNumber(
-      difficulty,
-      levelNumber,
-    )
-
-    if (previousLevelNumber === null) {
-      return
-    }
-
-    const previousProgress = await this.repository.getByDifficultyAndNumber(
-      actorKey,
-      difficulty,
-      previousLevelNumber,
-    )
-
-    if (previousProgress?.bestTimeSeconds == null) {
-      throw new HttpError(403, 'Finish the previous level first.')
-    }
-  }
-
   async completeLevel(
     actorKey: string,
     difficulty: Difficulty,
     levelNumber: number,
     input: CompleteLevelInput,
   ) {
-    await this.assertCompletionIsReachable(actorKey, difficulty, levelNumber)
-
-    const existing = await this.repository.getByDifficultyAndNumber(
-      actorKey,
+    const { exists, previousLevelNumber } = await this.levelRepository.getNeighbourLevelNumbers(
       difficulty,
       levelNumber,
     )
+
+    if (!exists) {
+      throw new HttpError(404, 'Level not found.')
+    }
+
+    // One query for both rows. The guard needs the previous level's, the write needs this level's,
+    // and they used to be a `findFirst` each.
+    const relevantProgress = await this.repository.listByLevelNumbers(
+      actorKey,
+      difficulty,
+      previousLevelNumber === null ? [levelNumber] : [previousLevelNumber, levelNumber],
+    )
+
+    if (previousLevelNumber !== null) {
+      const previousProgress = relevantProgress.find(
+        (row) => row.levelNumber === previousLevelNumber,
+      )
+
+      if (previousProgress?.bestTimeSeconds == null) {
+        throw new HttpError(403, 'Finish the previous level first.')
+      }
+    }
+
+    const existing = relevantProgress.find((row) => row.levelNumber === levelNumber)
     const timestamp = new Date().toISOString()
     const isNewBest =
       existing?.bestTimeSeconds === null ||
       existing?.bestTimeSeconds === undefined ||
       input.timeSeconds < existing.bestTimeSeconds
 
-    const progress = await this.repository.save(actorKey, {
-      difficulty,
-      levelNumber,
-      bestTimeSeconds: isNewBest ? input.timeSeconds : (existing?.bestTimeSeconds ?? input.timeSeconds),
-      completedAt: timestamp,
-      updatedAt: timestamp,
+    const progress = await this.repository.saveCompletion(actorKey, {
+      progress: {
+        difficulty,
+        levelNumber,
+        bestTimeSeconds: isNewBest
+          ? input.timeSeconds
+          : (existing?.bestTimeSeconds ?? input.timeSeconds),
+        completedAt: timestamp,
+        updatedAt: timestamp,
+      },
+      // Time played, not best times: this run happened whether or not it beat the record, so it
+      // counts.
+      timeSeconds: input.timeSeconds,
+      // Folded in from the client instead of arriving as a parallel `POST
+      // /api/statistics/bull-placement`. That endpoint remains for the `pagehide` flush.
+      bullPlacements: input.bullPlacements ?? 0,
     })
-
-    // Time played, not best times: this run happened whether or not it beat the record, so it
-    // counts. The counter is a no-op for guests, who have no backend rows.
-    await this.statisticsRepository.addCompletionTimeSeconds(actorKey, input.timeSeconds)
 
     return {
       progress,

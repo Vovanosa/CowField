@@ -1,8 +1,8 @@
-import { DIFFICULTIES } from '../levels/constants'
-import type { Difficulty } from '../types'
-import { createResource } from './cache'
-import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
-import { getGuestProgressByDifficulty } from './guestProgressStorage'
+import { DIFFICULTIES } from '../../levels/constants'
+import type { Difficulty } from '../../types'
+import { createResource } from '../cache'
+import { buildApiUrl, isGuestSession, requestAuthenticatedJson } from '../http'
+import { getGuestProgressByDifficulty } from '../guestProgressStorage'
 
 type DifficultyOverviewItem = {
   difficulty: Difficulty
@@ -10,7 +10,7 @@ type DifficultyOverviewItem = {
   completedCount: number
 }
 
-type DifficultyOverviewResponse = {
+export type DifficultyOverviewResponse = {
   difficulties: DifficultyOverviewItem[]
 }
 
@@ -59,7 +59,7 @@ const OVERVIEW_KEY = 'self'
 
 const overviewResource = createResource<string, DifficultyOverviewResponse>({
   load: () =>
-    getStoredSessionRole() === 'guest'
+    isGuestSession()
       ? loadGuestOverview()
       : requestAuthenticatedJson<DifficultyOverviewResponse>(`${PROGRESS_API_BASE}/overview`),
   clone: cloneOverview,
@@ -67,6 +67,26 @@ const overviewResource = createResource<string, DifficultyOverviewResponse>({
 
 export async function getDifficultyOverview() {
   return overviewResource.get(OVERVIEW_KEY)
+}
+
+/**
+ * Nudges one difficulty's completed count, for a first clear.
+ *
+ * `completedCount` is the only field a completion can move — `totalCount` is the level library, not
+ * the player. Patching it is what stops the difficulty list being refetched every time you finish a
+ * level and walk back to it.
+ */
+export function patchDifficultyCompletedCount(difficulty: Difficulty, delta: number) {
+  overviewResource.patch(OVERVIEW_KEY, (current) => ({
+    difficulties: current.difficulties.map((item) =>
+      item.difficulty === difficulty
+        ? {
+            ...item,
+            completedCount: Math.min(Math.max(item.completedCount + delta, 0), item.totalCount),
+          }
+        : item,
+    ),
+  }))
 }
 
 export function invalidateDifficultyOverviewCache() {

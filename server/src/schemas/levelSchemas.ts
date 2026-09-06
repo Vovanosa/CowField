@@ -17,11 +17,6 @@ export const difficultyParamsSchema = z.object({
   difficulty: difficultySchema,
 })
 
-export const levelListQuerySchema = z.object({
-  page: z.coerce.number().int().positive().max(INT4_MAX).optional(),
-  limit: z.coerce.number().int().positive().max(100).optional(),
-})
-
 export const levelRecordInputSchema = z.object({
   difficulty: difficultySchema,
   levelNumber: levelNumberSchema,

@@ -127,25 +127,14 @@ export class PrismaLevelRepository implements LevelRepository {
     }
   }
 
-  async listByDifficulty(
-    difficulty: AppDifficulty,
-    options?: {
-      page?: number
-      limit?: number
-    },
-  ): Promise<LevelListPageRecord> {
-    const totalCount = await this.prisma.level.count({
-      where: {
-        difficulty: toPrismaDifficulty(difficulty),
-      },
-    })
-
-    const hasPagination = options?.page !== undefined && options?.limit !== undefined
-    const page = hasPagination ? Math.max(options?.page ?? 1, 1) : 1
-    const limit = hasPagination ? Math.max(options?.limit ?? 1, 1) : Math.max(totalCount, 1)
-    const totalPages = hasPagination ? Math.max(Math.ceil(totalCount / limit), 1) : 1
-    const normalizedPage = hasPagination ? Math.min(page, totalPages) : 1
-
+  /**
+   * The whole catalogue for a difficulty.
+   *
+   * The `page`/`limit` path this used to carry is gone. Nothing ever passed the options: the client
+   * fetched everything and then re-sliced it, and the levels page pages the grid itself from what it
+   * already holds. Two of the three pagination implementations in the project were dead code.
+   */
+  async listByDifficulty(difficulty: AppDifficulty): Promise<LevelListPageRecord> {
     const levels = await this.prisma.level.findMany({
       where: {
         difficulty: toPrismaDifficulty(difficulty),
@@ -161,20 +150,15 @@ export class PrismaLevelRepository implements LevelRepository {
       orderBy: {
         levelNumber: 'asc',
       },
-      skip: hasPagination ? (normalizedPage - 1) * limit : undefined,
-      take: hasPagination ? limit : undefined,
     })
 
+    // The count came from a second query purely to fill a paging envelope. The list is the count.
     return {
       difficulty,
       levels: levels.map(toLevelSummaryRecord),
-      totalCount,
-      page: normalizedPage,
-      limit,
-      totalPages,
+      totalCount: levels.length,
     }
   }
-
   async getByDifficultyAndNumber(difficulty: AppDifficulty, levelNumber: number) {
     const level = await this.prisma.level.findUnique({
       where: {
@@ -188,23 +172,65 @@ export class PrismaLevelRepository implements LevelRepository {
     return level ? toLevelRecord(level) : null
   }
 
-  async getPreviousLevelNumber(difficulty: AppDifficulty, levelNumber: number) {
-    const previousLevel = await this.prisma.level.findFirst({
-      where: {
-        difficulty: toPrismaDifficulty(difficulty),
-        levelNumber: {
-          lt: levelNumber,
+  /**
+   * The neighbours of a level in this difficulty's ordered list, in **one** query.
+   *
+   * `lte` / `gte` with `take: 2` means the level itself comes back as the first row of each side, so
+   * existence and both neighbours fall out of the same two windows. Neither neighbour is
+   * `levelNumber ± 1` — deleting a level leaves a gap, and both unlock order and the "Next Level"
+   * button follow the list.
+   */
+  private async getNeighbourWindow(difficulty: AppDifficulty, levelNumber: number) {
+    const [atOrBefore, atOrAfter] = await Promise.all([
+      this.prisma.level.findMany({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          levelNumber: { lte: levelNumber },
         },
-      },
-      orderBy: {
-        levelNumber: 'desc',
-      },
-      select: {
-        levelNumber: true,
-      },
-    })
+        orderBy: { levelNumber: 'desc' },
+        take: 2,
+        select: { levelNumber: true },
+      }),
+      this.prisma.level.findFirst({
+        where: {
+          difficulty: toPrismaDifficulty(difficulty),
+          levelNumber: { gt: levelNumber },
+        },
+        orderBy: { levelNumber: 'asc' },
+        select: { levelNumber: true },
+      }),
+    ])
 
-    return previousLevel?.levelNumber ?? null
+    const exists = atOrBefore[0]?.levelNumber === levelNumber
+
+    return {
+      exists,
+      previousLevelNumber: exists ? (atOrBefore[1]?.levelNumber ?? null) : null,
+      nextLevelNumber: atOrAfter?.levelNumber ?? null,
+    }
+  }
+
+  async getNeighbourLevelNumbers(difficulty: AppDifficulty, levelNumber: number) {
+    return this.getNeighbourWindow(difficulty, levelNumber)
+  }
+
+  /**
+   * The board and its neighbours.
+   *
+   * Replaces a `findUnique` plus `getDifficultySummary`'s `count()` + `findFirst()` — three queries
+   * to produce a `hasNextLevel` **boolean**, which then made the client guess `levelNumber + 1`.
+   */
+  async getByDifficultyAndNumberWithNeighbours(difficulty: AppDifficulty, levelNumber: number) {
+    const [level, neighbours] = await Promise.all([
+      this.getByDifficultyAndNumber(difficulty, levelNumber),
+      this.getNeighbourWindow(difficulty, levelNumber),
+    ])
+
+    return {
+      level,
+      previousLevelNumber: neighbours.previousLevelNumber,
+      nextLevelNumber: neighbours.nextLevelNumber,
+    }
   }
 
   async save(level: LevelRecord, options: { createdByActorKey?: string } = {}) {

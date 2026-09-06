@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import { INT4_MAX, MAX_LEVEL_TIME_SECONDS, MIN_LEVEL_TIME_SECONDS } from '../../../shared/apiLimits'
+import {
+  INT4_MAX,
+  MAX_BULL_PLACEMENTS_PER_REQUEST,
+  MAX_LEVEL_TIME_SECONDS,
+  MIN_LEVEL_TIME_SECONDS,
+} from '../../../shared/apiLimits'
 import { difficultySchema } from '../types/level'
 
 export const progressParamsSchema = z.object({
@@ -20,6 +25,19 @@ export const completeLevelInputSchema = z.object({
   // unbounded value both makes that total nonsense and, once near `int4`, makes every later
   // completion fail to save. The client clamps to both ends — see `shared/apiLimits.ts`.
   timeSeconds: z.number().int().min(MIN_LEVEL_TIME_SECONDS).max(MAX_LEVEL_TIME_SECONDS),
+  /**
+   * Bulls placed during this run, folded into the completion instead of arriving as a second
+   * request.
+   *
+   * Optional because the `pagehide` flush still uses `POST /api/statistics/bull-placement` — it
+   * fires when the tab goes away, with no completion to travel with.
+   */
+  bullPlacements: z
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_BULL_PLACEMENTS_PER_REQUEST)
+    .optional(),
 })
 
 export type CompleteLevelInput = z.infer<typeof completeLevelInputSchema>

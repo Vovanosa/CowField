@@ -34,14 +34,16 @@ export interface SessionRepository {
 
 export interface PlayerProgressRepository {
   listByDifficulty(actorKey: string, difficulty: Difficulty): Promise<LevelProgressRecord[]>
-  getDifficultySummary(
+  /**
+   * Several specific levels in one query. Used by the completion guard, which needs the level being
+   * completed *and* the one before it — two `getByDifficultyAndNumber` calls before this existed.
+   */
+  listByLevelNumbers(
     actorKey: string,
     difficulty: Difficulty,
-  ): Promise<DifficultyProgressSummaryRecord>
-  /**
-   * All four difficulties in one query. Prefer this over four `getDifficultySummary` calls; the
-   * single-difficulty version is for the endpoint that really only wants one.
-   */
+    levelNumbers: number[],
+  ): Promise<LevelProgressRecord[]>
+  /** All four difficulties in one query. */
   getDifficultySummaries(actorKey: string): Promise<DifficultyProgressSummaryRecord[]>
   /**
    * Everything the statistics page needs from `level_progress`, in two queries rather than nine.
@@ -54,6 +56,22 @@ export interface PlayerProgressRepository {
     levelNumber: number,
   ): Promise<LevelProgressRecord | null>
   save(actorKey: string, progress: LevelProgressRecord): Promise<LevelProgressRecord>
+  /**
+   * Records a completion: the progress row **and** the lifetime counters, in one transaction.
+   *
+   * They used to be three separate writes across two HTTP requests — the progress upsert, a
+   * `total_completion_time_seconds` increment beside it, and a `total_bull_placements` increment
+   * from a parallel `POST /api/statistics/bull-placement`. Nothing tied them together, so a failure
+   * between them left a completion recorded with no time counted, or the reverse.
+   */
+  saveCompletion(
+    actorKey: string,
+    completion: {
+      progress: LevelProgressRecord
+      timeSeconds: number
+      bullPlacements: number
+    },
+  ): Promise<LevelProgressRecord>
 }
 
 export interface PlayerStatisticsRepository {
@@ -70,20 +88,39 @@ export interface PlayerStatisticsRepository {
 export interface LevelRepository {
   getDifficultySummary(difficulty: Difficulty): Promise<LevelDifficultySummaryRecord>
   getOverview(): Promise<LevelsOverviewRecord>
-  listByDifficulty(
-    difficulty: Difficulty,
-    options?: {
-      page?: number
-      limit?: number
-    },
-  ): Promise<LevelListPageRecord>
+  /**
+   * The whole catalogue for a difficulty. There is no paging: the client caches this for the
+   * session, ~25KB, and the `page`/`limit` path that existed here was never called by anything.
+   */
+  listByDifficulty(difficulty: Difficulty): Promise<LevelListPageRecord>
   getByDifficultyAndNumber(difficulty: Difficulty, levelNumber: number): Promise<LevelRecord | null>
   /**
-   * The level immediately before `levelNumber` in this difficulty's ordered list, or null if
-   * `levelNumber` is the first. Not `levelNumber - 1`: deleting a level leaves gaps, and unlock
-   * order follows the list, not the numbering.
+   * The level, plus the numbers of its neighbours in this difficulty's ordered list — **one query**
+   * for what used to be a `findUnique` plus a `count` plus two `findFirst`s.
+   *
+   * Neither neighbour is `levelNumber ± 1`: deleting a level leaves gaps, and both unlock order and
+   * the "Next Level" button follow the list rather than the numbering.
    */
-  getPreviousLevelNumber(difficulty: Difficulty, levelNumber: number): Promise<number | null>
+  getByDifficultyAndNumberWithNeighbours(
+    difficulty: Difficulty,
+    levelNumber: number,
+  ): Promise<{
+    level: LevelRecord | null
+    previousLevelNumber: number | null
+    nextLevelNumber: number | null
+  }>
+  /**
+   * The neighbours alone, without loading the board. For the completion guard (which needs to know
+   * the level exists and which one precedes it) and for a save (which needs what follows it).
+   */
+  getNeighbourLevelNumbers(
+    difficulty: Difficulty,
+    levelNumber: number,
+  ): Promise<{
+    exists: boolean
+    previousLevelNumber: number | null
+    nextLevelNumber: number | null
+  }>
   /**
    * `createdByActorKey` records who authored the level. It is written **only when the row is
    * created** — the original author of a level does not change because someone edited it later.

@@ -33,29 +33,6 @@ export class PlayerProgressController {
     response.json(overview)
   }
 
-  getDifficultySummary = async (request: Request, response: Response) => {
-    const params = progressDifficultyParamsSchema.parse(request.params)
-    const actor = getAuthenticatedActor(request)
-    const summary = await this.playerProgressService.getDifficultySummary(
-      actor.actorKey,
-      params.difficulty,
-    )
-
-    response.json(summary)
-  }
-
-  getByDifficultyAndNumber = async (request: Request, response: Response) => {
-    const params = progressParamsSchema.parse(request.params)
-    const actor = getAuthenticatedActor(request)
-    const progress = await this.playerProgressService.getByDifficultyAndNumber(
-      actor.actorKey,
-      params.difficulty,
-      params.levelNumber,
-    )
-
-    response.json(progress)
-  }
-
   completeLevel = async (request: Request, response: Response) => {
     const params = progressParamsSchema.parse(request.params)
     const body = completeLevelInputSchema.parse(request.body)

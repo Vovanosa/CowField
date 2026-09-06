@@ -36,5 +36,14 @@ export {
   resetPassword,
   setStoredSessionToken,
 } from './authSessionStorage'
-export { completeLevelProgress, getLevelProgress, getProgressByDifficulty } from './progressStorage'
-export { getPlayerStatistics, recordBullPlacements } from './statisticsStorage'
+export {
+  completeLevelProgress,
+  getDifficultyLevelsPageData,
+  getDifficultyOverview,
+  getLevelProgress,
+  getPlayerStatistics,
+  getProgressByDifficulty,
+  recordBullPlacements,
+  resetPlayerCaches,
+  type DifficultyLevelsPageData,
+} from './resources'

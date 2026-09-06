@@ -32,7 +32,7 @@ function GamePageScreen() {
     elapsedSeconds,
     isBoardLocked,
     completionModal,
-    hasNextLevel,
+    nextLevelNumber,
     isUnlocked,
     canUndo,
     activeCellIndex,
@@ -178,13 +178,20 @@ function GamePageScreen() {
     navigate(`/levels/${difficulty}`)
   }
 
+  // The two panels below only need to know *whether* there is one; the number itself is only used
+  // to navigate.
+  const hasNextLevel = nextLevelNumber !== null
+
   function handleNextLevel() {
-    if (!hasNextLevel || !level) {
+    if (nextLevelNumber === null) {
       return
     }
 
     setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
-    navigate(`/game/${difficulty}/${level.levelNumber + 1}`)
+    // The **actual** next level, from the server. This used to be `levelNumber + 1`, which dead-ended
+    // on the gap a deleted level leaves behind: the button was enabled and the page it navigated to
+    // did not exist.
+    navigate(`/game/${difficulty}/${nextLevelNumber}`)
   }
 
   return (

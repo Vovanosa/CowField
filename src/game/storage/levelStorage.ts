@@ -6,38 +6,27 @@ import type {
   LevelSummary,
 } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
-import { ApiError, buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
-import { invalidateDifficultyLevelsPageCache } from './difficultyLevelsPageStorage'
-import { invalidateDifficultyOverviewCache } from './difficultyOverviewStorage'
+import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
+import { invalidateDifficultyOverviewCache } from './resources/difficultyOverview'
+import {
+  getLevelBoard,
+  invalidateLevelBoards,
+  setLevelBoard,
+  type LevelDetailApiRecord,
+} from './resources/levelBoard'
+import { getLevelCatalogue, invalidateLevelCatalogue } from './resources/levelCatalogue'
+
+/**
+ * Level reads and the admin writes.
+ *
+ * The caching lives in `resources/levelCatalogue.ts` and `resources/levelBoard.ts`; this module owns
+ * the mapping between the API's records and the app's domain types, and the two admin-only writes.
+ */
 
 const API_BASE = buildApiUrl('/api/levels')
 // Re-exported so existing call sites keep working; the list itself lives in levels/constants.ts,
-// which both this module and difficultyOverviewStorage can import without a cycle.
+// which both this module and the overview resource can import without a cycle.
 export { DIFFICULTIES } from '../levels/constants'
-
-type LevelApiRecord = {
-  difficulty: Difficulty
-  levelNumber: number
-  title: string
-  gridSize: number
-  createdAt: string
-  updatedAt: string
-}
-
-type LevelDetailApiRecord = LevelApiRecord & {
-  colorsByCell: number[]
-  cowsByCell?: boolean[]
-  hasNextLevel: boolean
-}
-
-type DifficultyListResponse = {
-  difficulty: Difficulty
-  levels: LevelApiRecord[]
-  totalCount?: number
-  page?: number
-  limit?: number
-  totalPages?: number
-}
 
 type DifficultyLevelSummaryResponse = {
   difficulty: Difficulty
@@ -45,18 +34,9 @@ type DifficultyLevelSummaryResponse = {
   highestLevelNumber: number | null
 }
 
-export type PaginatedLevelsResult = {
-  difficulty: Difficulty
-  levels: LevelSummary[]
-  totalCount: number
-  page: number
-  limit: number
-  totalPages: number
-}
-
 export type DifficultyLevelSummary = DifficultyLevelSummaryResponse
 
-function fromSummaryApiRecord(record: LevelApiRecord): LevelSummary {
+function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
   return {
     id: `${record.difficulty}-${record.levelNumber}`,
     levelNumber: record.levelNumber,
@@ -65,14 +45,8 @@ function fromSummaryApiRecord(record: LevelApiRecord): LevelSummary {
     gridSize: record.gridSize,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
-  }
-}
-
-function fromApiRecord(record: LevelDetailApiRecord): LevelDefinition {
-  return {
-    ...fromSummaryApiRecord(record),
     pensByCell: record.colorsByCell,
-    hasNextLevel: record.hasNextLevel,
+    nextLevelNumber: record.nextLevelNumber,
   }
 }
 
@@ -116,62 +90,16 @@ export function createEmptyLevelDraft(
   }
 }
 
-export async function getLevelsByDifficulty(
-  difficulty: Difficulty,
-  options?: {
-    page?: number
-    limit?: number
-  },
-): Promise<PaginatedLevelsResult> {
-  const searchParams = new URLSearchParams()
-
-  if (options?.page !== undefined) {
-    searchParams.set('page', String(options.page))
-  }
-
-  if (options?.limit !== undefined) {
-    searchParams.set('limit', String(options.limit))
-  }
-
-  const query = searchParams.size > 0 ? `?${searchParams.toString()}` : ''
-  const response = await requestJson<DifficultyListResponse>(`/${difficulty}${query}`)
-  const sortedLevels = response.levels
-    .map(fromSummaryApiRecord)
-    .sort((left, right) => left.levelNumber - right.levelNumber)
-
-  const requestedPage = options?.page ?? response.page ?? 1
-  const requestedLimit = options?.limit ?? response.limit ?? sortedLevels.length ?? 1
-  const hasServerPagination =
-    typeof response.totalCount === 'number' &&
-    typeof response.page === 'number' &&
-    typeof response.limit === 'number' &&
-    typeof response.totalPages === 'number'
-
-  if (hasServerPagination) {
-    return {
-      difficulty: response.difficulty,
-      levels: sortedLevels,
-      totalCount: response.totalCount!,
-      page: response.page!,
-      limit: response.limit!,
-      totalPages: response.totalPages!,
-    }
-  }
-
-  const totalCount = sortedLevels.length
-  const totalPages = Math.max(Math.ceil(totalCount / requestedLimit), 1)
-  const normalizedPage = Math.min(Math.max(requestedPage, 1), totalPages)
-  const startIndex = (normalizedPage - 1) * requestedLimit
-  const endIndex = startIndex + requestedLimit
-
-  return {
-    difficulty: response.difficulty,
-    levels: sortedLevels.slice(startIndex, endIndex),
-    totalCount,
-    page: normalizedPage,
-    limit: requestedLimit,
-    totalPages,
-  }
+/**
+ * The whole catalogue for a difficulty, cached for the session.
+ *
+ * There is no `page`/`limit` any more, on either side of the wire. Three pagination implementations
+ * existed — a server `?page/?limit` path, a client-side re-slice for when the server ignored them,
+ * and the levels page's own grid paging — and only the third ever ran, because nothing passed the
+ * options. The whole catalogue is ~25KB and is now fetched once per session.
+ */
+export async function getLevelsByDifficulty(difficulty: Difficulty): Promise<LevelSummary[]> {
+  return getLevelCatalogue(difficulty)
 }
 
 export async function getDifficultyLevelSummary(
@@ -201,23 +129,16 @@ export async function getLevelByDifficultyAndNumber(
     includeAuthoringData?: boolean
   },
 ) {
-  try {
-    const record = await requestJson<LevelDetailApiRecord>(`/${difficulty}/${levelNumber}`)
-    const includeAuthoringData =
-      options?.includeAuthoringData ?? getStoredSessionRole() === 'admin'
+  const includeAuthoringData =
+    options?.includeAuthoringData ?? getStoredSessionRole() === 'admin'
+  const record = await getLevelBoard(difficulty, levelNumber, includeAuthoringData)
 
-    return includeAuthoringData ? fromEditorApiRecord(record) : fromApiRecord(record)
-  } catch (error) {
-    // A missing level is an answer, not a failure — the editor opens a blank draft on it. This used
-    // to be detected by comparing the server's message against the literal `'Level not found.'`,
-    // relayed through a `'NOT_FOUND'` sentinel, so rewording that string would have turned every
-    // missing level into an unhandled error.
-    if (error instanceof ApiError && error.isNotFound) {
-      return null
-    }
-
-    throw error
+  if (!record) {
+    // A missing level is an answer, not a failure — the editor opens a blank draft on it.
+    return null
   }
+
+  return includeAuthoringData ? fromEditorApiRecord(record) : fromApiRecord(record)
 }
 
 export async function saveLevel(draft: LevelDraft) {
@@ -229,8 +150,16 @@ export async function saveLevel(draft: LevelDraft) {
       body: JSON.stringify(payload),
     },
   )
-  invalidateDifficultyLevelsPageCache(draft.difficulty)
+
+  // A save can add a level, which changes what "next level" means for its neighbour, so every board
+  // in the session goes. The catalogue for this difficulty goes too — it now has a new title, or a
+  // new entry. Progress is deliberately untouched: nothing about a player's times changed.
+  invalidateLevelCatalogue(draft.difficulty)
+  invalidateLevelBoards()
   invalidateDifficultyOverviewCache()
+
+  // The response is the level we just wrote, so seed it rather than making the editor refetch.
+  setLevelBoard(draft.difficulty, draft.levelNumber, true, record)
 
   return fromEditorApiRecord(record)
 }
@@ -239,7 +168,10 @@ export async function deleteLevel(difficulty: Difficulty, levelNumber: number) {
   const response = await requestJson<{ deleted: boolean }>(`/${difficulty}/${levelNumber}`, {
     method: 'DELETE',
   })
-  invalidateDifficultyLevelsPageCache(difficulty)
+
+  invalidateLevelCatalogue(difficulty)
+  invalidateLevelBoards()
   invalidateDifficultyOverviewCache()
+
   return response
 }

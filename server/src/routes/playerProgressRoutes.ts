@@ -17,9 +17,7 @@ export function createPlayerProgressRoutes(
 
   router.use(requireAuth)
   router.get('/overview', asyncHandler(playerProgressController.getOverview))
-  router.get('/:difficulty/summary', asyncHandler(playerProgressController.getDifficultySummary))
   router.get('/:difficulty', asyncHandler(playerProgressController.listByDifficulty))
-  router.get('/:difficulty/:levelNumber', asyncHandler(playerProgressController.getByDifficultyAndNumber))
 
   // The reads above stay open to guests and answer "nothing recorded", which is true — a guest has
   // no rows here. The write does not get the same treatment: the repository silently no-ops for an
