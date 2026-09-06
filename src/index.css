@@ -1,5 +1,29 @@
 @import './styles/colors.css';
 
+/*
+  BREAKPOINTS — the four this app uses. Pick from this set; do not invent a fifth.
+
+    960px  page layout gives up a column (Levels, Statistics, Game, the level editor)
+    768px  THE phone line. The frame's control row hides, its pills move into Settings, and the
+           root type scale and spacing step down (see the block at the bottom of this file).
+           `App.css`, `LanguageSwitcher.module.css` and `SettingsPage.module.css` all key off it,
+           and they must stay on the same number — Language and Dark mode appear in exactly one
+           place at a time, and disagreement duplicates them or loses them both.
+    720px  component-level tightening (ProfileMenu, PageHeader, Toast, the editor)
+    640px  small-phone tightening (Settings rows, Buttons, Levels, Game, Statistics)
+
+  There were six until 2026-09-04; items 24 and 32 deleted two by removing the layouts that needed
+  them.
+
+  These are comments, not custom properties, because **a CSS custom property is not valid inside a
+  `@media` prelude** — `@media (max-width: var(--bp-phone))` does not work in any browser. Real
+  tokens need `@custom-media`, which means a PostCSS plugin or the Lightning CSS transformer, i.e.
+  a new build dependency. That was judged not worth it (plan item 33): the hazard was never the
+  bare numbers, it was the 768 that existed *twice* — once here and once as a
+  `matchMedia('(max-width: 768px)')` in `SettingsPage.tsx`. That second copy is gone; the page now
+  renders both rows always and lets `.narrowOnly` decide, under this same prelude.
+*/
+
 :root {
   --space-2: 8px;
   --space-3: 12px;

@@ -1,5 +1,5 @@
 import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '../../app/useAuth'
@@ -75,32 +75,6 @@ export function SettingsPage() {
   const settings = usePlayerSettings()
   const { t } = useTranslation()
   const [hasStorageFailed, setHasStorageFailed] = useState(false)
-  const [areFloatingControlsHidden, setAreFloatingControlsHidden] = useState(() => {
-    if (typeof window === 'undefined') {
-      return false
-    }
-
-    return window.matchMedia('(max-width: 768px)').matches
-  })
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const mediaQuery = window.matchMedia('(max-width: 768px)')
-
-    function syncFloatingControlVisibility() {
-      setAreFloatingControlsHidden(mediaQuery.matches)
-    }
-
-    syncFloatingControlVisibility()
-    mediaQuery.addEventListener('change', syncFloatingControlVisibility)
-
-    return () => {
-      mediaQuery.removeEventListener('change', syncFloatingControlVisibility)
-    }
-  }, [])
 
   /**
    * Every change goes through here so the one failure case is handled in one place: the setting
@@ -206,7 +180,14 @@ export function SettingsPage() {
           </p>
         ) : null}
         <div className={styles.settingsList}>
-          {areFloatingControlsHidden ? (
+          {/*
+            Language and Dark mode live in the frame's control row on wide screens and move in here
+            when it hides. That used to be decided by `matchMedia('(max-width: 768px)')` — a second
+            copy of a number that only CSS should own, and getting the two out of step duplicated the
+            controls or made them vanish. Both rows are always rendered now; `.narrowOnly` shows them
+            under the *same* `max-width: 768px` prelude that hides the pills.
+          */}
+          <div className={styles.narrowOnly}>
             <SettingsItem
               icon={Globe2}
               title={t('Language')}
@@ -234,15 +215,13 @@ export function SettingsPage() {
                 </div>
               }
             />
-          ) : null}
-          {settingsConfig
-            .filter((setting) => areFloatingControlsHidden || setting.key !== 'darkModeEnabled')
-            .map((setting) => {
+          </div>
+          {settingsConfig.map((setting) => {
             const isEnabled =
               isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
             const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
 
-            return (
+            const item = (
               <SettingsItem
                 key={setting.key}
                 icon={setting.icon}
@@ -261,7 +240,16 @@ export function SettingsPage() {
                 showDivider
               />
             )
-            })}
+
+            // Dark mode is the other control that lives in the frame's pills on wide screens.
+            return setting.key === 'darkModeEnabled' ? (
+              <div key={setting.key} className={styles.narrowOnly}>
+                {item}
+              </div>
+            ) : (
+              item
+            )
+          })}
         </div>
       </Panel>
     </div>

@@ -13,6 +13,29 @@
   flex-direction: column;
 }
 
+/*
+  Rows that only exist when the frame's control row is hidden — Language and Dark mode, which are
+  pills in the top-right corner on wider screens.
+
+  `display: contents` rather than `block` so the wrapper does not become a flex item: the
+  `SettingsItem` inside stays a direct child of `.settingsList` and the dividers line up exactly as
+  they did when this was decided in JavaScript.
+
+  Written as "hidden by default, shown under max-width: 768px" so the prelude is the *same string*
+  as the one in `App.css` and `LanguageSwitcher.module.css`. The inverse (`min-width: 769px`) would
+  read the same but introduce a second number to keep in step, which is the whole problem this
+  replaced.
+*/
+.narrowOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .narrowOnly {
+    display: contents;
+  }
+}
+
 .languageControl {
   display: inline-flex;
   align-items: center;

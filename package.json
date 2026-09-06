@@ -20,7 +20,9 @@
     "typecheck:server": "tsc -p server/tsconfig.json",
     "lint": "eslint .",
     "check": "npm run lint && npm run typecheck && npm run typecheck:server",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "measure:requests": "tsx scripts/measure-session.mts",
+    "measure:queries": "tsx scripts/measure-session.mts --queries --live"
   },
   "dependencies": {
     "@neondatabase/neon-js": "^0.2.0-beta.1",
