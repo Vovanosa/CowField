@@ -6,11 +6,9 @@ import type {
   LevelSummary,
 } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
-import { buildApiUrl } from './apiBase'
-import { getStoredSessionRole } from './authSessionStorage'
+import { ApiError, buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
 import { invalidateDifficultyLevelsPageCache } from './difficultyLevelsPageStorage'
 import { invalidateDifficultyOverviewCache } from './difficultyOverviewStorage'
-import { requestAuthenticatedJson } from './request'
 
 const API_BASE = buildApiUrl('/api/levels')
 // Re-exported so existing call sites keep working; the list itself lives in levels/constants.ts,
@@ -99,15 +97,7 @@ function toApiPayload(draft: LevelDraft) {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  try {
-    return await requestAuthenticatedJson<T>(`${API_BASE}${path}`, init)
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Level not found.') {
-      throw new Error('NOT_FOUND')
-    }
-
-    throw error
-  }
+  return requestAuthenticatedJson<T>(`${API_BASE}${path}`, init)
 }
 
 export function createEmptyLevelDraft(
@@ -218,7 +208,11 @@ export async function getLevelByDifficultyAndNumber(
 
     return includeAuthoringData ? fromEditorApiRecord(record) : fromApiRecord(record)
   } catch (error) {
-    if (error instanceof Error && error.message === 'NOT_FOUND') {
+    // A missing level is an answer, not a failure — the editor opens a blank draft on it. This used
+    // to be detected by comparing the server's message against the literal `'Level not found.'`,
+    // relayed through a `'NOT_FOUND'` sentinel, so rewording that string would have turned every
+    // missing level into an unhandled error.
+    if (error instanceof ApiError && error.isNotFound) {
       return null
     }
 

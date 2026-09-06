@@ -1,9 +1,8 @@
 import { DIFFICULTIES } from '../levels/constants'
 import type { Difficulty } from '../types'
-import { getStoredSessionRole } from './authSessionStorage'
-import { buildApiUrl } from './apiBase'
+import { createResource } from './cache'
+import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
 import { getGuestProgressByDifficulty } from './guestProgressStorage'
-import { requestAuthenticatedJson } from './request'
 
 type DifficultyOverviewItem = {
   difficulty: Difficulty
@@ -25,9 +24,6 @@ type LevelsOverviewResponse = {
 
 const PROGRESS_API_BASE = buildApiUrl('/api/progress')
 const LEVELS_API_BASE = buildApiUrl('/api/levels')
-
-let cachedOverview: DifficultyOverviewResponse | null = null
-let inFlightOverviewPromise: Promise<DifficultyOverviewResponse> | null = null
 
 function cloneOverview(overview: DifficultyOverviewResponse): DifficultyOverviewResponse {
   return {
@@ -58,35 +54,21 @@ async function loadGuestOverview(): Promise<DifficultyOverviewResponse> {
   }
 }
 
+/** One overview per player, so the key is a constant. In-flight dedup comes from the primitive. */
+const OVERVIEW_KEY = 'self'
+
+const overviewResource = createResource<string, DifficultyOverviewResponse>({
+  load: () =>
+    getStoredSessionRole() === 'guest'
+      ? loadGuestOverview()
+      : requestAuthenticatedJson<DifficultyOverviewResponse>(`${PROGRESS_API_BASE}/overview`),
+  clone: cloneOverview,
+})
+
 export async function getDifficultyOverview() {
-  if (cachedOverview) {
-    return cloneOverview(cachedOverview)
-  }
-
-  if (inFlightOverviewPromise) {
-    return inFlightOverviewPromise.then(cloneOverview)
-  }
-
-  inFlightOverviewPromise = (async () => {
-    const overview =
-      getStoredSessionRole() === 'guest'
-        ? await loadGuestOverview()
-        : await requestAuthenticatedJson<DifficultyOverviewResponse>(
-            `${PROGRESS_API_BASE}/overview`,
-          )
-
-    cachedOverview = overview
-    inFlightOverviewPromise = null
-    return cloneOverview(overview)
-  })().catch((error) => {
-    inFlightOverviewPromise = null
-    throw error
-  })
-
-  return inFlightOverviewPromise
+  return overviewResource.get(OVERVIEW_KEY)
 }
 
 export function invalidateDifficultyOverviewCache() {
-  cachedOverview = null
-  inFlightOverviewPromise = null
+  overviewResource.invalidate()
 }

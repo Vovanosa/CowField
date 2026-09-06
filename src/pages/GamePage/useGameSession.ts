@@ -5,6 +5,10 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 
+import {
+  MAX_LEVEL_TIME_SECONDS,
+  MIN_LEVEL_TIME_SECONDS,
+} from '../../../shared/apiLimits'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { playSoundEffect, startMusic, stopMusic } from '../../game/audio/audioManager'
 import {
@@ -367,14 +371,20 @@ export function useGameSession({
     const nextSolution = getSolutionState(currentLevel, resolvedMarks)
 
     if (!completionHandledRef.current && nextSolution.isSolved) {
-      // Floor at 1s: a sub-second solve would otherwise report 0, which the API rejects.
+      // Clamped to the API's own bounds (`shared/apiLimits.ts`), at both ends. A sub-second solve
+      // would otherwise report 0; and because the clock does not pause when the tab is hidden, a
+      // level left open for days would otherwise report a number the API refuses — losing the
+      // completion entirely rather than recording an implausible time.
       handleLevelSolved(
         currentLevel,
-        Math.max(
-          1,
-          nextStartedAt === null
-            ? elapsedSecondsRef.current
-            : Math.floor((interactionTimestampMs - nextStartedAt) / 1000),
+        Math.min(
+          MAX_LEVEL_TIME_SECONDS,
+          Math.max(
+            MIN_LEVEL_TIME_SECONDS,
+            nextStartedAt === null
+              ? elapsedSecondsRef.current
+              : Math.floor((interactionTimestampMs - nextStartedAt) / 1000),
+          ),
         ),
       )
     }

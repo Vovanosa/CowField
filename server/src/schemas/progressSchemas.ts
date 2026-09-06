@@ -1,10 +1,13 @@
 import { z } from 'zod'
 
+import { INT4_MAX, MAX_LEVEL_TIME_SECONDS, MIN_LEVEL_TIME_SECONDS } from '../../../shared/apiLimits'
 import { difficultySchema } from '../types/level'
 
 export const progressParamsSchema = z.object({
   difficulty: difficultySchema,
-  levelNumber: z.coerce.number().int().positive(),
+  // Bounded to `int4`: `level_number` is an `Int` column, so an out-of-range number used to reach
+  // Prisma and come back as a 500 instead of the 404 it actually is.
+  levelNumber: z.coerce.number().int().positive().max(INT4_MAX),
 })
 
 export const progressDifficultyParamsSchema = z.object({
@@ -13,8 +16,10 @@ export const progressDifficultyParamsSchema = z.object({
 
 export const completeLevelInputSchema = z.object({
   // At least a second: no board can be solved faster than its bulls can be tapped, so 0 only ever
-  // means a hand-crafted request. The client clamps to the same floor.
-  timeSeconds: z.number().int().min(1),
+  // means a hand-crafted request. At most a day: this is `increment`ed into a lifetime total, and an
+  // unbounded value both makes that total nonsense and, once near `int4`, makes every later
+  // completion fail to save. The client clamps to both ends — see `shared/apiLimits.ts`.
+  timeSeconds: z.number().int().min(MIN_LEVEL_TIME_SECONDS).max(MAX_LEVEL_TIME_SECONDS),
 })
 
 export type CompleteLevelInput = z.infer<typeof completeLevelInputSchema>

@@ -28,17 +28,30 @@ type Jwk = {
 
 /** Cached JWKS. Refetched when a token arrives with an unseen `kid`, i.e. after a key rotation. */
 let keyCache: Map<string, KeyObject> | null = null
-let keyCacheFetchedAt = 0
+
+/** When the JWKS was last *attempted*, whether or not it succeeded. See `getVerificationKey`. */
+let lastJwksAttemptAt = 0
 
 /** Don't refetch on every unknown kid — that would make bogus tokens a way to hammer Neon. */
 const MIN_JWKS_REFETCH_INTERVAL_MS = 60_000
+
+/**
+ * Ceiling on the JWKS fetch.
+ *
+ * Without one this `fetch` inherits Node's default, which is effectively "until the socket dies".
+ * Every authenticated request waits behind this call, so an unresponsive Neon would hang the API's
+ * whole authenticated surface rather than failing it.
+ */
+const JWKS_FETCH_TIMEOUT_MS = 5_000
 
 function decodeSegment(segment: string) {
   return Buffer.from(segment, 'base64url')
 }
 
 async function fetchJwks(neonAuthUrl: string) {
-  const response = await fetch(`${neonAuthUrl}/.well-known/jwks.json`)
+  const response = await fetch(`${neonAuthUrl}/.well-known/jwks.json`, {
+    signal: AbortSignal.timeout(JWKS_FETCH_TIMEOUT_MS),
+  })
 
   if (!response.ok) {
     throw new Error(`Neon Auth JWKS request failed with status ${response.status}.`)
@@ -67,16 +80,69 @@ async function getVerificationKey(neonAuthUrl: string, kid: string) {
     return keyCache.get(kid) ?? null
   }
 
-  const isStale = Date.now() - keyCacheFetchedAt > MIN_JWKS_REFETCH_INTERVAL_MS
-
-  if (keyCache && !isStale) {
-    return null
+  // The interval covers **failed** attempts too, which is the point of tracking the attempt rather
+  // than the last success. A failed fetch leaves `keyCache` null, and the old check only throttled
+  // when a cache already existed — so while Neon's JWKS was unreachable, every single authenticated
+  // request fired its own fetch at it, each now holding a socket for up to `JWKS_FETCH_TIMEOUT_MS`.
+  if (Date.now() - lastJwksAttemptAt <= MIN_JWKS_REFETCH_INTERVAL_MS) {
+    return keyCache?.get(kid) ?? null
   }
 
+  lastJwksAttemptAt = Date.now()
+
+  // Assigned only on success, so a transient failure keeps the keys we already had.
   keyCache = await fetchJwks(neonAuthUrl)
-  keyCacheFetchedAt = Date.now()
 
   return keyCache.get(kid) ?? null
+}
+
+/**
+ * Whether the token's `aud` says it was minted for us.
+ *
+ * Neon Auth is Better Auth underneath, whose JWT plugin defaults `aud` to the auth base URL — the
+ * same value it puts in `iss` — so the default rule here is "same host as the configured
+ * `NEON_AUTH_URL`", matching how `iss` is treated below.
+ *
+ * `NEON_AUTH_AUDIENCE` overrides that with an exact string, and tightens the rule: with it set, a
+ * token carrying no `aud` at all is rejected. Without it, an `aud` that is not URL-shaped is
+ * accepted, because there would be nothing to compare it against — Neon can configure a custom
+ * audience (a project id, say), and guessing wrong here would reject every real player's token.
+ * Set the variable to close that.
+ */
+function isAudienceAccepted(audience: unknown, neonAuthUrl: string) {
+  const audienceValues =
+    typeof audience === 'string'
+      ? [audience]
+      : Array.isArray(audience)
+        ? audience.filter((value): value is string => typeof value === 'string')
+        : []
+
+  const expectedAudience = process.env.NEON_AUTH_AUDIENCE?.trim()
+
+  if (expectedAudience) {
+    return audienceValues.includes(expectedAudience)
+  }
+
+  if (audienceValues.length === 0) {
+    return true
+  }
+
+  let expectedHost: string
+
+  try {
+    expectedHost = new URL(neonAuthUrl).host
+  } catch {
+    return true
+  }
+
+  return audienceValues.some((value) => {
+    try {
+      return new URL(value).host === expectedHost
+    } catch {
+      // Not a URL, so this is a custom audience we have no expectation for.
+      return true
+    }
+  })
 }
 
 /**
@@ -156,6 +222,7 @@ export async function verifyNeonJwt(
       name?: unknown
       exp?: unknown
       iss?: unknown
+      aud?: unknown
     }
 
     if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
@@ -176,6 +243,12 @@ export async function verifyNeonJwt(
       } catch {
         return null
       }
+    }
+
+    // A signed token still has to have been minted *for us*. Without this, any token Neon issued
+    // for another audience was accepted here purely because it verified.
+    if (!isAudienceAccepted(payload.aud, neonAuthUrl)) {
+      return null
     }
 
     return {

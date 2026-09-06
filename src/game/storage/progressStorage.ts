@@ -1,6 +1,5 @@
 import type { Difficulty, LevelProgress } from '../types'
-import { getStoredSessionRole } from './authSessionStorage'
-import { buildApiUrl } from './apiBase'
+import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
 import { invalidateDifficultyLevelsPageCache } from './difficultyLevelsPageStorage'
 import { invalidateDifficultyOverviewCache } from './difficultyOverviewStorage'
 import {
@@ -8,7 +7,6 @@ import {
   getGuestLevelProgress,
   getGuestProgressByDifficulty,
 } from './guestProgressStorage'
-import { requestAuthenticatedJson } from './request'
 import { invalidatePlayerStatisticsCache } from './statisticsStorage'
 
 const API_BASE = buildApiUrl('/api/progress')

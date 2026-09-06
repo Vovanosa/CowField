@@ -1,8 +1,19 @@
 import type { AuthSession } from '../types'
-import { buildApiUrl } from './apiBase'
+import {
+  ApiError,
+  buildApiUrl,
+  buildAuthenticatedHeaders,
+  clearBearerToken,
+  clearStoredSessionToken,
+  getBearerToken,
+  getStoredSessionRole,
+  getStoredSessionToken,
+  requestJson as requestApiJson,
+  setStoredSessionRole,
+  setStoredSessionToken,
+} from './http'
 import {
   exchangeNeonCodeForSession,
-  getNeonJwtToken,
   getNeonSession,
   resendNeonSignupVerification,
   requestNeonPasswordReset,
@@ -14,8 +25,6 @@ import {
 } from './neonAuthClient'
 
 const AUTH_API_BASE = buildApiUrl('/api/auth')
-const GUEST_SESSION_TOKEN_STORAGE_KEY = 'cowfield.guest-session-token'
-const SESSION_ROLE_STORAGE_KEY = 'cowfield.auth-session-role'
 
 type PasswordResetRequestResponse = {
   sent: boolean
@@ -25,108 +34,26 @@ type PasswordResetResponse = {
   reset: boolean
 }
 
-function buildHeaders(init?: HeadersInit) {
-  return {
-    'Content-Type': 'application/json',
-    ...(init ?? {}),
-  }
+// Re-exported so the many existing importers keep working. The definitions moved to `http/`, where
+// `bearer.ts` can read them without importing this module back.
+export {
+  buildAuthenticatedHeaders,
+  clearStoredSessionToken,
+  getStoredSessionRole,
+  getStoredSessionToken,
+  setStoredSessionToken,
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  // `headers` has to be the LAST key. With `...init` after it, a caller passing its own `headers`
-  // silently dropped every built one, including `Authorization` — it only ever worked because each
-  // such caller happened to spell out `Content-Type` too. `buildHeaders` already folds
-  // `init.headers` in, so nothing is lost. Same order as `requestAuthenticatedJson` in `./request.ts`.
-  const response = await fetch(`${AUTH_API_BASE}${path}`, {
+  return requestApiJson<T>(`${AUTH_API_BASE}${path}`, {
     ...init,
-    headers: buildHeaders(init?.headers),
-  })
-
-  if (!response.ok) {
-    let message = 'Request failed.'
-
-    try {
-      const payload = (await response.json()) as { message?: string }
-      message = payload.message ?? message
-    } catch {
-      // ignore parse error
-    }
-
-    throw new Error(message)
-  }
-
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  return (await response.json()) as T
-}
-
-export function getStoredSessionToken() {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  return window.localStorage.getItem(GUEST_SESSION_TOKEN_STORAGE_KEY)
-}
-
-export function setStoredSessionToken(token: string) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.setItem(GUEST_SESSION_TOKEN_STORAGE_KEY, token)
-}
-
-export function clearStoredSessionToken() {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.removeItem(GUEST_SESSION_TOKEN_STORAGE_KEY)
-  window.localStorage.removeItem(SESSION_ROLE_STORAGE_KEY)
-}
-
-export function getStoredSessionRole() {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const role = window.localStorage.getItem(SESSION_ROLE_STORAGE_KEY)
-
-  return role === 'admin' || role === 'user' || role === 'guest' ? role : null
-}
-
-function setStoredSessionRole(role: AuthSession['role']) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  window.localStorage.setItem(SESSION_ROLE_STORAGE_KEY, role)
-}
-
-/**
- * The bearer token for API calls: guests carry one our backend minted and stored, everyone else
- * carries a Neon-issued JWT the backend verifies against Neon's JWKS.
- *
- * `null` means "not signed in" — callers should skip the request rather than send an unauthenticated
- * one that can only 401.
- */
-async function resolveBearerToken() {
-  return getStoredSessionToken() ?? (await getNeonJwtToken())
-}
-
-export async function buildAuthenticatedHeaders(init?: HeadersInit) {
-  const token = await resolveBearerToken()
-
-  return buildHeaders({
-    ...(init ?? {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   })
 }
 
 async function resetAuthState() {
   clearStoredSessionToken()
+  clearBearerToken()
 
   try {
     await signOutNeon()
@@ -143,6 +70,8 @@ async function resetAuthState() {
 export async function login(email: string, password: string) {
   await resetAuthState()
   await signInWithNeonPassword(email, password)
+  // A new Neon session means a new JWT; anything cached belongs to whoever was signed in before.
+  clearBearerToken()
   const session = await getCurrentSession({ force: true })
 
   if (!session) {
@@ -155,6 +84,7 @@ export async function login(email: string, password: string) {
 export async function register(email: string, password: string) {
   await resetAuthState()
   await signUpWithNeonPassword(email, password)
+  clearBearerToken()
 
   const session = await getCurrentSession({ force: true })
 
@@ -170,6 +100,9 @@ export async function loginAsGuest() {
     method: 'POST',
   })
 
+  // A guest's stored token takes precedence over any cached Neon JWT, but drop the cache anyway so
+  // nothing from a previous account can be sent if the guest token is later cleared.
+  clearBearerToken()
   setStoredSessionToken(session.token)
   setStoredSessionRole(session.role)
   return session
@@ -189,6 +122,13 @@ type SessionLookupOptions = {
  * Makes **no network requests at all** when the browser has nothing to restore. Without that,
  * every visit by a signed-out player produced two guaranteed failures: a `401` from Neon's `/token`
  * and then a `401` from our `/me`, called with no `Authorization` header whatsoever.
+ *
+ * **Only a refusal erases the stored session.** This used to `catch { clearStoredSessionToken() }`
+ * around everything, and `clearStoredSessionToken` drops the remembered *role* as well as the token
+ * — so a single load while offline, or during one 500, left nothing to restore from, and the guard
+ * above then made every later visit return `null` without even asking. The sign-out was permanent
+ * and silent. Now a failure to reach the server leaves the browser's memory of the session intact,
+ * and the next load picks it back up.
  */
 export async function getCurrentSession({ force = false }: SessionLookupOptions = {}) {
   const storedRole = getStoredSessionRole()
@@ -203,22 +143,34 @@ export async function getCurrentSession({ force = false }: SessionLookupOptions 
     return null
   }
 
-  const token = await resolveBearerToken()
+  let token: string | null
+
+  try {
+    token = await getBearerToken()
+  } catch {
+    // Could not ask Neon. Says nothing about whether the session is valid — keep it.
+    return null
+  }
 
   if (!token) {
+    // Neon answered, and the answer was that there is no session here.
     clearStoredSessionToken()
     return null
   }
 
   try {
     const session = await requestJson<AuthSession>('/me', {
-      headers: buildHeaders({ Authorization: `Bearer ${token}` }),
+      headers: { Authorization: `Bearer ${token}` },
     })
 
     setStoredSessionRole(session.role)
     return session
-  } catch {
-    clearStoredSessionToken()
+  } catch (error) {
+    if (error instanceof ApiError && error.isUnauthorized) {
+      clearStoredSessionToken()
+      clearBearerToken()
+    }
+
     return null
   }
 }
@@ -247,6 +199,7 @@ export async function logout() {
     }
 
     clearStoredSessionToken()
+    clearBearerToken()
   }
 }
 
@@ -288,6 +241,9 @@ export async function completeGoogleLogin(code?: string) {
   if (!neonSession) {
     throw new Error('Google login failed.')
   }
+
+  // The session Neon just established is a different identity from anything cached.
+  clearBearerToken()
 
   const session = await getCurrentSession({ force: true })
 
