@@ -80,9 +80,21 @@
   transform: scale(0.98);
 }
 
+/*
+  The keyboard cursor, not a polite hint.
+
+  With arrow-key play the focused cell is the only thing telling the player where they are on the
+  board, so this is deliberately stronger than the app's usual focus ring — the old
+  `rgba(…, 0.34)` at 2px was near-invisible against a coloured pen.
+
+  The offset is **negative** because `.boardPreviewGrid` clips (`overflow: hidden`): a positive
+  offset is cut off on every edge cell, which is exactly where a player navigating by arrows most
+  needs to see it. `z-index` puts it above the intersection dots, which sit at 2.
+*/
 .boardCell:focus-visible {
-  outline: 2px solid rgba(158, 116, 49, 0.34);
-  outline-offset: 3px;
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: -3px;
+  z-index: 3;
 }
 
 .boardCell:disabled {
@@ -159,4 +171,37 @@
     width: 74%;
     height: 74%;
   }
+}
+
+/* The cramped-board notice. Sits above the grid inside the board's own frame so it moves with the
+   board rather than pushing the page around, and it is removable — see `useCrampedBoardNotice`. */
+.crampedNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-glass-soft);
+}
+
+.crampedNoticeText {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.crampedNoticeDismiss {
+  flex-shrink: 0;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-accent-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
 }

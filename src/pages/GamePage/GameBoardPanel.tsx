@@ -28,6 +28,7 @@ type GameBoardPanelProps = {
   onCellPointerDown: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellPointerEnter: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellPointerUp: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
+  onCellActivate: (cellIndex: number, timestampMs: number) => void
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
@@ -50,6 +51,7 @@ export function GameBoardPanel({
   onCellPointerDown,
   onCellPointerEnter,
   onCellPointerUp,
+  onCellActivate,
   t,
 }: GameBoardPanelProps) {
   return (
@@ -141,6 +143,7 @@ export function GameBoardPanel({
             onCellPointerDown={onCellPointerDown}
             onCellPointerEnter={onCellPointerEnter}
             onCellPointerUp={onCellPointerUp}
+            onCellActivate={onCellActivate}
           />
         </div>
       </Panel>

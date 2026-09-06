@@ -12,7 +12,7 @@ type GameCompletionDialogProps = {
   previousBestTimeSeconds: number | null
   hasNextLevel: boolean
   saveState: 'saving' | 'saved' | 'failed'
-  onBackdropPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void
+  onClose: () => void
   onBackToLevels: () => void
   onNextLevel: () => void
   onRetrySave: () => void
@@ -26,7 +26,7 @@ export function GameCompletionDialog({
   bestTimeSeconds,
   hasNextLevel,
   saveState,
-  onBackdropPointerDown,
+  onClose,
   onBackToLevels,
   onNextLevel,
   onRetrySave,
@@ -38,7 +38,7 @@ export function GameCompletionDialog({
     <Dialog
       title={t('Level complete')}
       labelledById="game-completion-title"
-      onBackdropPointerDown={onBackdropPointerDown}
+      onClose={onClose}
       className={styles.completionDialog}
       descriptionClassName={styles.completionDescription}
       actionsClassName={styles.completionActions}

@@ -222,26 +222,6 @@ export function useGameSession({
   }, [isGuest])
 
   useEffect(() => {
-    if (!completionModal?.isOpen) {
-      return
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setCompletionModal((currentModal) =>
-          currentModal ? { ...currentModal, isOpen: false } : null,
-        )
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [completionModal])
-
-  useEffect(() => {
     if (runStartedAt === null) {
       return
     }
@@ -539,6 +519,18 @@ export function useGameSession({
     playSoundEffect(dragMode === 'add-dot' ? 'placeDot' : 'clearCell')
   }
 
+  /**
+   * The keyboard path into a cell.
+   *
+   * Calls the *same* `handleCellClick` a tap resolves to, rather than reimplementing the cycle —
+   * so Enter on a cell and a tap on a cell cannot drift apart. The drag machinery is untouched:
+   * there is no keyboard equivalent of drag-paint, and pressing Enter on each cell reaches the same
+   * board.
+   */
+  function handleCellActivate(cellIndex: number, timestampMs: number) {
+    handleCellClick(cellIndex, timestampMs)
+  }
+
   function handleCellPointerDown(
     event: ReactPointerEvent<HTMLButtonElement>,
     cellIndex: number,
@@ -674,12 +666,6 @@ export function useGameSession({
     setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
   }
 
-  function handleCompletionBackdropClick(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.target === event.currentTarget) {
-      handleCloseCompletionModal()
-    }
-  }
-
   return {
     level,
     isLoading,
@@ -695,12 +681,13 @@ export function useGameSession({
     activeCellIndex,
     invalidBullIndexes: solutionState?.invalidBullIndexes ?? new Set<number>(),
     remainingBulls,
+    handleCellActivate,
     handleCellPointerDown,
     handleCellPointerEnter,
     handleCellPointerUp,
     handleRestartBoard,
     handleUndoMove,
-    handleCompletionBackdropClick,
+    handleCloseCompletionModal,
     handleRetrySaveCompletion,
     setCompletionModal,
   }

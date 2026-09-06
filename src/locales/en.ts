@@ -24,6 +24,22 @@ const en = {
   Hard: 'Hard',
   'Home menu': 'Home menu',
   'Puzzle board': 'Puzzle board',
+  // Cell names. Every one of these describes something conveyed only visually today — the pen by
+  // its colour, the mark by an `aria-hidden` icon, the rule break by an animation.
+  'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}':
+    'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}',
+  'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}. Breaks a rule.':
+    'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}. Breaks a rule.',
+  'Row {{row}}, column {{column}}': 'Row {{row}}, column {{column}}',
+  'Pen {{pen}}': 'Pen {{pen}}',
+  'No pen': 'No pen',
+  'This board is cramped on a screen this size.':
+    'This board is cramped on a screen this size.',
+  'Turning your phone sideways gives it more room.':
+    'Turning your phone sideways gives it more room.',
+  'Light levels are a better fit for narrow screens.':
+    'Light levels are a better fit for narrow screens.',
+  Dismiss: 'Dismiss',
   Play: 'Play',
   About: 'About',
   Statistics: 'Statistics',

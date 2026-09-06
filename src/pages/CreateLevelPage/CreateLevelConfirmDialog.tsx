@@ -27,6 +27,9 @@ export function CreateLevelConfirmDialog({
     <Dialog
       role="alertdialog"
       title={title}
+      // Escape and a backdrop click both mean Cancel: dismissing the question is choosing to keep
+      // the draft, which is the safe half of a one-way door.
+      onClose={onCancel}
       labelledById="confirm-discard-title"
       describedById="confirm-discard-description"
       description={description}

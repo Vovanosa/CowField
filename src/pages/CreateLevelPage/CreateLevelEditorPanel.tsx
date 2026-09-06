@@ -1,6 +1,7 @@
 import { BadgeCheck, RefreshCw, Save, SquarePen, Trash2 } from 'lucide-react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
+import { releaseImplicitPointerCapture } from '../../components/GameBoard/GameBoard.keyboard'
 import { CowIcon } from '../../components/icons'
 import { ToolChip } from '../../components/ToolChip'
 import { Button, Panel } from '../../components/ui'
@@ -136,14 +137,20 @@ export function CreateLevelEditorPanel({
             ))}
           </div>
 
-          <div className={styles.editorBoard} aria-label={t('Level color editor')}>
+          <div className={styles.editorBoard} role="group" aria-label={t('Level color editor')}>
             <div
               className={styles.editorBoardGrid}
               style={{
                 gridTemplateColumns: `repeat(${draft.gridSize}, minmax(0, 1fr))`,
               }}
             >
-              {draft.pensByCell.map((colorId, cellIndex) => (
+              {draft.pensByCell.map((colorId, cellIndex) => {
+                const row = Math.floor(cellIndex / draft.gridSize) + 1
+                const column = (cellIndex % draft.gridSize) + 1
+                const pen = colorId === 0 ? t('No pen') : t('Pen {{pen}}', { pen: colorId })
+                const bull = draft.cowsByCell[cellIndex] ? `. ${t('bull')}` : ''
+
+                return (
                 <button
                   key={cellIndex}
                   type="button"
@@ -152,7 +159,13 @@ export function CreateLevelEditorPanel({
                     colorId === 0 ? styles.editorCellEmpty : '',
                   ].filter(Boolean).join(' ')}
                   style={{ backgroundColor: getColorForId(colorId) }}
-                  onPointerDown={(event) => onCellPointerDown(event, cellIndex)}
+                  // The pen number is rendered as text in the cell, but the bull is an
+                  // `aria-hidden` icon and an unpainted cell shows nothing at all.
+                  aria-label={`${t('Row {{row}}, column {{column}}', { row, column })}. ${pen}${bull}`}
+                  onPointerDown={(event) => {
+                    releaseImplicitPointerCapture(event)
+                    onCellPointerDown(event, cellIndex)
+                  }}
                   onPointerEnter={() => onCellPointerEnter(cellIndex)}
                   onPointerUp={onCellPointerUp}
                   onDragStart={(event) => event.preventDefault()}
@@ -160,7 +173,8 @@ export function CreateLevelEditorPanel({
                   {colorId === 0 ? '' : <span className={styles.editorCellLabel}>{colorId}</span>}
                   {draft.cowsByCell[cellIndex] ? <CowIcon className={styles.cowMarker} /> : null}
                 </button>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>

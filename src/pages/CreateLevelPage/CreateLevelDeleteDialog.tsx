@@ -24,6 +24,9 @@ export function CreateLevelDeleteDialog({
     <Dialog
       role="alertdialog"
       title={title}
+      // Dismissing means "don't delete" — but not while the delete is already in flight, where
+      // closing would hide a request the player has no other way to follow.
+      onClose={isDeleting ? undefined : onCancel}
       labelledById="delete-level-title"
       describedById="delete-level-description"
       description={description}

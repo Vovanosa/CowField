@@ -1,5 +1,4 @@
 import { SquarePen } from 'lucide-react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -38,12 +37,13 @@ function GamePageScreen() {
     activeCellIndex,
     invalidBullIndexes,
     remainingBulls,
+    handleCellActivate,
     handleCellPointerDown,
     handleCellPointerEnter,
     handleCellPointerUp,
     handleRestartBoard,
     handleUndoMove,
-    handleCompletionBackdropClick: handleCompletionBackdropClose,
+    handleCloseCompletionModal,
     handleRetrySaveCompletion,
     setCompletionModal,
   } = useGameSession({
@@ -167,12 +167,6 @@ function GamePageScreen() {
     )
   }
 
-  function handleCompletionBackdropClick(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.target === event.currentTarget) {
-      handleCompletionBackdropClose(event)
-    }
-  }
-
   function handleBackToLevels() {
     setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
     navigate(`/levels/${difficulty}`)
@@ -222,6 +216,7 @@ function GamePageScreen() {
         onCellPointerDown={handleCellPointerDown}
         onCellPointerEnter={handleCellPointerEnter}
         onCellPointerUp={handleCellPointerUp}
+        onCellActivate={handleCellActivate}
         t={t}
       />
 
@@ -235,7 +230,7 @@ function GamePageScreen() {
           previousBestTimeSeconds={completionModal.previousBestTimeSeconds}
           saveState={completionModal.saveState}
           hasNextLevel={hasNextLevel}
-          onBackdropPointerDown={handleCompletionBackdropClick}
+          onClose={handleCloseCompletionModal}
           onBackToLevels={handleBackToLevels}
           onNextLevel={handleNextLevel}
           onRetrySave={handleRetrySaveCompletion}

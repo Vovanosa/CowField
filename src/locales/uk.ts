@@ -24,6 +24,20 @@
   Hard: 'Складна',
   'Home menu': 'Головне меню',
   'Puzzle board': 'Ігрове поле',
+  'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}':
+    'Рядок {{row}}, стовпець {{column}}, загін {{pen}}. {{state}}',
+  'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}. Breaks a rule.':
+    'Рядок {{row}}, стовпець {{column}}, загін {{pen}}. {{state}}. Порушує правило.',
+  'Row {{row}}, column {{column}}': 'Рядок {{row}}, стовпець {{column}}',
+  'Pen {{pen}}': 'Загін {{pen}}',
+  'No pen': 'Без загону',
+  'This board is cramped on a screen this size.':
+    'На екрані такого розміру поле надто тісне.',
+  'Turning your phone sideways gives it more room.':
+    'Якщо повернути телефон горизонтально, місця стане більше.',
+  'Light levels are a better fit for narrow screens.':
+    'Легкі рівні краще підходять для вузьких екранів.',
+  Dismiss: 'Сховати',
   Play: 'Грати',
   About: 'Про гру',
   Statistics: 'Статистика',
