@@ -19,10 +19,6 @@ function requireNeonAuth() {
   return neonAuthClient
 }
 
-export function isNeonAuthConfigured() {
-  return neonAuthClient !== null
-}
-
 export async function getNeonSession() {
   if (!neonAuthClient) {
     return null

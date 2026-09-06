@@ -3,11 +3,17 @@ import { z } from 'zod'
 export const accountRoleSchema = z.enum(['admin', 'user'])
 export const sessionRoleSchema = z.enum(['admin', 'user', 'guest'])
 
+/**
+ * A row of `users`.
+ *
+ * No `passwordHash` and no `googleId`: Neon Auth owns credentials, the browser authenticates
+ * against it directly, and this API only verifies the resulting JWT. Both columns were permanently
+ * null and are gone from the database as of
+ * `20260906_drop_dead_credential_columns`.
+ */
 export const userRecordSchema = z.object({
   id: z.string(),
   email: z.string().email(),
-  passwordHash: z.string().nullable().default(null),
-  googleId: z.string().nullable().default(null),
   role: accountRoleSchema,
   displayName: z.string(),
   createdAt: z.string(),
@@ -26,15 +32,6 @@ export const sessionRecordSchema = z.object({
   // fresh was pure cost, since no code ever read it.
   updatedAt: z.string(),
   /** Absolute expiry, set once at creation. See `auth/sessionExpiry.ts`. */
-  expiresAt: z.string(),
-})
-
-export const passwordResetTokenRecordSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  email: z.string().email(),
-  token: z.string(),
-  createdAt: z.string(),
   expiresAt: z.string(),
 })
 
@@ -66,4 +63,3 @@ export type AccountRole = z.infer<typeof accountRoleSchema>
 export type SessionRole = z.infer<typeof sessionRoleSchema>
 export type UserRecord = z.infer<typeof userRecordSchema>
 export type SessionRecord = z.infer<typeof sessionRecordSchema>
-export type PasswordResetTokenRecord = z.infer<typeof passwordResetTokenRecordSchema>

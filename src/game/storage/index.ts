@@ -15,7 +15,6 @@ export {
 export {
   applyThemeMode,
   getDefaultPlayerSettings,
-  getPlayerSettings,
   getPlayerSettingsSnapshot,
   savePlayerSettings,
   subscribeToPlayerSettings,

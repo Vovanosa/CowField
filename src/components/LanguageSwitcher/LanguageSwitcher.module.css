@@ -1,11 +1,16 @@
+/* Positioning belongs to `.app-shell-controls` now, which holds this and the profile menu. */
 .languageSwitcher {
-  position: absolute;
-  top: var(--space-8);
-  right: var(--space-8);
-  z-index: 10;
   display: inline-flex;
   align-items: flex-start;
   gap: 10px;
+}
+
+/* Language and theme are duplicated into Settings below this width (`SettingsPage` gates on the
+   same 768px), so the pills come out of the corner and leave it to the profile menu. */
+@media (max-width: 768px) {
+  .languageSwitcher {
+    display: none;
+  }
 }
 
 .languagePicker {

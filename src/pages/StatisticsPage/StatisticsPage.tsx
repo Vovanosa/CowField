@@ -139,7 +139,7 @@ export function StatisticsPage() {
         <PageHeader
           backTo="/"
           backLabel={t('Back to home')}
-          eyebrow={t(' ')}
+          eyebrow={t('Statistics')}
           title={t('Player statistics')}
         />
 

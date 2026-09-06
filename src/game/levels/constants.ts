@@ -1,8 +1,5 @@
 import type { Difficulty } from '../types'
 
-export const GRID_SIZE = 10
-export const TOTAL_LEVEL_SLOTS = 12
-
 export const COLOR_PALETTE = [
   'var(--color-pen-1)',
   'var(--color-pen-2)',

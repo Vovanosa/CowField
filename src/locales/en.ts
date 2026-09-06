@@ -162,6 +162,7 @@ const en = {
   'Create/Edit Level': 'Create/Edit Level',
   Generate: 'Generate',
   'Validate level': 'Validate level',
+  'Validating...': 'Validating...',
   'Save level': 'Save level',
   'Clear board': 'Clear board',
   'Pick a color, then click cells to assign them to that region. Every cell must belong to some color before the level can be saved, and cows should be placed inside each color. This board needs exactly {{gridSize}} connected colors and {{requiredCowCount}} cows to be on the board.':

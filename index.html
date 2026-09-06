@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/Cow.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CowField</title>
+    <script>
+      ;(function () {
+        try {
+          var stored = window.localStorage.getItem('cowfield.player-settings')
+          var isDark = stored ? JSON.parse(stored).darkModeEnabled === true : false
+          document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

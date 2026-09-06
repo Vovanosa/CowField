@@ -55,9 +55,9 @@ export class PlayerProgressService {
    * the previous level's progress together, and one transactional write covering the progress row
    * and both lifetime counters.
    *
-   * The unlock check is not a formality — the client enforces order too
-   * (`src/game/progression.ts`), but that is a UX affordance and this endpoint is reachable
-   * directly. Guests never arrive here: the route is behind `createRequireNonGuestMiddleware`,
+   * The unlock check is not a formality — the levels page enforces order too, by disabling the
+   * card, but that is a UX affordance and this endpoint is reachable directly. Guests never arrive
+   * here: the route is behind `createRequireNonGuestMiddleware`,
    * because they hold no backend rows for any of this to read or write.
    */
   async completeLevel(

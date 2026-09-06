@@ -29,20 +29,21 @@ enum Difficulty {
   hard
 }
 
+/// Neon Auth owns credentials. `password_hash`, `google_id` and the whole
+/// `password_reset_tokens` table were dropped in 20260906_drop_dead_credential_columns: nothing
+/// had written a value to any of them since the migration to Neon, and the server was threading
+/// them through as permanent nulls.
 model User {
-  id                  String               @id @default(uuid())
-  email               String               @unique
-  passwordHash        String?              @map("password_hash")
-  googleId            String?              @unique @map("google_id")
-  role                AccountRole
-  displayName         String               @map("display_name")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  levelProgress       LevelProgress[]
-  statisticsTotals    PlayerStatisticsTotal[]
-  authoredLevels      Level[]
+  id               String                  @id @default(uuid())
+  email            String                  @unique
+  role             AccountRole
+  displayName      String                  @map("display_name")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+  sessions         Session[]
+  levelProgress    LevelProgress[]
+  statisticsTotals PlayerStatisticsTotal[]
+  authoredLevels   Level[]
 
   @@map("users")
 }
@@ -65,19 +66,6 @@ model Session {
   @@index([userId], map: "sessions_user_id_idx")
   @@index([expiresAt], map: "sessions_expires_at_idx")
   @@map("sessions")
-}
-
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  email     String
-  token     String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  expiresAt DateTime @map("expires_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId], map: "password_reset_tokens_user_id_idx")
-  @@map("password_reset_tokens")
 }
 
 model LevelProgress {

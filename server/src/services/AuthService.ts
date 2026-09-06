@@ -196,8 +196,6 @@ export class AuthService {
     const nextUser: UserRecord = {
       id: existingUser?.id ?? claims.sub,
       email: normalizedEmail,
-      passwordHash: existingUser?.passwordHash ?? null,
-      googleId: existingUser?.googleId ?? null,
       role: normalizedEmail === this.adminEmail ? 'admin' : 'user',
       displayName:
         typeof claims.name === 'string' && claims.name.trim()

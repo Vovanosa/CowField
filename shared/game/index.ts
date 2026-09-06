@@ -15,7 +15,6 @@ export {
   type PenBoard,
 } from './board'
 export {
-  countBoardSolutions,
   solveBoard,
   type SolveOptions,
   type SolveResult,

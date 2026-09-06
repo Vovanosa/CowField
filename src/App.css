@@ -28,8 +28,14 @@
   padding: var(--space-8);
 }
 
-.app-shell-floating-controls {
-  display: contents;
+.app-shell-controls {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .route-stage {
@@ -66,10 +72,14 @@
   }
 
   .app-content {
-    padding: var(--space-5);
+    /* Reserves the band the control row sits in. This lived in `HomePage.module.css` while the
+       profile menu was home-only; every page needs it now, and a page-level reserve would have to
+       be repeated five times to say the same thing. */
+    padding: calc(var(--space-5) + 44px + var(--space-3)) var(--space-5) var(--space-5);
   }
 
-  .app-shell-floating-controls {
-    display: none;
+  .app-shell-controls {
+    top: var(--space-5);
+    right: var(--space-5);
   }
 }

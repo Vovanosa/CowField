@@ -215,8 +215,3 @@ export function solveBoard(
 
   return { count, reachedLimit, solutions }
 }
-
-/** Convenience wrapper for the common "is this board uniquely solvable?" question. */
-export function countBoardSolutions(board: PenBoard, bullsPerGroup: number, limit = DEFAULT_LIMIT) {
-  return solveBoard(board, bullsPerGroup, { limit }).count
-}

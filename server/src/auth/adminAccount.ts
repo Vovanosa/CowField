@@ -32,13 +32,11 @@ export async function enforceConfiguredAdminAccount(
   let configuredAdmin = users.find((user) => user.email === normalizedAdminEmail) ?? null
 
   if (!configuredAdmin) {
-    // No password is set. Passwords live in Neon Auth, so a local hash would be both unused and a
-    // standing credential — the admin signs in through Neon like everyone else.
+    // No password anywhere on the row: passwords live in Neon Auth, and the columns that used to
+    // hold one are gone. The admin signs in through Neon like everyone else.
     configuredAdmin = {
       id: randomUUID(),
       email: normalizedAdminEmail,
-      passwordHash: null,
-      googleId: null,
       role: 'admin',
       displayName: 'Admin',
       createdAt: timestamp,

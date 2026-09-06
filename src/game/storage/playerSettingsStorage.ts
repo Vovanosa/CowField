@@ -169,12 +169,6 @@ export function subscribeToPlayerSettings(listener: () => void) {
   }
 }
 
-export async function getPlayerSettings() {
-  const settings = readStoredPlayerSettings()
-  setCurrentPlayerSettings(settings)
-  return settings
-}
-
 /**
  * Applies a settings change, and reports whether it was written to disk.
  *

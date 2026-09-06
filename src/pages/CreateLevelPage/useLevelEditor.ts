@@ -9,7 +9,11 @@ import {
   getLevelByDifficultyAndNumber,
   saveLevel,
 } from '../../game/storage/levelStorage'
-import { getBullsPerGroupForDifficulty, validateLevelDraft } from '../../game/validation'
+import {
+  getBullsPerGroupForDifficulty,
+  validateLevelDraftAsync,
+  type LevelValidationResult,
+} from '../../game/validation'
 import type { Difficulty, LevelDraft } from '../../game/types'
 import {
   applyToolToDraft,
@@ -43,8 +47,12 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [pendingDiscard, setPendingDiscard] = useState<PendingDiscard | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
   const dragStateRef = useRef(createEditorDragState())
   const isGeneratingRef = useRef(false)
+  // A ref as well as state, for the same reason `isGenerating` has one: the guard has to hold
+  // against a second click in the same tick, before React has re-rendered with the flag set.
+  const isValidatingRef = useRef(false)
 
   // `t` is only needed for a fallback message, and its identity changes when the language changes.
   // Keeping it out of the load effect's deps matters: with it in there, switching language reloaded
@@ -215,8 +223,16 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
       return
     }
 
+    if (isValidatingRef.current) {
+      return
+    }
+
     const nextDraft = draft satisfies LevelDraft
-    const validationResult = validateLevelDraft(nextDraft)
+    const validationResult = await runValidation(nextDraft)
+
+    if (!validationResult) {
+      return
+    }
 
     if (!validationResult.isValid) {
       setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
@@ -288,7 +304,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
    * How many ways the puzzle can be finished, phrased for the author. A level worth shipping has
    * exactly one solution; anything higher means players can reach the end a different way.
    */
-  function describeSolutionCount(result: ReturnType<typeof validateLevelDraft>) {
+  function describeSolutionCount(result: LevelValidationResult) {
     if (result.solutionCount === null) {
       return null
     }
@@ -306,12 +322,41 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
         })
   }
 
-  function handleValidate() {
-    if (!draft) {
+  /**
+   * Runs the solution search in a worker and keeps the pending flag honest.
+   *
+   * Returns `null` when the run failed outright — the toast is already set, and both callers should
+   * simply stop. Shared by Validate and Save so the two cannot disagree about what a draft is.
+   */
+  async function runValidation(nextDraft: LevelDraft) {
+    isValidatingRef.current = true
+    setIsValidating(true)
+
+    try {
+      return await validateLevelDraftAsync(nextDraft)
+    } catch (error) {
+      setToast(
+        createWarningToast(
+          error instanceof Error ? error.message : t('Failed to load level data.'),
+        ),
+      )
+      return null
+    } finally {
+      isValidatingRef.current = false
+      setIsValidating(false)
+    }
+  }
+
+  async function handleValidate() {
+    if (!draft || isValidatingRef.current) {
       return
     }
 
-    const validationResult = validateLevelDraft(draft)
+    const validationResult = await runValidation(draft)
+
+    if (!validationResult) {
+      return
+    }
 
     if (!validationResult.isValid) {
       setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
@@ -428,6 +473,7 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     requiredCowCount,
     hasUnsavedChanges,
     isGenerating,
+    isValidating,
     pendingDiscard,
     handleCancelDiscard,
     handleConfirmDiscard,

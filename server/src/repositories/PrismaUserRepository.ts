@@ -6,8 +6,6 @@ import type { UserRepository } from './interfaces'
 function toUserRecord(user: {
   id: string
   email: string
-  passwordHash: string | null
-  googleId: string | null
   role: AccountRole
   displayName: string
   createdAt: Date
@@ -16,8 +14,6 @@ function toUserRecord(user: {
   return {
     id: user.id,
     email: user.email,
-    passwordHash: user.passwordHash,
-    googleId: user.googleId,
     role: user.role,
     displayName: user.displayName,
     createdAt: user.createdAt.toISOString(),
@@ -69,8 +65,6 @@ export class PrismaUserRepository implements UserRepository {
       },
       update: {
         email: user.email,
-        passwordHash: user.passwordHash,
-        googleId: user.googleId,
         role: user.role,
         displayName: user.displayName,
         createdAt: new Date(user.createdAt),
@@ -79,8 +73,6 @@ export class PrismaUserRepository implements UserRepository {
       create: {
         id: user.id,
         email: user.email,
-        passwordHash: user.passwordHash,
-        googleId: user.googleId,
         role: user.role,
         displayName: user.displayName,
         createdAt: new Date(user.createdAt),

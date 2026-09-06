@@ -18,6 +18,7 @@ type CreateLevelEditorPanelProps = {
   colorOptions: number[]
   isDeleting: boolean
   isGenerating: boolean
+  isValidating: boolean
   onGenerate: () => void
   onValidate: () => void
   onSave: () => void
@@ -38,6 +39,7 @@ export function CreateLevelEditorPanel({
   colorOptions,
   isDeleting,
   isGenerating,
+  isValidating,
   onGenerate,
   onValidate,
   onSave,
@@ -49,6 +51,8 @@ export function CreateLevelEditorPanel({
   onCellPointerUp,
   t,
 }: CreateLevelEditorPanelProps) {
+  const isBusy = isGenerating || isValidating
+
   return (
     <section className={[styles.layout, styles.layoutSingle].join(' ')}>
       <Panel className={styles.editorPanel}>
@@ -59,25 +63,30 @@ export function CreateLevelEditorPanel({
 
         <div className={styles.editorSection}>
           <div className={styles.editorActions}>
+            {/*
+              Generate and Validate both run the same backtracking search in a worker, and Save runs
+              Validate first — so all three are busy whenever either flag is set. Before the worker
+              existed the tab was frozen instead, which disabled them by force.
+            */}
             <div className={styles.editorActionsGroup}>
               <Button
                 onClick={onGenerate}
-                disabled={isGenerating}
+                disabled={isBusy}
                 leadingIcon={<RefreshCw size={18} />}
               >
                 {isGenerating ? t('Generating...') : t('Generate')}
               </Button>
               <Button
                 onClick={onValidate}
-                disabled={isGenerating}
+                disabled={isBusy}
                 leadingIcon={<BadgeCheck size={18} />}
               >
-                {t('Validate level')}
+                {isValidating ? t('Validating...') : t('Validate level')}
               </Button>
               <Button
                 variant="primary"
                 onClick={onSave}
-                disabled={isGenerating}
+                disabled={isBusy}
                 leadingIcon={<Save size={18} />}
               >
                 {t('Save level')}
@@ -85,7 +94,7 @@ export function CreateLevelEditorPanel({
             </div>
 
             <div className={[styles.editorActionsGroup, styles.editorActionsGroupRight].join(' ')}>
-              <Button onClick={onClearBoard} disabled={isGenerating}>
+              <Button onClick={onClearBoard} disabled={isBusy}>
                 {t('Clear board')}
               </Button>
               {routeLevelNumber ? (

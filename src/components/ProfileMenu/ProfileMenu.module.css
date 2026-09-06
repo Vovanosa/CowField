@@ -1,8 +1,6 @@
+/* Anchors its own dropdown; `.app-shell-controls` places the row. */
 .profileMenu {
-  position: absolute;
-  top: var(--space-8);
-  left: var(--space-8);
-  z-index: 10;
+  position: relative;
 }
 
 .profileTrigger {
@@ -30,13 +28,19 @@
 }
 
 .profileTriggerText {
+  /* A long display name would otherwise widen the control row until it reached the page title. */
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 600;
 }
 
 .profileDropdown {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
+  /* Opens leftwards: the trigger now sits near the right edge of the frame. */
+  right: 0;
   width: min(280px, calc(100vw - 48px));
   display: flex;
   flex-direction: column;
@@ -103,9 +107,8 @@
 }
 
 @media (max-width: 720px) {
-  .profileMenu {
-    top: var(--space-5);
-    left: var(--space-5);
+  .profileTriggerText {
+    max-width: 8ch;
   }
 
   .profileDropdown {

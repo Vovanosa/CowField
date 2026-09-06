@@ -14,6 +14,13 @@ function toPrismaDifficulty(difficulty: AppDifficulty): Difficulty {
   return difficulty as Difficulty
 }
 
+/** One row of the `DISTINCT ON` read in `getStatisticsSummaries`. */
+type FastestLevelRow = {
+  difficulty: string
+  levelNumber: number
+  bestTimeSeconds: number | null
+}
+
 /** A difficulty the player has not completed anything in. `groupBy` omits those rows entirely. */
 function createEmptyDifficultyStatisticsSummary(
   difficulty: AppDifficulty,
@@ -91,9 +98,16 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
    * extra.
    *
    * The second query exists because `groupBy` can give the *minimum* best time but not the level
-   * number it belongs to. `distinct` on a sorted `findMany` returns the first row per difficulty,
-   * which — ordered by time then level number — is exactly the fastest level, ties broken by the
-   * lower number.
+   * number it belongs to. `DISTINCT ON (difficulty)` over a sorted read returns the first row per
+   * difficulty, which — ordered by time then level number — is exactly the fastest level, ties
+   * broken by the lower number.
+   *
+   * **It is raw SQL because Prisma's `distinct` never reaches the database.** Measured 2026-09-06
+   * against Prisma 7.5 by capturing the compiled SQL with a stub driver adapter: the statement
+   * emitted for `findMany({ distinct: ['difficulty'] })` is byte-identical to the one emitted
+   * without it. The filtering happens in the client, so this read was fetching **every completed
+   * row** — up to 800 for a player who has finished the library — to return four. See plan.md item
+   * 74. The datasource is hard-wired to postgresql, so `DISTINCT ON` is safe to depend on.
    */
   async getStatisticsSummaries(actorKey: string): Promise<ProgressStatisticsSummaries> {
     const actor = await resolveActorReference(this.prisma, actorKey)
@@ -123,16 +137,19 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
           bestTimeSeconds: true,
         },
       }),
-      this.prisma.levelProgress.findMany({
-        where: completedFilter,
-        orderBy: [{ difficulty: 'asc' }, { bestTimeSeconds: 'asc' }, { levelNumber: 'asc' }],
-        distinct: ['difficulty'],
-        select: {
-          difficulty: true,
-          levelNumber: true,
-          bestTimeSeconds: true,
-        },
-      }),
+      // `user_id` is TEXT, not uuid — Prisma maps `String` to TEXT — so the parameter goes in
+      // uncast. The schema is spelled out because every statement Prisma itself compiles for this
+      // datasource is qualified the same way.
+      this.prisma.$queryRaw<FastestLevelRow[]>`
+        SELECT DISTINCT ON ("difficulty")
+          "difficulty"::text AS "difficulty",
+          "level_number" AS "levelNumber",
+          "best_time_seconds" AS "bestTimeSeconds"
+        FROM "public"."level_progress"
+        WHERE "user_id" = ${actor.userId}
+          AND "best_time_seconds" IS NOT NULL
+        ORDER BY "difficulty" ASC, "best_time_seconds" ASC, "level_number" ASC
+      `,
     ])
 
     const groupByDifficulty = new Map(groups.map((group) => [group.difficulty as AppDifficulty, group]))

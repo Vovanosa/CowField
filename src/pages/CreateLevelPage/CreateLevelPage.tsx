@@ -37,6 +37,7 @@ function CreateLevelPageView({
     isLoading,
     isDeleting,
     isGenerating,
+    isValidating,
     deleteDialog,
     colorOptions,
     requiredCowCount,
@@ -151,6 +152,7 @@ function CreateLevelPageView({
         colorOptions={colorOptions}
         isDeleting={isDeleting}
         isGenerating={isGenerating}
+        isValidating={isValidating}
         onGenerate={handleGenerate}
         onValidate={handleValidate}
         onSave={handleSave}

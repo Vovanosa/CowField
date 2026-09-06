@@ -149,6 +149,7 @@
   'Create/Edit Level': 'Створення/редагування рівня',
   Generate: 'Генерувати',
   'Validate level': 'Перевірити рівень',
+  'Validating...': 'Перевірка...',
   'Save level': 'Зберегти рівень',
   'Clear board': 'Очистити поле',
   'Pick a color, then click cells to assign them to that region. Every cell must belong to some color before the level can be saved, and cows should be placed inside each color. This board needs exactly {{gridSize}} connected colors and {{requiredCowCount}} cows to be on the board.':
