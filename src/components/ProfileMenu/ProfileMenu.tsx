@@ -57,8 +57,13 @@ export function ProfileMenu() {
         <span className={styles.profileTriggerIcon}>
           <UserRound size={16} />
         </span>
+        {/*
+          Both hidden below 640px, leaving the icon alone as a round button — see the media query in
+          the stylesheet. The name and email are in the dropdown either way, and `aria-label` already
+          names the trigger, so nothing is lost by dropping the visible text on a phone.
+        */}
         <span className={styles.profileTriggerText}>{isGuest ? t('Guest') : session.displayName}</span>
-        <ChevronDown size={14} />
+        <ChevronDown size={14} className={styles.profileTriggerChevron} />
       </button>
 
       {isProfileMenuOpen ? (

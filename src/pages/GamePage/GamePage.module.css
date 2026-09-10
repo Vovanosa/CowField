@@ -449,6 +449,13 @@
 }
 
 @media (max-width: 640px) {
+  /* Shares its line with the collapsed profile control, which now sits in this corner instead of in
+     a reserved band above the page — see `App.css`. 52px is the 40px circle plus its gap. The title
+     is `nowrap`, so this is the only thing keeping it out from under the control. */
+  .topbar {
+    padding-right: 52px;
+  }
+
   /* Board first. The puzzle is the content and the control bar is chrome, so the board sits directly
      under the level title and can never be pushed down the screen by however many rows the bar
      needs. */

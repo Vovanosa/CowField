@@ -42,3 +42,16 @@
     margin-bottom: var(--space-5);
   }
 }
+
+/*
+  Below 640px the shell stops reserving a band for the profile control and collapses it to a 40px
+  circle in this corner instead (`App.css`, `ProfileMenu.module.css`), so the header shares its top
+  line with it. This keeps the eyebrow and title clear of that circle; the description is left alone
+  because it starts below the control and 52px is a lot of column to lose on a phone.
+*/
+@media (max-width: 640px) {
+  .pageIntroEyebrow,
+  .pageIntro h2 {
+    padding-right: 52px;
+  }
+}

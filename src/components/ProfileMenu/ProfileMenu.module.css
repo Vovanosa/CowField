@@ -115,3 +115,39 @@
     width: min(280px, calc(100vw - 32px));
   }
 }
+
+/*
+  Phone: the trigger collapses to the icon alone.
+
+  At full width this control is a pill wide enough for a display name, and the shell reserves a whole
+  44px band above the page for it — which pushed every page's back button and title down a row, so a
+  phone spent one of its scarce rows on a name the player already knows. Collapsed, it is a 40px
+  circle that shares the header line with the back button instead, and the reserve goes away
+  (`App.css`). The name and email still appear the moment it is opened, which is the only place they
+  were doing any work.
+
+  40px to match `IconButton`, so the circle and the back button are the same size and their centres
+  line up. Well above the 24px WCAG target minimum either way.
+*/
+@media (max-width: 640px) {
+  .profileTrigger {
+    gap: 0;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .profileTriggerText,
+  .profileTriggerChevron {
+    display: none;
+  }
+
+  /* The icon becomes the button, so it drops its own inner plate and fills the circle. */
+  .profileTriggerIcon {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: none;
+  }
+}

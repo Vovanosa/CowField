@@ -10,7 +10,11 @@
            and they must stay on the same number — Language and Dark mode appear in exactly one
            place at a time, and disagreement duplicates them or loses them both.
     720px  component-level tightening (ProfileMenu, PageHeader, Toast, the editor)
-    640px  small-phone tightening (Settings rows, Buttons, Levels, Game, Statistics)
+    640px  small-phone tightening (Settings rows, Buttons, Levels, Game, Statistics) — and the
+           line where the profile control collapses to a 40px circle so it shares the header line
+           instead of costing a reserved band above it. Four files agree on that: `App.css` drops
+           the reserve, `ProfileMenu.module.css` collapses the trigger, and `PageHeader` and
+           `GamePage` each keep their heading clear of the corner it moves into.
 
   There were six until 2026-09-04; items 24 and 32 deleted two by removing the layouts that needed
   them.
