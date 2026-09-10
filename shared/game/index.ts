@@ -20,7 +20,10 @@ export {
   type SolveResult,
 } from './solver'
 export {
+  BOARD_VALIDATION_ISSUE_CODES,
+  formatBoardValidationIssue,
   validateBoard,
+  type BoardValidationIssue,
   type BoardValidationOptions,
   type BoardValidationResult,
   type ValidatableBoard,

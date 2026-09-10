@@ -5,3 +5,8 @@ export {
   validateLevelDraft,
   type LevelValidationResult,
 } from './levelValidator'
+export {
+  translateValidationIssue,
+  type EditorValidationIssue,
+  type LevelValidationIssue,
+} from './translateValidationIssue'

@@ -34,6 +34,48 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ')
 
+/** Focus it and report whether that actually took. A disabled button accepts the call and ignores it. */
+function focusIfPossible(element: HTMLElement | null | undefined) {
+  if (!element || !element.isConnected) {
+    return false
+  }
+
+  element.focus()
+
+  return document.activeElement === element
+}
+
+/**
+ * Put focus back where it was — and if that is no longer possible, somewhere useful instead of
+ * nowhere.
+ *
+ * Verified in Chrome on 2026-09-10: completing a level opens the completion dialog **and locks the
+ * board**, so all 100 cell buttons become `disabled`. The cell the player clicked is still in the
+ * document, so an `isConnected` check passes, but `.focus()` on a disabled button is a silent no-op
+ * and focus ends up on `<body>` — a keyboard player who pressed Escape was dropped to the very top
+ * of the page. The remembered element being *gone or inert by the time the dialog closes* is normal,
+ * not exceptional: dismissing a dialog usually changes the thing that opened it.
+ *
+ * The fallback prefers the region the dialog was rendered into, so focus lands near where the player
+ * was (on the game page that is the board's own controls) rather than at the top of the document.
+ */
+function restoreFocus(previous: HTMLElement | null, region: HTMLElement | null) {
+  if (focusIfPossible(previous)) {
+    return
+  }
+
+  const candidates = [
+    ...(region?.isConnected ? Array.from(region.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)) : []),
+    ...Array.from(document.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)),
+  ]
+
+  for (const candidate of candidates) {
+    if (focusIfPossible(candidate)) {
+      return
+    }
+  }
+}
+
 export function Dialog({
   title,
   description,
@@ -89,6 +131,10 @@ export function Dialog({
     }
 
     const previouslyFocused = document.activeElement as HTMLElement | null
+    // Captured now, while the backdrop is still mounted: by cleanup time it is being removed, so
+    // `parentElement` would already be null. This is the page region the dialog belongs to, and the
+    // preferred place to put focus if the opener cannot take it back.
+    const region = backdrop.parentElement as HTMLElement | null
 
     function getFocusable() {
       return Array.from(
@@ -142,8 +188,9 @@ export function Dialog({
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true)
-      // Back where they were, so dismissing a dialog does not dump focus at the top of the page.
-      previouslyFocused?.focus?.()
+      // Back where they were, so dismissing a dialog does not dump focus at the top of the page —
+      // and if that element is disabled or gone by now, somewhere nearby instead of `<body>`.
+      restoreFocus(previouslyFocused, region)
     }
     // Open once, trap once, restore once — see `onCloseRef` for why nothing belongs in here.
   }, [])

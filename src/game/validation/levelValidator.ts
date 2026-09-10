@@ -4,12 +4,14 @@ import {
   validateBoard,
 } from '../../../shared/game'
 import type { LevelDraft } from '../types'
+import type { LevelValidationIssue } from './translateValidationIssue'
 
 export { getBullsPerGroupForDifficulty, getGridSizeForDifficulty }
 
 export type LevelValidationResult = {
   isValid: boolean
-  issues: string[]
+  /** Codes, not sentences — `translateValidationIssue` turns each one into the admin's language. */
+  issues: LevelValidationIssue[]
   /** How many ways the puzzle can be solved. `null` when the rule checks failed first. */
   solutionCount: number | null
   /** True when counting stopped at the ceiling, so the real number is higher. */
@@ -32,10 +34,10 @@ const EDITOR_SOLUTION_LIMIT = 100
  * `bullsByCell`.
  */
 export function validateLevelDraft(draft: LevelDraft): LevelValidationResult {
-  const issues: string[] = []
+  const issues: LevelValidationIssue[] = []
 
   if (!draft.title.trim()) {
-    issues.push('Add a level title.')
+    issues.push({ code: 'missing-title' })
   }
 
   const result = validateBoard(

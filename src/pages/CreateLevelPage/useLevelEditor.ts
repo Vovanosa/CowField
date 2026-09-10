@@ -11,6 +11,7 @@ import {
 } from '../../game/storage/levelStorage'
 import {
   getBullsPerGroupForDifficulty,
+  translateValidationIssue,
   validateLevelDraftAsync,
   type LevelValidationResult,
 } from '../../game/validation'
@@ -235,7 +236,12 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     }
 
     if (!validationResult.isValid) {
-      setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
+      setToast(
+        createWarningToast(
+          t('Fix those problems and try again.'),
+          validationResult.issues.map((issue) => translateValidationIssue(t, issue)),
+        ),
+      )
       return
     }
 
@@ -359,7 +365,12 @@ export function useLevelEditor({ difficulty, routeLevelNumber, t }: UseLevelEdit
     }
 
     if (!validationResult.isValid) {
-      setToast(createWarningToast(t('Fix those problems and try again.'), validationResult.issues))
+      setToast(
+        createWarningToast(
+          t('Fix those problems and try again.'),
+          validationResult.issues.map((issue) => translateValidationIssue(t, issue)),
+        ),
+      )
       return
     }
 

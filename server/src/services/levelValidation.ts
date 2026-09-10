@@ -1,4 +1,4 @@
-import { validateBoard } from '../../../shared/game'
+import { formatBoardValidationIssue, validateBoard } from '../../../shared/game'
 import type { LevelRecordInput } from '../schemas/levelSchemas'
 
 type ValidationResult = {
@@ -30,6 +30,10 @@ export function validateLevelRecord(input: LevelRecordInput): ValidationResult {
 
   return {
     isValid: result.isValid,
-    issues: result.issues,
+    // English here on purpose: this is an admin-only API and it has no request language to work
+    // from. `formatBoardValidationIssue` reproduces the exact strings the shared module used to
+    // build, so 400 bodies read the same as before the issues became structured. The editor
+    // translates the same codes itself — see `src/game/validation/translateValidationIssue.ts`.
+    issues: result.issues.map(formatBoardValidationIssue),
   }
 }

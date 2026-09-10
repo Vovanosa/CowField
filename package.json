@@ -22,7 +22,8 @@
     "check": "npm run lint && npm run typecheck && npm run typecheck:server",
     "preview": "vite preview",
     "measure:requests": "tsx scripts/measure-session.mts",
-    "measure:queries": "tsx scripts/measure-session.mts --queries --live"
+    "measure:queries": "tsx scripts/measure-session.mts --queries --live",
+    "check:a11y": "tsx scripts/check-accessibility.mts"
   },
   "dependencies": {
     "@neondatabase/neon-js": "^0.2.0-beta.1",

@@ -128,6 +128,71 @@
   'Admin role is required to create or edit levels.':
     'Для створення або редагування рівнів потрібна роль адміністратора.',
   'Fix those problems and try again.': 'Виправте ці проблеми та спробуйте ще раз.',
+  // Editor validation issues. These were English for every admin until the shared validator started
+  // returning codes instead of sentences. Three plural forms as usual: 1 бик, 2–4 бики, 5+ биків.
+  'Add a level title.': 'Додайте назву рівня.',
+  'Grid size must stay {{size}} x {{size}} for {{difficulty}}.':
+    'Для складності «{{difficulty}}» розмір сітки має залишатися {{size}} x {{size}}.',
+  'The pen grid is incomplete.': 'Сітку загонів не завершено.',
+  'The authored bull layout is incomplete.': 'Авторську схему биків не завершено.',
+  'Every cell must belong to a pen.': 'Кожна клітинка має належати до загону.',
+  'A {{size}} x {{size}} level must use exactly {{size}} pens.':
+    'Рівень {{size}} x {{size}} має містити рівно {{size}} загонів.',
+  'Pen {{penId}} is too small for {{count}} bull placements.':
+    'Загін {{penId}} замалий для {{count}} биків.',
+  'Pen {{penId}} is too small for {{count}} bull placements._one':
+    'Загін {{penId}} замалий для {{count}} бика.',
+  'Pen {{penId}} is too small for {{count}} bull placements._few':
+    'Загін {{penId}} замалий для {{count}} биків.',
+  'Pen {{penId}} is too small for {{count}} bull placements._many':
+    'Загін {{penId}} замалий для {{count}} биків.',
+  'Pen {{penId}} is too small for {{count}} bull placements._other':
+    'Загін {{penId}} замалий для {{count}} биків.',
+  'Pen {{penId}} must be one connected region.':
+    'Загін {{penId}} має бути однією суцільною областю.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}.':
+    'Для складності «{{difficulty}}» авторська схема має містити рівно {{count}} биків.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._one':
+    'Для складності «{{difficulty}}» авторська схема має містити рівно {{count}} бика.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._few':
+    'Для складності «{{difficulty}}» авторська схема має містити рівно {{count}} бики.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._many':
+    'Для складності «{{difficulty}}» авторська схема має містити рівно {{count}} биків.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._other':
+    'Для складності «{{difficulty}}» авторська схема має містити рівно {{count}} биків.',
+  'Each row must contain exactly {{count}} bulls.':
+    'Кожен рядок має містити рівно {{count}} биків.',
+  'Each row must contain exactly {{count}} bulls._one':
+    'Кожен рядок має містити рівно {{count}} бика.',
+  'Each row must contain exactly {{count}} bulls._few':
+    'Кожен рядок має містити рівно {{count}} бики.',
+  'Each row must contain exactly {{count}} bulls._many':
+    'Кожен рядок має містити рівно {{count}} биків.',
+  'Each row must contain exactly {{count}} bulls._other':
+    'Кожен рядок має містити рівно {{count}} биків.',
+  'Each column must contain exactly {{count}} bulls.':
+    'Кожен стовпець має містити рівно {{count}} биків.',
+  'Each column must contain exactly {{count}} bulls._one':
+    'Кожен стовпець має містити рівно {{count}} бика.',
+  'Each column must contain exactly {{count}} bulls._few':
+    'Кожен стовпець має містити рівно {{count}} бики.',
+  'Each column must contain exactly {{count}} bulls._many':
+    'Кожен стовпець має містити рівно {{count}} биків.',
+  'Each column must contain exactly {{count}} bulls._other':
+    'Кожен стовпець має містити рівно {{count}} биків.',
+  'Pen {{penId}} must contain exactly {{count}} bulls.':
+    'Загін {{penId}} має містити рівно {{count}} биків.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._one':
+    'Загін {{penId}} має містити рівно {{count}} бика.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._few':
+    'Загін {{penId}} має містити рівно {{count}} бики.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._many':
+    'Загін {{penId}} має містити рівно {{count}} биків.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._other':
+    'Загін {{penId}} має містити рівно {{count}} биків.',
+  'Bulls may not touch, including diagonally.':
+    'Бики не можуть торкатися один одного, зокрема по діагоналі.',
+  'This level has no valid solution.': 'Цей рівень не має правильного розв’язку.',
   'Level saved': 'Рівень збережено',
   'Failed to save level.': 'Не вдалося зберегти рівень.',
   'Failed to delete level.': 'Не вдалося видалити рівень.',
@@ -235,6 +300,7 @@
   'Email not verified': 'Електронну пошту ще не підтверджено.',
   'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
+  'Sign-in failed. Try again.': 'Не вдалося увійти. Спробуйте ще раз.',
   'Email verification failed.': 'Не вдалося підтвердити електронну пошту.',
   'Your email is verified. You can log in now.':
     'Вашу пошту підтверджено. Тепер ви можете увійти.',

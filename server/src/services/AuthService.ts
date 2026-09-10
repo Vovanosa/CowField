@@ -31,8 +31,24 @@ function deriveDisplayNameFromEmail(email: string) {
  * How long a resolved user is trusted without re-reading it.
  *
  * Short on purpose. The only things that can change underneath it are the display name and the role,
- * and role changes come from `enforceConfiguredAdminAccount`, which runs at startup. A minute of
- * staleness costs nothing; the queries it saves are on **every authenticated request**.
+ * and a minute of staleness costs nothing against the queries it saves on **every authenticated
+ * request**.
+ *
+ * **Why there is no invalidation function.** Audited 2026-09-10, looking for the opposite answer:
+ * nothing in this process can change a role or delete a user while a request is being served.
+ * The role is not stored state that someone flips — it is **derived** on every sync from
+ * `normalizedEmail === this.adminEmail`, so it can only differ if `BULLPEN_ADMIN_EMAIL` changes,
+ * which is an env change and therefore a restart. `enforceConfiguredAdminAccount` runs in
+ * `index.ts`, `await`ed *before* `app.listen`, so the cache is still empty when it finishes. And
+ * there is no role-change endpoint, no account-deletion endpoint, and no write to `users` at all
+ * besides the conditional upsert below. So the only way a row changes underneath this map is an
+ * out-of-band edit to the database — visible within 60 seconds anyway, or immediately if the API is
+ * restarted, which empties an in-process `Map` by definition.
+ *
+ * A `clearAuthUserCache()` export used to sit here for exactly that scenario. It had no callers and
+ * no caller was possible, so it was a lever attached to nothing — deleted rather than left to read
+ * as though something invalidated the cache. **If a role-change or delete-account endpoint is ever
+ * added, it has to bust this map**, and that is the moment to bring the function back.
  */
 const USER_CACHE_TTL_MS = 60_000
 
@@ -94,11 +110,6 @@ function isUserUpToDate(existing: UserRecord, next: UserRecord) {
     existing.role === next.role &&
     existing.displayName === next.displayName
   )
-}
-
-/** Empties the user cache. For tests, and for anything that changes roles out of band. */
-export function clearAuthUserCache() {
-  userCacheBySubject.clear()
 }
 
 /**

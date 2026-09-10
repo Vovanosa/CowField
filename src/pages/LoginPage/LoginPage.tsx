@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { translateAuthMessage } from '../../app/translateAuthMessage'
+import { translateAuthMessage, translateKnownAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
@@ -98,7 +98,13 @@ export function LoginPage() {
   // address is confirmed, there is just no session to hand over. It was being set and never read.
   const isVerified = searchParams.get('verified') === '1'
   const routeMessage: AuthMessage | null = routeError
-    ? { text: translateAuthMessage(t, routeError), tone: 'error' }
+    ? {
+        // Allowlisted, not echoed. Anyone can put anything in `?error=`, and this renders in the
+        // app's own error styling next to a password field — see `translateKnownAuthMessage`.
+        // Unrecognised text becomes the generic failure rather than the attacker's sentence.
+        text: translateKnownAuthMessage(t, routeError) ?? t('Sign-in failed. Try again.'),
+        tone: 'error',
+      }
     : isVerified
       ? { text: t('Your email is verified. You can log in now.'), tone: 'success' }
       : null

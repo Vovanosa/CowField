@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 import {
+  formatBoardValidationIssue,
   generateUniqueBoard,
   getBullsPerGroupForDifficulty,
   validateBoard,
@@ -195,7 +196,7 @@ async function main() {
       if (!validation.isValid || validation.solutionCount !== 1) {
         console.log(
           `  level ${levelNumber}: rejected — valid=${validation.isValid} ` +
-            `solutions=${validation.solutionCount} ${validation.issues.join(' | ')}`,
+            `solutions=${validation.solutionCount} ${validation.issues.map(formatBoardValidationIssue).join(' | ')}`,
         )
         continue
       }

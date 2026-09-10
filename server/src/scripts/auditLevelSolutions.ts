@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 import {
+  formatBoardValidationIssue,
   getBullsPerGroupForDifficulty,
   solveBoard,
   validateBoard,
@@ -67,7 +68,7 @@ async function main() {
       title: level.title,
       solutions: solved.count,
       reachedLimit: solved.reachedLimit,
-      ruleIssues: validation.issues,
+      ruleIssues: validation.issues.map(formatBoardValidationIssue),
     })
   }
 

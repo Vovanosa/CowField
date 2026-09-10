@@ -134,6 +134,50 @@ const en = {
   'Admin role is required to create or edit levels.':
     'Admin role is required to create or edit levels.',
   'Fix those problems and try again.': 'Fix those problems and try again.',
+  // The editor's validation issues. `shared/game/validation.ts` hands back a code and its numbers
+  // instead of a sentence, and `translateValidationIssue` chooses the wording — which is what lets
+  // a Ukrainian admin read these at all. `{{count}}` keys carry `_one` / `_other` for the same
+  // reason as the ones above; `uk.ts` adds `_few` and `_many`.
+  'Add a level title.': 'Add a level title.',
+  'Grid size must stay {{size}} x {{size}} for {{difficulty}}.':
+    'Grid size must stay {{size}} x {{size}} for {{difficulty}}.',
+  'The pen grid is incomplete.': 'The pen grid is incomplete.',
+  'The authored bull layout is incomplete.': 'The authored bull layout is incomplete.',
+  'Every cell must belong to a pen.': 'Every cell must belong to a pen.',
+  'A {{size}} x {{size}} level must use exactly {{size}} pens.':
+    'A {{size}} x {{size}} level must use exactly {{size}} pens.',
+  'Pen {{penId}} is too small for {{count}} bull placements.':
+    'Pen {{penId}} is too small for {{count}} bull placements.',
+  'Pen {{penId}} is too small for {{count}} bull placements._one':
+    'Pen {{penId}} is too small for {{count}} bull placement.',
+  'Pen {{penId}} is too small for {{count}} bull placements._other':
+    'Pen {{penId}} is too small for {{count}} bull placements.',
+  'Pen {{penId}} must be one connected region.': 'Pen {{penId}} must be one connected region.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}.':
+    'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._one':
+    'The authored bull layout must place exactly {{count}} bull for {{difficulty}}.',
+  'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}._other':
+    'The authored bull layout must place exactly {{count}} bulls for {{difficulty}}.',
+  'Each row must contain exactly {{count}} bulls.': 'Each row must contain exactly {{count}} bulls.',
+  'Each row must contain exactly {{count}} bulls._one':
+    'Each row must contain exactly {{count}} bull.',
+  'Each row must contain exactly {{count}} bulls._other':
+    'Each row must contain exactly {{count}} bulls.',
+  'Each column must contain exactly {{count}} bulls.':
+    'Each column must contain exactly {{count}} bulls.',
+  'Each column must contain exactly {{count}} bulls._one':
+    'Each column must contain exactly {{count}} bull.',
+  'Each column must contain exactly {{count}} bulls._other':
+    'Each column must contain exactly {{count}} bulls.',
+  'Pen {{penId}} must contain exactly {{count}} bulls.':
+    'Pen {{penId}} must contain exactly {{count}} bulls.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._one':
+    'Pen {{penId}} must contain exactly {{count}} bull.',
+  'Pen {{penId}} must contain exactly {{count}} bulls._other':
+    'Pen {{penId}} must contain exactly {{count}} bulls.',
+  'Bulls may not touch, including diagonally.': 'Bulls may not touch, including diagonally.',
+  'This level has no valid solution.': 'This level has no valid solution.',
   'Level saved': 'Level saved',
   'Failed to save level.': 'Failed to save level.',
   'Failed to delete level.': 'Failed to delete level.',
@@ -247,6 +291,9 @@ const en = {
   'Email not verified': 'Email not verified.',
   'Failed to restore session after login.': 'Failed to restore session after login.',
   'Google login failed.': 'Google login failed.',
+  // Shown instead of `?error=` when the address bar carries something we do not ship a string for.
+  // Everything above is the allowlist `translateKnownAuthMessage` checks against.
+  'Sign-in failed. Try again.': 'Sign-in failed. Try again.',
   'Email verification failed.': 'Email verification failed.',
   'Your email is verified. You can log in now.':
     'Your email is verified. You can log in now.',

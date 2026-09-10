@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout } from '../../components/AuthLayout'
 
@@ -41,14 +40,26 @@ export function GoogleAuthCallbackPage() {
     // stray visit.
     const sessionVerifier = searchParams.get('neon_auth_session_verifier')
 
+    /**
+     * The **key**, never the translated sentence.
+     *
+     * `/login` allowlists `?error=` against the catalogue now, so prose sent from here would fail
+     * that check and show up as the generic failure. Sending the key also stops the message being
+     * translated twice — once here and once on arrival — and keeps the URL language-independent, so
+     * a player who switches language on the login page sees the right text either way.
+     */
+    function redirectWithError(messageKey: string) {
+      navigate(`/login?error=${encodeURIComponent(messageKey)}`, { replace: true })
+    }
+
     async function finishLogin() {
       if (error) {
-        navigate(`/login?error=${encodeURIComponent(translateAuthMessage(t, error))}`, { replace: true })
+        redirectWithError(error)
         return
       }
 
       if (!code && !sessionVerifier) {
-        navigate(`/login?error=${encodeURIComponent(t('Google login failed.'))}`, { replace: true })
+        redirectWithError('Google login failed.')
         return
       }
 
@@ -56,16 +67,14 @@ export function GoogleAuthCallbackPage() {
         await completeGoogleLogin(code ?? undefined)
         navigate('/', { replace: true })
       } catch (completionError) {
-        const message =
-          completionError instanceof Error
-            ? translateAuthMessage(t, completionError.message)
-            : t('Google login failed.')
-        navigate(`/login?error=${encodeURIComponent(message)}`, { replace: true })
+        redirectWithError(
+          completionError instanceof Error ? completionError.message : 'Google login failed.',
+        )
       }
     }
 
     void finishLogin()
-  }, [completeGoogleLogin, isAuthenticated, isLoading, navigate, searchParams, t])
+  }, [completeGoogleLogin, isAuthenticated, isLoading, navigate, searchParams])
 
   return (
     <AuthLayout
