@@ -2,11 +2,13 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout } from '../../components/AuthLayout'
 
 export function GoogleAuthCallbackPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Login')), robots: 'noindex' })
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { completeGoogleLogin, isAuthenticated, isLoading } = useAuth()

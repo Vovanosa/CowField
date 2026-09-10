@@ -4,7 +4,51 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/Cow.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CowField</title>
+
+    <!--
+      Static defaults, so a crawler that does not run JavaScript still gets a real title, a real
+      description and a working share preview. `useDocumentMeta` overwrites all of this per route
+      once the app boots; these values describe the landing page, because that is what `/` serves and
+      `/` is what gets shared.
+
+      The Open Graph image URL is **absolute** because most scrapers do not resolve a relative one.
+      That means the domain is hardcoded here, as it is in `robots.txt` and `sitemap.xml` — those three
+      files are what a move to a custom domain has to update, and `npm run check:seo` fails if they
+      disagree with the URL it is pointed at.
+
+      Measured before this existed (2026-09-10): every URL sent `<title>CowField</title>` and nothing
+      else — no description, no canonical, no Open Graph.
+
+      **Bullpen**, not CowField (scope decision D1): it is what the UI has always called itself, and
+      the `<title>` used to disagree with the page's own `<h1>`.
+    -->
+    <title>Bullpen — a calm Star Battle puzzle</title>
+    <meta
+      name="description"
+      content="Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffaf1" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bullpen" />
+    <meta property="og:title" content="Bullpen — a calm Star Battle puzzle" />
+    <meta
+      property="og:description"
+      content="A calm Star Battle (Two Not Touch) logic puzzle. 800 levels, four difficulties, exactly one solution each. Play as a guest with no account."
+    />
+    <meta property="og:image" content="https://cowfield.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A Bullpen puzzle board of coloured pens with bulls placed on it" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bullpen — a calm Star Battle puzzle" />
+    <meta
+      name="twitter:description"
+      content="A calm Star Battle (Two Not Touch) logic puzzle. 800 levels, four difficulties, exactly one solution each. Play as a guest with no account."
+    />
+    <meta name="twitter:image" content="https://cowfield.vercel.app/og-image.png" />
+
     <script>
       ;(function () {
         try {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Two URLs, and that is correct: they are the only pages that do not need a session. Listing level
+  URLs would list 800 pages that redirect a crawler to a login form, which is worse than listing
+  nothing.
+
+  The domain is hardcoded because a sitemap has to carry absolute URLs. **If the site moves to a
+  custom domain, this file and `robots.txt` both need updating** — `npm run check:seo` compares them
+  against the URL it is pointed at, so it will fail rather than let them drift silently.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://cowfield.vercel.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

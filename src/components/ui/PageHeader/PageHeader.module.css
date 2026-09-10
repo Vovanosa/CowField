@@ -51,7 +51,16 @@
 */
 @media (max-width: 640px) {
   .pageIntroEyebrow,
-  .pageIntro h2 {
+  .pageIntroTitle {
     padding-right: 52px;
   }
+}
+
+/* Pins the page title's appearance so `titleAs` only changes semantics. `h1` is styled globally as
+   the 4.4rem wordmark (`index.css`), which is right for the login screen and much too large here. */
+.pageIntroTitle {
+  margin-bottom: 0;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  letter-spacing: normal;
 }

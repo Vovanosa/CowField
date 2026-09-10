@@ -2,14 +2,9 @@ import { Suspense, lazy, useEffect, type ComponentType, type ReactNode } from 'r
 import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from './AppShell'
+import { HomeRoute } from './HomeRoute'
 import { RouteErrorElement } from './RouteErrorElement'
 import { useAuth } from './useAuth'
-import { AboutPage } from '../pages/AboutPage'
-import { DifficultyLevelsPage } from '../pages/DifficultyLevelsPage'
-import { HomePage } from '../pages/HomePage'
-import { LevelsPage } from '../pages/LevelsPage'
-import { SettingsPage } from '../pages/SettingsPage'
-import { StatisticsPage } from '../pages/StatisticsPage'
 import { applyThemeMode } from '../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../game/usePlayerSettings'
 
@@ -19,8 +14,25 @@ function lazyPage<T extends ComponentType<object>>(
   return lazy(load)
 }
 
+/*
+  **Every** page is lazy now, not just the ones that felt heavy.
+
+  Six of them — Home, About, Levels, DifficultyLevels, Settings, Statistics — used to be imported
+  eagerly, so the entry chunk was 727 KB and a first-time visitor to the landing page downloaded the
+  whole app, including pages they had no session to reach. Route-splitting is the only lever that
+  matters for Core Web Vitals here, and the pages were already route-scoped; this is just moving them
+  behind `import()`.
+*/
+const AboutPage = lazyPage(() =>
+  import('../pages/AboutPage').then((module) => ({ default: module.AboutPage })),
+)
 const CreateLevelPage = lazyPage(() =>
   import('../pages/CreateLevelPage').then((module) => ({ default: module.CreateLevelPage })),
+)
+const DifficultyLevelsPage = lazyPage(() =>
+  import('../pages/DifficultyLevelsPage').then((module) => ({
+    default: module.DifficultyLevelsPage,
+  })),
 )
 const ForgotPasswordPage = lazyPage(() =>
   import('../pages/ForgotPasswordPage/ForgotPasswordPage').then((module) => ({
@@ -35,8 +47,14 @@ const GoogleAuthCallbackPage = lazyPage(() =>
     default: module.GoogleAuthCallbackPage,
   })),
 )
+const LevelsPage = lazyPage(() =>
+  import('../pages/LevelsPage').then((module) => ({ default: module.LevelsPage })),
+)
 const LoginPage = lazyPage(() =>
   import('../pages/LoginPage/LoginPage').then((module) => ({ default: module.LoginPage })),
+)
+const NotFoundPage = lazyPage(() =>
+  import('../pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })),
 )
 const RegisterPage = lazyPage(() =>
   import('../pages/RegisterPage/RegisterPage').then((module) => ({ default: module.RegisterPage })),
@@ -45,6 +63,12 @@ const ResetPasswordPage = lazyPage(() =>
   import('../pages/ResetPasswordPage/ResetPasswordPage').then((module) => ({
     default: module.ResetPasswordPage,
   })),
+)
+const SettingsPage = lazyPage(() =>
+  import('../pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
+)
+const StatisticsPage = lazyPage(() =>
+  import('../pages/StatisticsPage').then((module) => ({ default: module.StatisticsPage })),
 )
 const VerifyEmailPage = lazyPage(() =>
   import('../pages/VerifyEmailPage/VerifyEmailPage').then((module) => ({
@@ -141,31 +165,46 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <RequireSession />,
+    path: '/',
+    element: <AppShell />,
+    // Catches a throw in the shell itself, where there is no outlet left to render into.
     errorElement: <RouteErrorElement />,
     children: [
       {
-        path: '/',
-        element: <AppShell />,
-        // Catches a throw in the shell itself, where there is no outlet left to render into.
+        // A pathless layout route, so a throw from a page renders inside the shell's
+        // `<Outlet />` and leaves the header and navigation usable.
         errorElement: <RouteErrorElement />,
         children: [
+          /*
+            `RequireSession` used to wrap this entire subtree, which is why nothing on the site was
+            indexable: measured 2026-09-10, `/`, `/about`, `/levels` and a nonsense path all
+            rendered the same login form, 31 words, one `<title>`.
+
+            It now guards only the routes that genuinely need a session. Two routes are public:
+            `/` (the landing page for a visitor, today's home page for a player) and `/about`,
+            which is the rules content and the best keyword page on the site. Everything else is
+            unchanged — a signed-out visitor still gets bounced to `/login` from `/levels`,
+            `/game`, `/settings` and `/statistics`.
+          */
           {
-            // A pathless layout route, so a throw from a page renders inside the shell's
-            // `<Outlet />` and leaves the header and navigation usable.
-            errorElement: <RouteErrorElement />,
+            index: true,
+            element: withSuspense(<HomeRoute />),
+          },
+          {
+            // Public. Verified to need no session: no `useAuth`, no fetch, no storage.
+            path: 'about',
+            element: withSuspense(<AboutPage />),
+          },
+          {
+            element: <RequireSession />,
             children: [
               {
-                index: true,
-                element: <HomePage />,
-              },
-              {
                 path: 'levels',
-                element: <LevelsPage />,
+                element: withSuspense(<LevelsPage />),
               },
               {
                 path: 'levels/:difficulty',
-                element: <DifficultyLevelsPage />,
+                element: withSuspense(<DifficultyLevelsPage />),
               },
               {
                 path: 'levels/:difficulty/create',
@@ -180,35 +219,33 @@ const router = createBrowserRouter([
                 element: withSuspense(<GamePage />),
               },
               {
-                path: 'about',
-                element: <AboutPage />,
-              },
-              {
                 element: <RequireNonGuest />,
                 children: [
                   {
                     path: 'statistics',
-                    element: <StatisticsPage />,
+                    element: withSuspense(<StatisticsPage />),
                   },
                 ],
               },
               {
                 path: 'settings',
-                element: <SettingsPage />,
-              },
-              {
-                path: '*',
-                element: <Navigate to="/" replace />,
+                element: withSuspense(<SettingsPage />),
               },
             ],
+          },
+          {
+            /*
+              A real not-found view instead of `<Navigate to="/" replace />`. The redirect made
+              every mistyped URL look like the home page, and `vercel.json` served all of them with
+              a 200 — an unbounded supply of soft-404s. Unknown *top-level* paths now 404 at the
+              edge; this catches the rest, such as `/levels/nonsense`, and reports `noindex`.
+            */
+            path: '*',
+            element: withSuspense(<NotFoundPage />),
           },
         ],
       },
     ],
-  },
-  {
-    path: '*',
-    element: <Navigate to="/login" replace />,
   },
 ])
 

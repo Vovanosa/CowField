@@ -1,5 +1,56 @@
 const en = {
   Bullpen: 'Bullpen',
+
+  // ---------------------------------------------------------------------------------------------
+  // The landing page (P14 item 84) — the only page a stranger, or a crawler, can read.
+  //
+  // This block is deliberately prose rather than labels: it is the site's entire indexable content.
+  // Before it existed, every URL rendered the login form and the whole site was 31 words. The genre
+  // words matter as much as the wording — nobody searches "Bullpen", people search "Star Battle"
+  // and "Two Not Touch".
+  // ---------------------------------------------------------------------------------------------
+  'Star Battle logic puzzle': 'Star Battle logic puzzle',
+  'Bullpen — a calm Star Battle puzzle': 'Bullpen — a calm Star Battle puzzle',
+  'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
+    'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+  'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
+    'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.',
+  'Play now': 'Play now',
+  'Starting...': 'Starting...',
+  'Sign in to save your progress': 'Sign in to save your progress',
+  'No account, no email. Play as a guest right away.':
+    'No account, no email. Play as a guest right away.',
+  "Couldn't start a game. Check your connection and try again.":
+    "Couldn't start a game. Check your connection and try again.",
+  'The rules, in three lines': 'The rules, in three lines',
+  'Every row, column and pen holds its exact quota of bulls.':
+    'Every row, column and pen holds its exact quota of bulls.',
+  'No two bulls may touch — not side by side, not diagonally.':
+    'No two bulls may touch — not side by side, not diagonally.',
+  'Dots are notes for yourself. They never count as bulls.':
+    'Dots are notes for yourself. They never count as bulls.',
+  'Read the full rules': 'Read the full rules',
+  'Made to be unhurried': 'Made to be unhurried',
+  'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.':
+    'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.',
+  'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.':
+    'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.',
+  '800 levels': '800 levels',
+  '4 difficulties': '4 difficulties',
+  'Exactly one solution each': 'Exactly one solution each',
+  'No account needed': 'No account needed',
+  'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.':
+    'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.',
+
+  // The not-found view, which replaced a silent redirect to `/`.
+  'Page not found': 'Page not found',
+  'That link does not lead anywhere.': 'That link does not lead anywhere.',
+  'Back to the start': 'Back to the start',
+
+  // Page descriptions — `<meta name="description">`, so ~150-160 characters each. Only the two
+  // public pages genuinely need one; the rest are `noindex` and carry a title alone.
+  'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
+    'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
   'Loading...': 'Loading...',
   Hidden: 'Hidden',
   'Back to home': 'Back to home',

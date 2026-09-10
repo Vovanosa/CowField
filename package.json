@@ -23,7 +23,9 @@
     "preview": "vite preview",
     "measure:requests": "tsx scripts/measure-session.mts",
     "measure:queries": "tsx scripts/measure-session.mts --queries --live",
-    "check:a11y": "tsx scripts/check-accessibility.mts"
+    "check:a11y": "tsx scripts/check-accessibility.mts",
+    "og:image": "tsx scripts/capture-og-image.mts",
+    "check:seo": "tsx scripts/check-seo.mts"
   },
   "dependencies": {
     "@neondatabase/neon-js": "^0.2.0-beta.1",

@@ -2,6 +2,7 @@ import { BarChart3, BookOpenText, Play, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useGuestStatisticsToast } from '../../app/useGuestStatisticsToast'
 import { useAuth } from '../../app/useAuth'
 import { Toast } from '../../components/ui'
@@ -17,6 +18,7 @@ type HomeMenuItem = {
 
 export function HomePage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Home')), robots: 'noindex' })
   const { isGuest } = useAuth()
   const { toastMessage, showToast } = useGuestStatisticsToast()
   const menuItems: HomeMenuItem[] = [

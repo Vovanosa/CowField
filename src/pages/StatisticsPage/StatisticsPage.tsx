@@ -2,6 +2,7 @@ import { Clock3, Flag, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
@@ -48,6 +49,7 @@ export function StatisticsPage() {
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Statistics')), robots: 'noindex' })
 
   useEffect(() => {
     let isActive = true

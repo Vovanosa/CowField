@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
@@ -11,6 +12,7 @@ import styles from '../AuthPage/AuthPage.module.css'
 
 export function ResetPasswordPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Reset password')), robots: 'noindex' })
   const [searchParams] = useSearchParams()
   const [token, setToken] = useState(searchParams.get('token') ?? '')
   const [password, setPassword] = useState('')

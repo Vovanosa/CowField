@@ -1,16 +1,25 @@
 import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { CowIcon } from '../../components/icons'
 import { PageHeader, Panel } from '../../components/ui'
 import styles from './AboutPage.module.css'
 
 export function AboutPage() {
   const { t } = useTranslation()
+  // Public and indexable: this is the rules page, and the best keyword surface on the site.
+  useDocumentMeta({
+    title: brandedTitle(t('About the game')),
+    description: t(
+      'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
+    ),
+  })
 
   return (
     <div className={`${styles.simplePage} page-shell`}>
       <PageHeader
+        titleAs="h1"
         backTo="/"
         backLabel={t('Back to home')}
         eyebrow={t('About')}

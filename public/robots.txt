@@ -1,0 +1,31 @@
+# Bullpen — https://cowfield.vercel.app
+#
+# A static file in `public/` on purpose. Vercel checks the filesystem before it applies the rewrites
+# in `vercel.json`, and until this file existed the `/(.*)` catch-all answered /robots.txt with the
+# app's HTML — measured 2026-09-10: 200, text/html.
+#
+# Only two pages here are worth a crawler's time. Everything else needs a session, so a bot can only
+# ever see it redirect to a login form; those are disallowed rather than crawled and discarded, and
+# they carry `noindex` in the app as well.
+
+User-agent: *
+
+# Credential forms. Nothing to index, and no reason to fetch them.
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /auth/
+
+# Behind the session guard. 800 level URLs are the reason this matters: crawl budget spent on them
+# is budget not spent on the two pages that can actually rank.
+Disallow: /levels
+Disallow: /game/
+Disallow: /settings
+Disallow: /statistics
+
+Allow: /
+Allow: /about
+
+Sitemap: https://cowfield.vercel.app/sitemap.xml

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
 import { Button, PageHeader } from '../../components/ui'
@@ -46,6 +47,7 @@ function createProgressSummaryRecord() {
 
 export function LevelsPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Level Select')), robots: 'noindex' })
   const [progressByDifficulty, setProgressByDifficulty] = useState<
     Record<Difficulty, DifficultyProgressSummary>
   >(createProgressSummaryRecord)

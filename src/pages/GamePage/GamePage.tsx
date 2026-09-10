@@ -2,6 +2,7 @@ import { SquarePen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
 import { Button, Panel, StatusMessage } from '../../components/ui'
@@ -53,6 +54,17 @@ function GamePageScreen() {
     isAutoPlaceDotsEnabled,
   })
 
+  // Computed before the invalid-route return below, because the `useDocumentMeta` call has to run
+  // unconditionally — a hook after an early return is a hook that sometimes does not happen.
+  const routeLevelLabel =
+    isDifficulty(difficulty) && levelNumber
+      ? `${getDifficultyLabel(t, difficulty)} / ${t('Level {{levelNumber}}', { levelNumber })}`
+      : t('The requested level route is invalid.')
+
+  // `noindex`: this route needs a session, so a crawler only ever sees it redirect to a login form.
+  // The title still names the level, which is what makes browser history and tabs usable.
+  useDocumentMeta({ title: brandedTitle(routeLevelLabel), robots: 'noindex' })
+
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
       <div className={styles.page}>
@@ -60,10 +72,6 @@ function GamePageScreen() {
       </div>
     )
   }
-
-  const routeLevelLabel = `${getDifficultyLabel(t, difficulty)} / ${t('Level {{levelNumber}}', {
-    levelNumber,
-  })}`
 
   if (isLoading) {
     return (

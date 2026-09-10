@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
@@ -13,6 +14,7 @@ import styles from '../AuthPage/AuthPage.module.css'
 
 export function RegisterPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Create account')), robots: 'noindex' })
   const navigate = useNavigate()
   const auth = useAuth()
   const [email, setEmail] = useState('')

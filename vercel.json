@@ -1,7 +1,52 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/login",
+      "destination": "/"
+    },
+    {
+      "source": "/register",
+      "destination": "/"
+    },
+    {
+      "source": "/forgot-password",
+      "destination": "/"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/"
+    },
+    {
+      "source": "/verify-email",
+      "destination": "/"
+    },
+    {
+      "source": "/about",
+      "destination": "/"
+    },
+    {
+      "source": "/settings",
+      "destination": "/"
+    },
+    {
+      "source": "/statistics",
+      "destination": "/"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/levels",
+      "destination": "/"
+    },
+    {
+      "source": "/levels/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/game/:path*",
       "destination": "/"
     }
   ]

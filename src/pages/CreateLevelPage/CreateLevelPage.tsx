@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
 import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
@@ -27,6 +28,7 @@ function CreateLevelPageView({
   levelNumber: routeLevelNumber,
 }: CreateLevelPageViewProps) {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Edit level')), robots: 'noindex' })
   const { isAdmin } = useRole()
   const navigate = useNavigate()
   const {

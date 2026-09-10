@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
@@ -58,6 +59,17 @@ function DifficultyLevelsPageScreen() {
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
+
+  // Before the `isDifficulty` guard at the bottom of this component, so the hook runs on every
+  // render rather than only on the valid-route path.
+  useDocumentMeta({
+    title: brandedTitle(
+      isDifficulty(difficulty)
+        ? t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })
+        : t('Unknown difficulty.'),
+    ),
+    robots: 'noindex',
+  })
 
   useEffect(() => {
     if (!isDifficulty(difficulty)) {

@@ -1,5 +1,47 @@
 ﻿const uk = {
   Bullpen: 'Bullpen',
+
+  // Лендінг (P14, пункт 84) — єдина сторінка, яку бачить незнайомець або пошуковий робот.
+  // Жанрові слова (Star Battle, Two Not Touch) залишені англійською навмисно: саме їх шукають.
+  'Star Battle logic puzzle': 'Логічна головоломка Star Battle',
+  'Bullpen — a calm Star Battle puzzle': 'Bullpen — спокійна головоломка Star Battle',
+  'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
+    'Грайте в Bullpen — спокійну логічну головоломку Star Battle (Two Not Touch). 800 перевірених рівнів на чотирьох складностях, у кожного рівно один розв’язок. Без реєстрації та без поспіху.',
+  'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
+    'Поле, поділене на кольорові загони. Розставте биків так, щоб у кожному рядку, кожному стовпці й кожному загоні була потрібна кількість — і щоб жодні два бики не торкалися, ні збоку, ні по діагоналі через кут.',
+  'Play now': 'Грати зараз',
+  'Starting...': 'Запускаємо...',
+  'Sign in to save your progress': 'Увійти, щоб зберігати прогрес',
+  'No account, no email. Play as a guest right away.':
+    'Без акаунта й без email. Можна грати як гість просто зараз.',
+  "Couldn't start a game. Check your connection and try again.":
+    'Не вдалося почати гру. Перевірте з’єднання та спробуйте ще раз.',
+  'The rules, in three lines': 'Правила у трьох рядках',
+  'Every row, column and pen holds its exact quota of bulls.':
+    'У кожному рядку, стовпці й загоні — рівно потрібна кількість биків.',
+  'No two bulls may touch — not side by side, not diagonally.':
+    'Жодні два бики не можуть торкатися — ні збоку, ні по діагоналі.',
+  'Dots are notes for yourself. They never count as bulls.':
+    'Точки — це нотатки для себе. Вони ніколи не рахуються як бики.',
+  'Read the full rules': 'Читати повні правила',
+  'Made to be unhurried': 'Створено без поспіху',
+  'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.':
+    'Тут ніщо вас не підганяє. Якщо хочете позмагатися із собою — працює таймер, а режим «не спішіть» вимикає його повністю. Бик, який порушує правило, підсвічується відразу, тож ви можете перевірити ідею й побачити відповідь, а не сумніватися. Підсвітка показує лише те, що заборонено, і ніколи те, що правильно, — тож головоломка залишається вашою.',
+  'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.':
+    'Усього 800 рівнів на чотирьох складностях: light на полі 6x6, easy на 8x8, medium на 10x10 і hard на 10x10 з двома биками в кожному рядку, стовпці та загоні. Кожне поле згенеровано й перевірено так, щоб мати рівно один розв’язок, тому навіть безнадійний на вигляд рівень завжди можна вирішити логікою. Гравцям Star Battle ця головоломка відома і як Two Not Touch.',
+  '800 levels': '800 рівнів',
+  '4 difficulties': '4 складності',
+  'Exactly one solution each': 'Рівно один розв’язок у кожного',
+  'No account needed': 'Без реєстрації',
+  'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.':
+    'Поле Bullpen: сітка з кольоровими загонами, на якій розставлені бики та точки-нотатки.',
+
+  'Page not found': 'Сторінку не знайдено',
+  'That link does not lead anywhere.': 'Це посилання нікуди не веде.',
+  'Back to the start': 'На початок',
+
+  'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
+    'Повні правила Bullpen: як працюють бики, рядки, стовпці й загони, для чого потрібні точки та чим відрізняються чотири складності.',
   'Loading...': 'Завантаження...',
   Hidden: 'Приховано',
   'Back to home': 'Назад на головну',

@@ -1,30 +1,73 @@
-import { createAuthClient } from '@neondatabase/neon-js/auth'
-import { SupabaseAuthAdapter } from '@neondatabase/neon-js/auth/vanilla/adapters'
-
 import { getNeonAuthUrl } from './http/apiBase'
 
 const NEON_AUTH_URL = getNeonAuthUrl()
 
-const neonAuthClient = NEON_AUTH_URL
-  ? createAuthClient(NEON_AUTH_URL, {
-      adapter: SupabaseAuthAdapter(),
-    })
-  : null
+/**
+ * The Neon Auth SDK is loaded **on demand**, not at boot.
+ *
+ * It is `@neondatabase/neon-js` plus its Supabase-compatible adapter, and it measured **365 KB
+ * minified** — more than half of the entire first load, and by far the largest single thing in the
+ * bundle. Importing it at module top level put it in the entry graph, so *every* visitor downloaded
+ * it before the page could paint, including the two who never need it:
+ *
+ *  - someone reading the landing page, who has no session at all;
+ *  - a **guest**, whose token comes from our own `POST /api/auth/guest` and who never talks to Neon.
+ *
+ * Nothing is lost for a signed-in player: they need the SDK, so they wait for it once, and
+ * `getCurrentSession` short-circuits before reaching here when there is no stored role — which is
+ * also why a crawler never pays for it.
+ */
+async function createNeonAuthClient(authUrl: string) {
+  const [{ createAuthClient }, { SupabaseAuthAdapter }] = await Promise.all([
+    import('@neondatabase/neon-js/auth'),
+    import('@neondatabase/neon-js/auth/vanilla/adapters'),
+  ])
 
-function requireNeonAuth() {
-  if (!neonAuthClient) {
+  return createAuthClient(authUrl, { adapter: SupabaseAuthAdapter() })
+}
+
+/**
+ * Inferred from the real construction above rather than written out.
+ *
+ * `createAuthClient` is generic over its adapter, so naming the type as
+ * `ReturnType<typeof createAuthClient>` collapses it to a union of every adapter shape and loses
+ * every Supabase-specific method — `signInWithPassword`, `exchangeCodeForSession` and the rest all
+ * stop existing. Deriving it from the call keeps the adapter that was actually passed.
+ */
+type NeonAuthClient = Awaited<ReturnType<typeof createNeonAuthClient>>
+
+let clientPromise: Promise<NeonAuthClient | null> | null = null
+
+function getNeonAuthClient() {
+  if (!NEON_AUTH_URL) {
+    return Promise.resolve(null)
+  }
+
+  // Memoised on the promise, not the resolved value: two callers arriving together must not each
+  // construct a client, and must not each fetch the chunk.
+  clientPromise ??= createNeonAuthClient(NEON_AUTH_URL)
+
+  return clientPromise
+}
+
+async function requireNeonAuth() {
+  const client = await getNeonAuthClient()
+
+  if (!client) {
     throw new Error('Neon Auth is not configured.')
   }
 
-  return neonAuthClient
+  return client
 }
 
 export async function getNeonSession() {
-  if (!neonAuthClient) {
+  const client = await getNeonAuthClient()
+
+  if (!client) {
     return null
   }
 
-  const response = await neonAuthClient.getSession()
+  const response = await client.getSession()
 
   if (response.error) {
     throw new Error(response.error.message)
@@ -34,7 +77,7 @@ export async function getNeonSession() {
 }
 
 export async function signInWithNeonPassword(email: string, password: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const response = await auth.signInWithPassword({ email, password })
 
   if (response.error) {
@@ -49,7 +92,7 @@ export async function signUpWithNeonPassword(
   password: string,
   emailRedirectTo: string,
 ) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   // Points the verification link at our own `/verify-email` route, the same place `resend` sends
   // it. Without this the first email used whatever default the provider is configured with, so the
   // two paths to the same mailbox could land the player in two different places.
@@ -63,7 +106,7 @@ export async function signUpWithNeonPassword(
 }
 
 export async function signInWithNeonGoogle(redirectTo: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const response = await auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -79,7 +122,7 @@ export async function signInWithNeonGoogle(redirectTo: string) {
 }
 
 export async function requestNeonPasswordReset(email: string, redirectTo: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const response = await auth.resetPasswordForEmail(email, {
     redirectTo,
   })
@@ -92,7 +135,7 @@ export async function requestNeonPasswordReset(email: string, redirectTo: string
 }
 
 export async function resendNeonSignupVerification(email: string, emailRedirectTo: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const response = await auth.resend({
     email,
     type: 'signup',
@@ -109,7 +152,7 @@ export async function resendNeonSignupVerification(email: string, emailRedirectT
 }
 
 export async function resetNeonPassword(token: string, newPassword: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const resetPassword = (
     auth as typeof auth & {
       resetPassword: (input: { token: string; newPassword: string }) => Promise<{
@@ -131,7 +174,7 @@ export async function resetNeonPassword(token: string, newPassword: string) {
 }
 
 export async function exchangeNeonCodeForSession(code: string) {
-  const auth = requireNeonAuth()
+  const auth = await requireNeonAuth()
   const response = await auth.exchangeCodeForSession(code)
 
   if (response.error) {
@@ -142,11 +185,13 @@ export async function exchangeNeonCodeForSession(code: string) {
 }
 
 export async function signOutNeon() {
-  if (!neonAuthClient) {
+  const client = await getNeonAuthClient()
+
+  if (!client) {
     return
   }
 
-  const response = await neonAuthClient.signOut()
+  const response = await client.signOut()
 
   if (response.error) {
     throw new Error(response.error.message)

@@ -2,6 +2,7 @@ import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-re
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
 import gbFlag from '../../assets/flags/gb.svg'
 import uaFlag from '../../assets/flags/ua.svg'
@@ -74,6 +75,7 @@ export function SettingsPage() {
   const { isGuest } = useAuth()
   const settings = usePlayerSettings()
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Settings')), robots: 'noindex' })
   const [hasStorageFailed, setHasStorageFailed] = useState(false)
 
   /**

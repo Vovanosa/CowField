@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout } from '../../components/AuthLayout'
@@ -22,6 +23,7 @@ import { AuthLayout } from '../../components/AuthLayout'
  */
 export function VerifyEmailPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Verifying your email...')), robots: 'noindex' })
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { completeEmailVerification, isAuthenticated, isLoading } = useAuth()

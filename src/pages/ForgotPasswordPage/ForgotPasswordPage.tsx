@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { Button, Field, Input, TextLink } from '../../components/ui'
@@ -9,6 +10,7 @@ import styles from '../AuthPage/AuthPage.module.css'
 
 export function ForgotPasswordPage() {
   const { t } = useTranslation()
+  useDocumentMeta({ title: brandedTitle(t('Forgot password?')), robots: 'noindex' })
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<AuthMessage | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
