@@ -58,10 +58,12 @@
   font-family: var(--font-heading);
   font-size: 1.2rem;
   color: var(--color-heading);
+  overflow-wrap: anywhere;
 }
 
 .profileMeta {
   color: var(--color-muted);
+  overflow-wrap: anywhere;
 }
 
 .profileField {
