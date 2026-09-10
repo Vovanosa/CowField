@@ -1,6 +1,6 @@
 # Cowfield
 
-Calm, grid-based logic puzzle game inspired by Bullpen, built with React, Vite, TypeScript, Express, PostgreSQL, and Prisma.
+Calm, grid-based logic puzzle game in the Star Battle (Two Not Touch) tradition, built with React, Vite, TypeScript, Express, PostgreSQL, and Prisma.
 
 ## Current Project Layout
 

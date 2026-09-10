@@ -133,7 +133,7 @@ export function ProfileMenu() {
           {/*
             The only route into the landing page from inside the app.
 
-            `/` is the home menu once you are signed in, so the page that explains what Bullpen is
+            `/` is the home menu once you are signed in, so the page that explains what CowField is
             had no link pointing at it from anywhere a player could stand — it existed only for
             visitors who had never signed in. `/welcome` renders it for everyone; see the route.
 
@@ -142,7 +142,7 @@ export function ProfileMenu() {
           */}
           <TextLink to="/welcome" className={styles.profileAbout} onClick={closeProfileMenu}>
             <BookOpenText size={16} />
-            <span>{t('What is Bullpen?')}</span>
+            <span>{t('What is CowField?')}</span>
           </TextLink>
 
           <Button

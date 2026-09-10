@@ -1,4 +1,4 @@
-# Bullpen — https://cowfield.vercel.app
+# CowField — https://cowfield.vercel.app
 #
 # A static file in `public/` on purpose. Vercel checks the filesystem before it applies the rewrites
 # in `vercel.json`, and until this file existed the `/(.*)` catch-all answered /robots.txt with the

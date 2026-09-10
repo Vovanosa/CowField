@@ -12,7 +12,7 @@ export function AboutPage() {
   useDocumentMeta({
     title: brandedTitle(t('About the game')),
     description: t(
-      'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
+      'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
     ),
   })
 
@@ -29,7 +29,7 @@ export function AboutPage() {
         <article className={styles.aboutArticle}>
           <p className={styles.lead}>
             {t(
-              'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
+              'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
             )}
           </p>
 
@@ -88,7 +88,7 @@ export function AboutPage() {
 
           <p className={styles.closing}>
             {t(
-              'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
+              'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
             )}
           </p>
         </article>

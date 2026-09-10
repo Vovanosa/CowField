@@ -1,18 +1,18 @@
 const en = {
-  Bullpen: 'Bullpen',
+  CowField: 'CowField',
 
   // ---------------------------------------------------------------------------------------------
   // The landing page (P14 item 84) — the only page a stranger, or a crawler, can read.
   //
   // This block is deliberately prose rather than labels: it is the site's entire indexable content.
   // Before it existed, every URL rendered the login form and the whole site was 31 words. The genre
-  // words matter as much as the wording — nobody searches "Bullpen", people search "Star Battle"
+  // words matter as much as the wording — nobody searches "CowField", people search "Star Battle"
   // and "Two Not Touch".
   // ---------------------------------------------------------------------------------------------
   'Star Battle logic puzzle': 'Star Battle logic puzzle',
-  'Bullpen — a calm Star Battle puzzle': 'Bullpen — a calm Star Battle puzzle',
-  'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
-    'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+  'CowField — a calm Star Battle puzzle': 'CowField — a calm Star Battle puzzle',
+  'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
+    'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
   'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
     'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.',
   'Play now': 'Play now',
@@ -41,8 +41,8 @@ const en = {
   '4 difficulties': '4 difficulties',
   'Exactly one solution each': 'Exactly one solution each',
   'No account needed': 'No account needed',
-  'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.':
-    'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.',
+  'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.':
+    'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.',
 
   // The not-found view, which replaced a silent redirect to `/`.
   'Page not found': 'Page not found',
@@ -51,8 +51,8 @@ const en = {
 
   // Page descriptions — `<meta name="description">`, so ~150-160 characters each. Only the two
   // public pages genuinely need one; the rest are `noindex` and carry a title alone.
-  'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
-    'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
+  'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
+    'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
   'Loading...': 'Loading...',
   Hidden: 'Hidden',
   'Back to home': 'Back to home',
@@ -115,8 +115,8 @@ const en = {
   'This level is locked. Complete the previous level first to open it.':
     'This level is locked. Complete the previous level first to open it.',
   'About the game': 'About the game',
-  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
-    'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
+  'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
+    'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
   'How cell marks work': 'How cell marks work',
   'Each cell changes like this:': 'Each cell changes like this:',
   empty: 'empty',
@@ -138,8 +138,8 @@ const en = {
     'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.',
   'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
     'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.',
-  'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
-    'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
+  'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
+    'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
   'Adjust your preferences here.':
     'Adjust your preferences here.',
   'Sound effects': 'Sound effects',
@@ -357,7 +357,7 @@ const en = {
   "Couldn't create your account. Try again.": "Couldn't create your account. Try again.",
   "Couldn't send the reset link. Try again.": "Couldn't send the reset link. Try again.",
   "Couldn't update your password. Try again.": "Couldn't update your password. Try again.",
-  'What is Bullpen?': 'What is Bullpen?',
+  'What is CowField?': 'What is CowField?',
   'Back to your levels': 'Back to your levels',
   'Email verification failed.': 'Email verification failed.',
   'Your email is verified. You can log in now.':

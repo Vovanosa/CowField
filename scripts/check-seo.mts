@@ -312,7 +312,7 @@ for (const route of PUBLIC_ROUTES) {
     facts.path === route,
     `ended up at ${facts.path}`,
   )
-  check(`${route} has a title naming the product`, /Bullpen/.test(facts.title), `"${facts.title}"`)
+  check(`${route} has a title naming the product`, /CowField/.test(facts.title), `"${facts.title}"`)
   check(
     `${route} has a description`,
     Boolean(facts.description && facts.description.length > 50),

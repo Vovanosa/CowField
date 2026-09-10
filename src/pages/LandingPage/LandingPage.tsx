@@ -52,9 +52,9 @@ export function LandingPage() {
   const isPlayer = auth.isAuthenticated
 
   useDocumentMeta({
-    title: t('Bullpen — a calm Star Battle puzzle'),
+    title: t('CowField — a calm Star Battle puzzle'),
     description: t(
-      'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+      'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
     ),
     // This page answers on `/welcome` too, so both URLs name `/` as the one to index.
     canonicalPath: '/',
@@ -119,10 +119,10 @@ export function LandingPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'VideoGame',
-            name: 'Bullpen',
-            alternateName: 'Bullpen — Star Battle puzzle',
+            name: 'CowField',
+            alternateName: 'CowField — Star Battle puzzle',
             description: t(
-              'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+              'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
             ),
             genre: ['Puzzle', 'Logic puzzle', 'Star Battle'],
             applicationCategory: 'Game',
@@ -144,7 +144,7 @@ export function LandingPage() {
 
       <section className={styles.hero}>
         <p className={styles.eyebrow}>{t('Star Battle logic puzzle')}</p>
-        <h1 className={styles.title}>{t('Bullpen — a calm Star Battle puzzle')}</h1>
+        <h1 className={styles.title}>{t('CowField — a calm Star Battle puzzle')}</h1>
         <p className={styles.lead}>
           {t(
             'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.',
@@ -214,7 +214,7 @@ export function LandingPage() {
         height={630}
         loading="lazy"
         decoding="async"
-        alt={t('A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.')}
+        alt={t('A CowField board: a grid of coloured pens with bulls and dot notes placed on it.')}
       />
 
       <section className={styles.section} aria-labelledby="landing-rules">

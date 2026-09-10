@@ -96,7 +96,7 @@ export function VerifyEmailPage() {
   return (
     <AuthLayout
       eyebrow={t('Login')}
-      title={t('Bullpen')}
+      title={t('CowField')}
       description={t('Verifying your email...')}
     >
       <></>

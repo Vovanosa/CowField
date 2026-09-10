@@ -76,7 +76,7 @@ export function RegisterPage() {
   return (
     <AuthLayout
       eyebrow={t('Create account')}
-      title={t('Bullpen')}
+      title={t('CowField')}
       description={t('Create a user account with your email and password.')}
       message={message}
       links={
@@ -86,7 +86,7 @@ export function RegisterPage() {
           </TextLink>
           {/* Signed out by definition here, so `/` is the landing page — see the note on `/login`. */}
           <TextLink to="/">
-            {t('What is Bullpen?')}
+            {t('What is CowField?')}
           </TextLink>
         </>
       }

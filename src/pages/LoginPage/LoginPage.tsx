@@ -118,7 +118,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       eyebrow={t('Login')}
-      title={t('Bullpen')}
+      title={t('CowField')}
       description={t('Sign in with your email and password, create an account, or continue as a guest.')}
       message={visibleMessage}
       links={
@@ -135,7 +135,7 @@ export function LoginPage() {
             the landing page. Sending them to the canonical URL rather than its alias.
           */}
           <TextLink to="/">
-            {t('What is Bullpen?')}
+            {t('What is CowField?')}
           </TextLink>
           {needsVerification ? (
             <Button

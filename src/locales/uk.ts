@@ -1,12 +1,12 @@
 ﻿const uk = {
-  Bullpen: 'Bullpen',
+  CowField: 'CowField',
 
   // Лендінг (P14, пункт 84) — єдина сторінка, яку бачить незнайомець або пошуковий робот.
   // Жанрові слова (Star Battle, Two Not Touch) залишені англійською навмисно: саме їх шукають.
   'Star Battle logic puzzle': 'Логічна головоломка Star Battle',
-  'Bullpen — a calm Star Battle puzzle': 'Bullpen — спокійна головоломка Star Battle',
-  'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
-    'Грайте в Bullpen — спокійну логічну головоломку Star Battle (Two Not Touch). 800 перевірених рівнів на чотирьох складностях, у кожного рівно один розв’язок. Без реєстрації та без поспіху.',
+  'CowField — a calm Star Battle puzzle': 'CowField — спокійна головоломка Star Battle',
+  'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
+    'Грайте в CowField — спокійну логічну головоломку Star Battle (Two Not Touch). 800 перевірених рівнів на чотирьох складностях, у кожного рівно один розв’язок. Без реєстрації та без поспіху.',
   'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
     'Поле, поділене на кольорові загони. Розставте биків так, щоб у кожному рядку, кожному стовпці й кожному загоні була потрібна кількість — і щоб жодні два бики не торкалися, ні збоку, ні по діагоналі через кут.',
   'Play now': 'Грати зараз',
@@ -35,15 +35,15 @@
   '4 difficulties': '4 складності',
   'Exactly one solution each': 'Рівно один розв’язок у кожного',
   'No account needed': 'Без реєстрації',
-  'A Bullpen board: a grid of coloured pens with bulls and dot notes placed on it.':
-    'Поле Bullpen: сітка з кольоровими загонами, на якій розставлені бики та точки-нотатки.',
+  'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.':
+    'Поле CowField: сітка з кольоровими загонами, на якій розставлені бики та точки-нотатки.',
 
   'Page not found': 'Сторінку не знайдено',
   'That link does not lead anywhere.': 'Це посилання нікуди не веде.',
   'Back to the start': 'На початок',
 
-  'The full rules of Bullpen: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
-    'Повні правила Bullpen: як працюють бики, рядки, стовпці й загони, для чого потрібні точки та чим відрізняються чотири складності.',
+  'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
+    'Повні правила CowField: як працюють бики, рядки, стовпці й загони, для чого потрібні точки та чим відрізняються чотири складності.',
   'Loading...': 'Завантаження...',
   Hidden: 'Приховано',
   'Back to home': 'Назад на головну',
@@ -104,8 +104,8 @@
   'This level is locked. Complete the previous level first to open it.':
     'Цей рівень заблокований. Спочатку пройдіть попередній рівень, щоб його відкрити.',
   'About the game': 'Про гру',
-  'Bullpen is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
-    'Bullpen — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без стресу, лише поступове розуміння того, де бик може стояти, а де ні.',
+  'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
+    'CowField — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без стресу, лише поступове розуміння того, де бик може стояти, а де ні.',
   'How cell marks work': 'Як працюють позначки в клітинках',
   'Each cell changes like this:': 'Кожна клітинка змінюється так:',
   empty: 'порожньо',
@@ -127,8 +127,8 @@
     'Зручний спосіб грати — ставити точки як підказки для себе, поки ви перевіряєте ідеї. Биків можна ставити навіть у неправильні місця: бик, який порушує правило, підсвічується відразу, тож ви це побачите й рухатиметеся далі. Перед завершенням рівня не потрібно зачищати всі невикористані клітинки.',
   'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
     'У налаштуваннях можна зробити гру комфортнішою: увімкнути режим без поспіху, щоб сховати таймер, скористатися автопозначками точками, перейти на темну тему та ввімкнути звукові ефекти або музику з регулюванням гучності. Якщо ви граєте як гість, режим без поспіху вмикається автоматично.',
-  'The fun of Bullpen is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
-    'Найприємніший момент у Bullpen — це коли заплутане поле раптом починає складатися в зрозумну картину. Починайте з малого, довіряйте правилам і дозвольте візерунку з’являтися по одному бику за раз.',
+  'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
+    'Найприємніший момент у CowField — це коли заплутане поле раптом починає складатися в зрозумну картину. Починайте з малого, довіряйте правилам і дозвольте візерунку з’являтися по одному бику за раз.',
   'Sound effects': 'Звукові ефекти',
   'Enable sound effects.': 'Увімкнути звукові ефекти.',
   Music: 'Музика',
@@ -353,7 +353,7 @@
   "Couldn't send the reset link. Try again.":
     'Не вдалося надіслати посилання для скидання. Спробуйте ще раз.',
   "Couldn't update your password. Try again.": 'Не вдалося змінити пароль. Спробуйте ще раз.',
-  'What is Bullpen?': 'Що таке Bullpen?',
+  'What is CowField?': 'Що таке CowField?',
   'Back to your levels': 'Повернутися до рівнів',
   'Email verification failed.': 'Не вдалося підтвердити електронну пошту.',
   'Your email is verified. You can log in now.':

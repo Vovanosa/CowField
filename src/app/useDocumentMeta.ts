@@ -38,19 +38,20 @@ export type DocumentMeta = {
   canonicalPath?: string
 }
 
-const DEFAULT_TITLE = 'Bullpen — a calm Star Battle puzzle'
+const DEFAULT_TITLE = 'CowField — a calm Star Battle puzzle'
 
 /**
- * `Bullpen — <page>`, the pattern for every page except the landing page, which owns the bare
+ * `CowField — <page>`, the pattern for every page except the landing page, which owns the bare
  * branded title.
  *
- * **Bullpen**, not CowField (scope decision D1). `CowField` is the repository and the current
- * domain; `Bullpen` is what the UI has always called itself, and until now the `<title>` said one
- * thing while the page's own `<h1>` said the other — which makes a weak search result and a
- * confusing share.
+ * **One name, and it is the same as the domain.** P14 briefly branded the UI differently from the
+ * repository and the host (scope decision D1); that was dropped on 2026-09-10 over a naming concern,
+ * and the result is the arrangement that should have been chosen first — `<title>`, `<h1>`,
+ * structured data and `cowfield.vercel.app` all agree, where before the title said one thing and the
+ * page's own heading said another, which makes a weak search result and a confusing share.
  */
 export function brandedTitle(pageTitle: string) {
-  return `Bullpen — ${pageTitle}`
+  return `CowField — ${pageTitle}`
 }
 
 /** `<meta name="…">` or `<meta property="…">`, created on first use and reused after. */

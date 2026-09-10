@@ -53,7 +53,7 @@ export function HomePage() {
     <div className={`${styles.homePage} page-shell page-shell-compact`}>
       <section className={styles.homeShell}>
         <div className={styles.homeWordmark}>
-          <p className={styles.homeTitle}>{t('Bullpen')}</p>
+          <p className={styles.homeTitle}>{t('CowField')}</p>
         </div>
 
         <nav className={styles.homeMenu} aria-label={t('Home menu')}>
