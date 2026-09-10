@@ -342,9 +342,19 @@
   'Invalid email or password': 'Неправильна електронна пошта або пароль.',
   'User already exists': 'Обліковий запис із такою електронною поштою вже існує.',
   'Email not verified': 'Електронну пошту ще не підтверджено.',
+  'Invalid token': 'Це посилання для скидання вже недійсне. Запросіть нове.',
+  'Password too short': 'Цей пароль надто короткий. Використайте щонайменше 8 символів.',
+  'Password too long': 'Цей пароль надто довгий.',
   'Failed to restore session after login.': 'Не вдалося відновити сесію після входу.',
   'Google login failed.': 'Не вдалося завершити вхід через Google.',
   'Sign-in failed. Try again.': 'Не вдалося увійти. Спробуйте ще раз.',
+  "Couldn't create your account. Try again.":
+    'Не вдалося створити обліковий запис. Спробуйте ще раз.',
+  "Couldn't send the reset link. Try again.":
+    'Не вдалося надіслати посилання для скидання. Спробуйте ще раз.',
+  "Couldn't update your password. Try again.": 'Не вдалося змінити пароль. Спробуйте ще раз.',
+  'What is Bullpen?': 'Що таке Bullpen?',
+  'Back to your levels': 'Повернутися до рівнів',
   'Email verification failed.': 'Не вдалося підтвердити електронну пошту.',
   'Your email is verified. You can log in now.':
     'Вашу пошту підтверджено. Тепер ви можете увійти.',

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
-import { translateAuthMessage } from '../../app/translateAuthMessage'
+import { translateAuthError } from '../../app/translateAuthMessage'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { Button, Field, Input, TextLink } from '../../components/ui'
 import { requestPasswordReset } from '../../game/storage/authSessionStorage'
@@ -29,8 +29,12 @@ export function ForgotPasswordPage() {
     } catch (error) {
       // Previously indistinguishable from the success above: this page passed no tone at all, so a
       // failed request was rendered in the same neutral grey as a sent link.
+      //
+      // Allowlisted rather than echoed, which also closes an enumeration hole: the provider answers
+      // an unknown address with "User not found", and echoing that told a stranger which emails
+      // have accounts — the exact thing the success message above is worded to avoid.
       setMessage({
-        text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+        text: translateAuthError(t, error, t("Couldn't send the reset link. Try again.")),
         tone: 'error',
       })
     } finally {

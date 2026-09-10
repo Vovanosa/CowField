@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
-import { translateAuthMessage, translateKnownAuthMessage } from '../../app/translateAuthMessage'
+import { translateAuthError, translateKnownAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
@@ -26,7 +26,10 @@ export function LoginPage() {
 
   function toErrorMessage(error: unknown): AuthMessage {
     return {
-      text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+      // Allowlisted, like `?error=` below. A thrown message here can be the provider's own server
+      // prose or an internal `TypeError`, and neither belongs on the page — the ones worth naming
+      // have keys in `locales/en.ts`.
+      text: translateAuthError(t, error, t('Sign-in failed. Try again.')),
       tone: 'error',
     }
   }
@@ -125,6 +128,14 @@ export function LoginPage() {
           </TextLink>
           <TextLink to="/forgot-password">
             {t('Forgot password?')}
+          </TextLink>
+          {/*
+            `/` and not `/welcome`, even though both render the landing page: `PublicOnlyRoute`
+            guards this route, so anyone reading this link is signed out — and for them `/` *is*
+            the landing page. Sending them to the canonical URL rather than its alias.
+          */}
+          <TextLink to="/">
+            {t('What is Bullpen?')}
           </TextLink>
           {needsVerification ? (
             <Button

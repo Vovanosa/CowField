@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
-import { translateAuthMessage } from '../../app/translateAuthMessage'
+import { translateAuthError } from '../../app/translateAuthMessage'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
 import { Button, Field, Input, TextLink } from '../../components/ui'
@@ -36,7 +36,7 @@ export function ResetPasswordPage() {
       setMessage({ text: t('Your password has been updated.'), tone: 'success' })
     } catch (error) {
       setMessage({
-        text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+        text: translateAuthError(t, error, t("Couldn't update your password. Try again.")),
         tone: 'error',
       })
     } finally {

@@ -60,6 +60,9 @@
   color: var(--color-accent-strong);
   font-family: var(--font-heading);
   font-size: 1.05rem;
+  /* This is a `<button>` for a visitor and an `<a>` for a signed-in player, and only one of the two
+     comes with an underline by default. */
+  text-decoration: none;
   box-shadow: var(--shadow-soft);
   transition:
     transform var(--transition-fast),

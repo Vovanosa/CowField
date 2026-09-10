@@ -27,6 +27,9 @@ import styles from './LandingPage.module.css'
 /** Where "Play now" lands: the first level of the gentlest difficulty, i.e. actually playing. */
 const FIRST_LEVEL_PATH = '/game/light/1'
 
+/** Where a player who is already signed in goes instead — their own progress, not level one. */
+const PLAYER_PATH = '/levels'
+
 /** How long a start may take silently before the page explains itself. */
 const SLOW_START_NOTICE_MS = 3000
 
@@ -38,11 +41,23 @@ export function LandingPage() {
   const [isSlow, setIsSlow] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /*
+    Whether the reader has a session changes what this page is for, not what it says.
+
+    A stranger arriving at `/` gets the pitch and a one-tap guest start. A **player** can only get
+    here through `/welcome`, deliberately — from the profile menu — because `/` is their home menu.
+    They must not be offered the guest start: `loginAsGuest` would replace the account they are
+    signed in to, so for them the same button goes to their levels instead.
+  */
+  const isPlayer = auth.isAuthenticated
+
   useDocumentMeta({
     title: t('Bullpen — a calm Star Battle puzzle'),
     description: t(
       'Play Bullpen, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
     ),
+    // This page answers on `/welcome` too, so both URLs name `/` as the one to index.
+    canonicalPath: '/',
   })
 
   async function handlePlayNow() {
@@ -137,20 +152,31 @@ export function LandingPage() {
         </p>
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.primaryAction}
-            onClick={() => void handlePlayNow()}
-            disabled={isStarting}
-          >
-            <span className={styles.actionIcon}>
-              <Play size={18} />
-            </span>
-            <span>{isStarting ? t('Starting...') : t('Play now')}</span>
-          </button>
-          <Link className={styles.secondaryAction} to="/login">
-            {t('Sign in to save your progress')}
-          </Link>
+          {isPlayer ? (
+            <Link className={styles.primaryAction} to={PLAYER_PATH}>
+              <span className={styles.actionIcon}>
+                <Play size={18} />
+              </span>
+              <span>{t('Back to your levels')}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className={styles.primaryAction}
+              onClick={() => void handlePlayNow()}
+              disabled={isStarting}
+            >
+              <span className={styles.actionIcon}>
+                <Play size={18} />
+              </span>
+              <span>{isStarting ? t('Starting...') : t('Play now')}</span>
+            </button>
+          )}
+          {isPlayer ? null : (
+            <Link className={styles.secondaryAction} to="/login">
+              {t('Sign in to save your progress')}
+            </Link>
+          )}
         </div>
 
         {/*
@@ -158,12 +184,17 @@ export function LandingPage() {
           screen-reader user is told about the wait rather than left with a button that went quiet —
           `polite` because it must not interrupt, and the region is always rendered so the change is
           announced (a region that appears at the same moment its text does is often missed).
+
+          Nothing to say to a player: there is no guest start to explain and no cold start to wait
+          through, since they only got here from inside the running app.
         */}
-        <p className={styles.actionNote} aria-live="polite">
-          {isSlow
-            ? t('Waking the server — the first visit after a quiet spell takes a moment.')
-            : t('No account, no email. Play as a guest right away.')}
-        </p>
+        {isPlayer ? null : (
+          <p className={styles.actionNote} aria-live="polite">
+            {isSlow
+              ? t('Waking the server — the first visit after a quiet spell takes a moment.')
+              : t('No account, no email. Play as a guest right away.')}
+          </p>
+        )}
 
         {error ? <StatusMessage message={error} variant="warning" compact /> : null}
       </section>

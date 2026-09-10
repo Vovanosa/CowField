@@ -102,6 +102,21 @@
   justify-content: flex-start;
 }
 
+.profileAbout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  color: var(--color-muted);
+}
+
+@media (hover: hover) {
+  .profileAbout:hover {
+    color: var(--color-heading);
+  }
+}
+
 .profileLogoutButton {
   justify-content: center;
 }

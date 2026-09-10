@@ -35,6 +35,8 @@ const DEBUG_PORT = Number(process.env.A11Y_DEBUG_PORT ?? 9224)
 const PUBLIC_ROUTES = ['/', '/about']
 /** Needs a session, or is a credential form: must report `noindex`. */
 const PRIVATE_ROUTES = ['/levels', '/settings', '/login']
+/** The landing page's second URL, for players who cannot reach it at `/`. Must canonicalise to `/`. */
+const ALIAS_ROUTE = '/welcome'
 /** Must not resolve to the app at all. */
 const UNKNOWN_ROUTE = '/this-page-does-not-exist-seo-check'
 
@@ -353,6 +355,28 @@ check(
   'the public pages do not share one title',
   new Set(publicFacts.map((facts) => facts.title)).size === publicFacts.length,
   publicFacts.map((facts) => `"${facts.title}"`).join(' vs '),
+)
+
+/*
+  `/welcome` is the same page as `/`, on a URL a signed-in player can reach — `/` is their home
+  menu, so without this the landing page was unreachable from inside the app.
+
+  It is the one page in the site served on two URLs, which is the thing this whole script exists to
+  catch, so it is checked rather than trusted: it must render the landing page, and it must hand `/`
+  the credit for it. A self-canonical here would be two pages competing for the same words.
+*/
+console.log('\n--- the landing page on its second URL ---')
+
+const welcome = await inspect(ALIAS_ROUTE)
+check(`${ALIAS_ROUTE} renders the landing page`, welcome.words > MINIMUM_LANDING_WORDS, `${welcome.words} words`)
+check(
+  `${ALIAS_ROUTE} gives / the canonical rather than claiming it`,
+  welcome.canonical === `${TARGET}/`,
+  `canonical=${welcome.canonical}`,
+)
+check(
+  `${ALIAS_ROUTE} is not listed in the sitemap`,
+  !sitemap.body.includes(`${declaredOrigin}${ALIAS_ROUTE}`),
 )
 
 console.log('\n--- the pages that must stay out of the index ---')

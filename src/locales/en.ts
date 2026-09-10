@@ -342,11 +342,23 @@ const en = {
   'Invalid email or password': 'Incorrect email or password.',
   'User already exists': 'An account with that email already exists.',
   'Email not verified': 'Email not verified.',
+  // The reset-password endpoint's codes, same idea. Anything not listed here — "User not found" on
+  // a forgotten-password request, for one, which would otherwise tell a stranger which addresses
+  // have accounts — falls through to the caller's generic message instead of being shown.
+  'Invalid token': 'This reset link is no longer valid. Request a new one.',
+  'Password too short': 'That password is too short. Use at least 8 characters.',
+  'Password too long': 'That password is too long.',
   'Failed to restore session after login.': 'Failed to restore session after login.',
   'Google login failed.': 'Google login failed.',
   // Shown instead of `?error=` when the address bar carries something we do not ship a string for.
   // Everything above is the allowlist `translateKnownAuthMessage` checks against.
   'Sign-in failed. Try again.': 'Sign-in failed. Try again.',
+  // The other generic fallbacks, one per form, so a failure at least says which thing failed.
+  "Couldn't create your account. Try again.": "Couldn't create your account. Try again.",
+  "Couldn't send the reset link. Try again.": "Couldn't send the reset link. Try again.",
+  "Couldn't update your password. Try again.": "Couldn't update your password. Try again.",
+  'What is Bullpen?': 'What is Bullpen?',
+  'Back to your levels': 'Back to your levels',
   'Email verification failed.': 'Email verification failed.',
   'Your email is verified. You can log in now.':
     'Your email is verified. You can log in now.',

@@ -47,6 +47,9 @@ const GoogleAuthCallbackPage = lazyPage(() =>
     default: module.GoogleAuthCallbackPage,
   })),
 )
+const LandingPage = lazyPage(() =>
+  import('../pages/LandingPage').then((module) => ({ default: module.LandingPage })),
+)
 const LevelsPage = lazyPage(() =>
   import('../pages/LevelsPage').then((module) => ({ default: module.LevelsPage })),
 )
@@ -194,6 +197,25 @@ const router = createBrowserRouter([
             // Public. Verified to need no session: no `useAuth`, no fetch, no storage.
             path: 'about',
             element: withSuspense(<AboutPage />),
+          },
+          {
+            /*
+              The landing page, on a URL that does not change meaning with the session.
+
+              `/` cannot do that job for a **player**: `HomeRoute` gives them the home menu there,
+              which is right, and left the landing page unreachable once anyone signed in — there
+              was no link to it from anywhere in the app. The profile menu now points here.
+
+              Not a second marketing URL: it declares `/` as its canonical, so the page that gets
+              crawled, shared and listed in the sitemap is still `/` alone (scope decision D2).
+              A canonical rather than `noindex`, because the two contradict each other — `noindex`
+              on a duplicate tells Google to drop the page instead of crediting the original.
+
+              Note this also needs a rewrite in `vercel.json`, or a reload on `/welcome` 404s at
+              the edge like any other unlisted path.
+            */
+            path: 'welcome',
+            element: withSuspense(<LandingPage />),
           },
           {
             element: <RequireSession />,

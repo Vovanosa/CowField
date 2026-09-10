@@ -151,23 +151,33 @@ export async function resendNeonSignupVerification(email: string, emailRedirectT
   return response.data
 }
 
+/**
+ * Set a new password from the token in a reset email.
+ *
+ * **This is the one call that cannot go through the Supabase-shaped surface, because it is not part
+ * of it.** The adapter implements Supabase's `AuthClient`, and Supabase's recovery flow is "turn
+ * the emailed link into a session, then `updateUser`" — it has no "reset with a token" method at
+ * all. This function used to *cast* one into existence, so every submission threw
+ * `resetPassword is not a function`, and minification shipped that to the player as
+ * **"n is not a function"** underneath the form. The cast is why it compiled: it asserted the
+ * method rather than asking for it.
+ *
+ * Neon Auth is better-auth underneath, `getBetterAuthInstance()` is a public method on the adapter,
+ * and better-auth's `resetPassword` is the endpoint the emailed `?token=` was actually minted for.
+ * Going through it is fully typed, so the next wrong method name is a compile error instead of a
+ * live one. Measured against the installed SDK on 2026-09-10: `typeof client.resetPassword` is
+ * `'undefined'`, `typeof client.getBetterAuthInstance().resetPassword` is `'function'`.
+ */
 export async function resetNeonPassword(token: string, newPassword: string) {
   const auth = await requireNeonAuth()
-  const resetPassword = (
-    auth as typeof auth & {
-      resetPassword: (input: { token: string; newPassword: string }) => Promise<{
-        data: unknown
-        error: { message: string } | null
-      }>
-    }
-  ).resetPassword
-  const response = await resetPassword({
-    token,
-    newPassword,
-  })
+  const response = await auth.getBetterAuthInstance().resetPassword({ token, newPassword })
 
   if (response.error) {
-    throw new Error(response.error.message)
+    // Raw provider text, exactly like every other function here: `locales/en.ts` carries keys for
+    // the messages worth naming ("Invalid token", "Password too short") and the page falls back to
+    // a generic line for anything else, rather than rendering whatever the server happened to say.
+    // `message` is optional in better-auth's error shape, hence the fallback.
+    throw new Error(response.error.message || "Couldn't update your password. Try again.")
   }
 
   return response.data

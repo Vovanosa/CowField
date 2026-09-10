@@ -27,6 +27,15 @@ export type DocumentMeta = {
    * that form. The public pages take the default.
    */
   robots?: 'index' | 'noindex'
+  /**
+   * The path this page should be indexed under, when that is not the path it is being served from.
+   *
+   * Only one page needs it: the landing page answers on `/` *and* on `/welcome`, because a
+   * signed-in player cannot reach it at `/` — that URL is their home menu. Two URLs serving one
+   * page is a duplicate, and the canonical tag is the standard answer: both say `/`, which is the
+   * URL that is shared, linked and listed in the sitemap (scope decision D2 stands).
+   */
+  canonicalPath?: string
 }
 
 const DEFAULT_TITLE = 'Bullpen — a calm Star Battle puzzle'
@@ -74,7 +83,12 @@ function upsertCanonical(href: string) {
   }
 }
 
-export function useDocumentMeta({ title, description, robots = 'index' }: DocumentMeta) {
+export function useDocumentMeta({
+  title,
+  description,
+  robots = 'index',
+  canonicalPath,
+}: DocumentMeta) {
   const { pathname } = useLocation()
 
   useEffect(() => {
@@ -87,8 +101,9 @@ export function useDocumentMeta({ title, description, robots = 'index' }: Docume
     // correct on localhost, on a preview deployment and on whatever domain this ends up on, with
     // nothing to forget to update. The pathname is stripped of a trailing slash so `/about/` and
     // `/about` cannot both be indexed.
-    const canonicalPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '')
-    const canonicalUrl = `${window.location.origin}${canonicalPath}`
+    const servedPath = canonicalPath ?? pathname
+    const indexedPath = servedPath === '/' ? '/' : servedPath.replace(/\/+$/, '')
+    const canonicalUrl = `${window.location.origin}${indexedPath}`
 
     upsertCanonical(canonicalUrl)
     upsertMeta('property', 'og:url', canonicalUrl)
@@ -99,5 +114,5 @@ export function useDocumentMeta({ title, description, robots = 'index' }: Docume
       upsertMeta('property', 'og:description', description)
       upsertMeta('name', 'twitter:description', description)
     }
-  }, [description, pathname, robots, title])
+  }, [canonicalPath, description, pathname, robots, title])
 }

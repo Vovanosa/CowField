@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
-import { translateAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout } from '../../components/AuthLayout'
 
@@ -55,9 +54,16 @@ export function VerifyEmailPage() {
 
     async function finishVerification() {
       if (error) {
-        navigate(`/login?error=${encodeURIComponent(translateAuthMessage(t, error))}`, {
-          replace: true,
-        })
+        /*
+          A **key**, not the provider's sentence, and not a translation of it.
+
+          `error` here came out of the address bar, so translating it and forwarding the result was
+          wrong twice over: `/login` allowlists `?error=` against the English keys, so an already
+          translated string never matches and degrades to the generic message anyway — and a link
+          could put any prose it liked into the app's own error styling next to a password field.
+          The same fix the Google callback got.
+        */
+        navigate('/login?error=Email verification failed.', { replace: true })
         return
       }
 
@@ -72,16 +78,20 @@ export function VerifyEmailPage() {
         await completeEmailVerification(code)
         navigate('/', { replace: true })
       } catch (verificationError) {
-        const message =
+        console.warn('Email verification failed:', verificationError)
+
+        // The key, again: `/login` does the translating, and it only renders a message it ships a
+        // string for. Anything else — including an internal error — becomes the generic line there.
+        const key =
           verificationError instanceof Error
-            ? translateAuthMessage(t, verificationError.message)
-            : t('Email verification failed.')
-        navigate(`/login?error=${encodeURIComponent(message)}`, { replace: true })
+            ? verificationError.message
+            : 'Email verification failed.'
+        navigate(`/login?error=${encodeURIComponent(key)}`, { replace: true })
       }
     }
 
     void finishVerification()
-  }, [completeEmailVerification, isAuthenticated, isLoading, navigate, searchParams, t])
+  }, [completeEmailVerification, isAuthenticated, isLoading, navigate, searchParams])
 
   return (
     <AuthLayout

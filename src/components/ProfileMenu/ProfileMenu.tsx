@@ -1,9 +1,17 @@
-import { ChevronDown, LogOut, UserRound } from 'lucide-react'
+import { BookOpenText, ChevronDown, LogOut, UserRound } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '../../app/useAuth'
-import { Button, ControlButton, DropdownMenu, DropdownMenuItem, Panel, useDropdownMenu } from '../ui'
+import {
+  Button,
+  ControlButton,
+  DropdownMenu,
+  DropdownMenuItem,
+  Panel,
+  TextLink,
+  useDropdownMenu,
+} from '../ui'
 import styles from './ProfileMenu.module.css'
 
 export function ProfileMenu() {
@@ -121,6 +129,21 @@ export function ProfileMenu() {
               </div>
             </label>
           ) : null}
+
+          {/*
+            The only route into the landing page from inside the app.
+
+            `/` is the home menu once you are signed in, so the page that explains what Bullpen is
+            had no link pointing at it from anywhere a player could stand — it existed only for
+            visitors who had never signed in. `/welcome` renders it for everyone; see the route.
+
+            It sits here rather than in the page navigation because it is not somewhere anyone goes
+            twice, and this menu is already the shell's home for "about you and this app".
+          */}
+          <TextLink to="/welcome" className={styles.profileAbout} onClick={closeProfileMenu}>
+            <BookOpenText size={16} />
+            <span>{t('What is Bullpen?')}</span>
+          </TextLink>
 
           <Button
             className={styles.profileLogoutButton}

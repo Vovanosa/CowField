@@ -35,3 +35,31 @@ export function translateKnownAuthMessage(t: TFunction, message: string) {
 
   return translated === '' ? null : translated
 }
+
+/**
+ * Turn a **caught** auth failure into something safe to render.
+ *
+ * `translateAuthMessage` echoes an unrecognised message back, which is right for text our own code
+ * wrote and wrong for anything that merely *arrived* as an `Error`. Two things do:
+ *
+ *  - **the provider's own server prose**, which is untranslated and sometimes internal;
+ *  - **a JavaScript `TypeError`**, which after minification reads like `n is not a function` — and
+ *    that is not a hypothetical: the reset-password page rendered exactly that string, in the app's
+ *    error styling, under two password fields, until the call behind it was fixed on 2026-09-10.
+ *
+ * So a caught message is allowlisted, the same way `?error=` is, and anything unrecognised becomes
+ * the caller's fallback. The real error still goes to the console, which is where an internal
+ * message is useful and harmless — the point is that the player is never the one reading it.
+ */
+export function translateAuthError(t: TFunction, error: unknown, fallback: string) {
+  // Not `console.error` on a handled failure a player caused (a wrong password is not a fault), but
+  // the underlying text has to survive somewhere or an unmapped provider message becomes invisible
+  // to whoever has to map it.
+  console.warn('Auth request failed:', error)
+
+  if (!(error instanceof Error)) {
+    return fallback
+  }
+
+  return translateKnownAuthMessage(t, error.message) ?? fallback
+}

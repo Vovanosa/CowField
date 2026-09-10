@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
-import { translateAuthMessage } from '../../app/translateAuthMessage'
+import { translateAuthError } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
 import { AuthLayout, type AuthMessage } from '../../components/AuthLayout'
 import { AuthPasswordField } from '../../components/AuthPasswordField/AuthPasswordField'
@@ -25,7 +25,7 @@ export function RegisterPage() {
 
   function toErrorMessage(error: unknown): AuthMessage {
     return {
-      text: error instanceof Error ? translateAuthMessage(t, error.message) : t('Request failed.'),
+      text: translateAuthError(t, error, t("Couldn't create your account. Try again.")),
       tone: 'error',
     }
   }
@@ -80,9 +80,15 @@ export function RegisterPage() {
       description={t('Create a user account with your email and password.')}
       message={message}
       links={
-        <TextLink to="/login">
-          {t('Back to login')}
-        </TextLink>
+        <>
+          <TextLink to="/login">
+            {t('Back to login')}
+          </TextLink>
+          {/* Signed out by definition here, so `/` is the landing page — see the note on `/login`. */}
+          <TextLink to="/">
+            {t('What is Bullpen?')}
+          </TextLink>
+        </>
       }
     >
         <form className={styles.authForm} onSubmit={handleSubmit} autoComplete="on">
