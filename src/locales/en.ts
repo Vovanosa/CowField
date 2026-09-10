@@ -20,6 +20,8 @@ const en = {
   'Sign in to save your progress': 'Sign in to save your progress',
   'No account, no email. Play as a guest right away.':
     'No account, no email. Play as a guest right away.',
+  'Waking the server — the first visit after a quiet spell takes a moment.':
+    'Waking the server — the first visit after a quiet spell takes a moment.',
   "Couldn't start a game. Check your connection and try again.":
     "Couldn't start a game. Check your connection and try again.",
   'The rules, in three lines': 'The rules, in three lines',

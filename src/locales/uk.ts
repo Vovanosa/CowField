@@ -14,6 +14,8 @@
   'Sign in to save your progress': 'Увійти, щоб зберігати прогрес',
   'No account, no email. Play as a guest right away.':
     'Без акаунта й без email. Можна грати як гість просто зараз.',
+  'Waking the server — the first visit after a quiet spell takes a moment.':
+    'Пробуджуємо сервер — перший візит після паузи триває трохи довше.',
   "Couldn't start a game. Check your connection and try again.":
     'Не вдалося почати гру. Перевірте з’єднання та спробуйте ще раз.',
   'The rules, in three lines': 'Правила у трьох рядках',

@@ -27,11 +27,15 @@ import styles from './LandingPage.module.css'
 /** Where "Play now" lands: the first level of the gentlest difficulty, i.e. actually playing. */
 const FIRST_LEVEL_PATH = '/game/light/1'
 
+/** How long a start may take silently before the page explains itself. */
+const SLOW_START_NOTICE_MS = 3000
+
 export function LandingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const auth = useAuth()
   const [isStarting, setIsStarting] = useState(false)
+  const [isSlow, setIsSlow] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useDocumentMeta({
@@ -43,7 +47,19 @@ export function LandingPage() {
 
   async function handlePlayNow() {
     setIsStarting(true)
+    setIsSlow(false)
     setError(null)
+
+    /*
+      The API sleeps when idle and takes tens of seconds to wake, so the very first visitor of the
+      day can wait a long time here for something that is working perfectly.
+
+      Silence reads as broken and people leave, so after a few seconds the button stops saying
+      "Starting..." and says what is actually happening. It is not a fix for the cold start — that is
+      a hosting decision — but it is the difference between a visitor waiting and a visitor giving
+      up on a game they never got to see.
+    */
+    const slowTimer = window.setTimeout(() => setIsSlow(true), SLOW_START_NOTICE_MS)
 
     try {
       await auth.loginAsGuest()
@@ -56,6 +72,9 @@ export function LandingPage() {
           : t('Request failed.'),
       )
       setIsStarting(false)
+      setIsSlow(false)
+    } finally {
+      window.clearTimeout(slowTimer)
     }
   }
 
@@ -134,7 +153,17 @@ export function LandingPage() {
           </Link>
         </div>
 
-        <p className={styles.actionNote}>{t('No account, no email. Play as a guest right away.')}</p>
+        {/*
+          One line, and which line it is depends on how long the start is taking. `aria-live` so a
+          screen-reader user is told about the wait rather than left with a button that went quiet —
+          `polite` because it must not interrupt, and the region is always rendered so the change is
+          announced (a region that appears at the same moment its text does is often missed).
+        */}
+        <p className={styles.actionNote} aria-live="polite">
+          {isSlow
+            ? t('Waking the server — the first visit after a quiet spell takes a moment.')
+            : t('No account, no email. Play as a guest right away.')}
+        </p>
 
         {error ? <StatusMessage message={error} variant="warning" compact /> : null}
       </section>

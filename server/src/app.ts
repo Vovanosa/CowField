@@ -131,6 +131,24 @@ export function createApp() {
     }),
   )
 
+  /**
+   * Liveness only: is this process up? **Deliberately touches nothing.**
+   *
+   * This is the target for the keep-alive cron that stops the host spinning the instance down after
+   * ~15 minutes idle. It has to be free, because it runs every 10 minutes forever:
+   *
+   * - **No database.** `/api/health` below runs `SELECT 1`, which is right for a readiness check and
+   *   wrong here — pinging it every 10 minutes would keep the *database* compute awake 24/7 as well,
+   *   and a serverless Postgres compute allowance is much smaller than the web host's instance
+   *   hours. Waking Postgres 144 times a day to learn that Express is running is the wrong trade.
+   * - **No logging.** Skipped in `requestLogger`, or the log becomes 144 lines a day of nothing.
+   * - **No auth, no body.** Nothing to leak; `ok` and nothing else.
+   */
+  app.get('/api/ping', (_request, response) => {
+    response.json({ ok: true })
+  })
+
+  /** Readiness: is the process up *and* the database reachable? Answers with a real query. */
   app.get('/api/health', async (_request, response) => {
     await getPrismaClient().$queryRaw`SELECT 1`
     response.json({
