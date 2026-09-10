@@ -8,27 +8,17 @@ import { useAuth } from '../../app/useAuth'
 import { StatusMessage } from '../../components/ui'
 import styles from './LandingPage.module.css'
 
+
+
 /**
- * The one page a stranger can read.
+ * Where both primary actions land — the guest start and a signed-in player's "back to your levels".
  *
- * Every URL on this site used to render the login form — measured 2026-09-10: `/`, `/about`,
- * `/levels` and a nonsense path all produced the same 31 words, because everything sat behind
- * `RequireSession`. Nothing was indexable and nobody could see what the game was without signing up
- * for it first.
- *
- * So this page has two jobs, and they happen to want the same thing:
- *  - tell a **person** what the game is and let them play in one tap;
- *  - give a **crawler** real prose, naming the genre people actually search for.
- *
- * Guest mode is what makes the first one possible: no account, no email, and no backend write
- * (universal rule 7). It was already built — it was just hidden behind a sign-in form.
+ * "Play now" used to drop a new guest straight into `/game/light/1`. Landing on the difficulty
+ * chooser instead costs one tap and shows them what they actually arrived at: four difficulties and
+ * 800 levels, which is the thing the page just spent 259 words describing. Jumping into one 6x6 grid
+ * hid all of it and gave them no idea where they were or how to get anywhere else.
  */
-
-/** Where "Play now" lands: the first level of the gentlest difficulty, i.e. actually playing. */
-const FIRST_LEVEL_PATH = '/game/light/1'
-
-/** Where a player who is already signed in goes instead — their own progress, not level one. */
-const PLAYER_PATH = '/levels'
+const LEVELS_PATH = '/levels'
 
 /** How long a start may take silently before the page explains itself. */
 const SLOW_START_NOTICE_MS = 3000
@@ -44,10 +34,10 @@ export function LandingPage() {
   /*
     Whether the reader has a session changes what this page is for, not what it says.
 
-    A stranger arriving at `/` gets the pitch and a one-tap guest start. A **player** can only get
-    here through `/welcome`, deliberately — from the profile menu — because `/` is their home menu.
+    A stranger arriving at `/` gets the pitch and a guest start. A **player** can only get here
+    through `/welcome`, deliberately — from the profile menu — because `/` is their home menu.
     They must not be offered the guest start: `loginAsGuest` would replace the account they are
-    signed in to, so for them the same button goes to their levels instead.
+    signed in to, so for them the button skips straight to the same destination.
   */
   const isPlayer = auth.isAuthenticated
 
@@ -78,7 +68,7 @@ export function LandingPage() {
 
     try {
       await auth.loginAsGuest()
-      navigate(FIRST_LEVEL_PATH)
+      navigate(LEVELS_PATH)
     } catch (requestError) {
       // The API can be cold or unreachable. Saying so beats a button that looks broken.
       setError(
@@ -153,7 +143,7 @@ export function LandingPage() {
 
         <div className={styles.actions}>
           {isPlayer ? (
-            <Link className={styles.primaryAction} to={PLAYER_PATH}>
+            <Link className={styles.primaryAction} to={LEVELS_PATH}>
               <span className={styles.actionIcon}>
                 <Play size={18} />
               </span>
