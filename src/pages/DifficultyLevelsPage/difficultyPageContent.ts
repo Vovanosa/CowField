@@ -17,10 +17,13 @@ import type { Difficulty } from '../../game/types'
  * - **Nothing here repeats `/difficulties`.** That page explains what changes *between* sizes; these
  *   explain what one size *is*. Two pages saying the same thing compete with each other, and the one
  *   that loses is usually the one you wanted.
- * - **No shared sentence in the body.** An earlier draft ended all five with the same line about
- *   nothing being locked. Five pages carrying an identical paragraph is exactly the pattern that
- *   makes a set of pages look generated; the line survives as one navigational footer instead, which
- *   is boilerplate a crawler expects.
+ * - **No sentence is shared across the five.** An earlier draft ended all of them with the same line
+ *   about nothing being locked. It was moved out of `body` to stop it looking generated, but it kept
+ *   rendering as a paragraph on every one of the five, so it was still the identical-paragraph
+ *   pattern with extra steps. **Removed entirely on 2026-09-11**, for the better reason: it was
+ *   answering a question no reader has. Nobody looking at a grid of clickable level numbers wonders
+ *   whether they are locked, and naming the restriction is what plants the idea that one exists.
+ *   Only the navigational links below are shared now, which is boilerplate a crawler expects.
  *
  * Every string is an English literal because English text *is* the key (rule 9) — `uk.ts` carries
  * the counterpart, written natively rather than translated.

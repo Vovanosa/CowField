@@ -108,13 +108,9 @@
   // як і всюди в грі.
   'Star Battle puzzles by board size': 'Головоломки Star Battle за розміром поля',
   'Choose a difficulty to play.': 'Оберіть складність для гри.',
-  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.':
-    '1000 безкоштовних головоломок Star Battle у п’яти розмірах поля: від 6x6 з однією зіркою до 15x15 з трьома. Акаунт не потрібен, і жоден рівень не заблокований.',
-  'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.':
-    'Оберіть розмір. Нічого не заблоковано, тож будь-який рівень будь-якої складності відкриється одразу.',
+  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. Pick a size and start, no account needed.':
+    '1000 безкоштовних головоломок Star Battle у п’яти розмірах поля: від 6x6 з однією зіркою до 15x15 з трьома. Оберіть розмір і починайте, акаунт не потрібен.',
   'What changes between sizes': 'Що змінюється між розмірами',
-  'Nothing is locked. Any level on this page opens straight away, in any order.':
-    'Нічого не заблоковано. Будь-який рівень на цій сторінці відкриється одразу, у будь-якому порядку.',
   '6x6 Star Battle puzzles, one star per row':
     'Головоломки Star Battle 6x6, одна зірка в рядку',
   '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.':
@@ -249,8 +245,8 @@
   // `/difficulties` — що саме змінюється між розмірами поля (P17).
   'Board sizes': 'Розміри поля',
   'Star Battle board sizes and difficulty': 'Розміри поля та складність у Star Battle',
-  'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.':
-    'П’ять розмірів, по 200 рівнів на кожному, і нічого не заблоковано. Проходити по порядку не треба: і перший рівень light, і 173-й рівень extreme відкриті з першого ж візиту. Обирайте за розміром поля, який зараз хочеться.',
+  'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away, so pick by how big a board you feel like.':
+    'П’ять розмірів, по 200 рівнів на кожному. І перший рівень light, і 173-й рівень extreme відкриті в один клік, тож обирайте за розміром поля, який зараз хочеться.',
   '200 levels': '200 рівнів',
   '6x6 board, one bull per row, column and pen.':
     'Поле 6x6, один бик у рядку, стовпці й загоні.',

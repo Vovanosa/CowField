@@ -125,13 +125,9 @@ const en = {
   // -------------------------------------------------------------------------------------------
   'Star Battle puzzles by board size': 'Star Battle puzzles by board size',
   'Choose a difficulty to play.': 'Choose a difficulty to play.',
-  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.':
-    '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.',
-  'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.':
-    'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.',
+  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. Pick a size and start, no account needed.':
+    '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. Pick a size and start, no account needed.',
   'What changes between sizes': 'What changes between sizes',
-  'Nothing is locked. Any level on this page opens straight away, in any order.':
-    'Nothing is locked. Any level on this page opens straight away, in any order.',
   '6x6 Star Battle puzzles, one star per row': '6x6 Star Battle puzzles, one star per row',
   '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.':
     '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.',
@@ -272,8 +268,8 @@ const en = {
   // -------------------------------------------------------------------------------------------
   'Board sizes': 'Board sizes',
   'Star Battle board sizes and difficulty': 'Star Battle board sizes and difficulty',
-  'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.':
-    "Five sizes, 200 levels each, and nothing is locked. There's no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.",
+  'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away, so pick by how big a board you feel like.':
+    'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away, so pick by how big a board you feel like.',
   '200 levels': '200 levels',
   '6x6 board, one bull per row, column and pen.': '6x6 board, one bull per row, column and pen.',
   '8x8 board, one bull per row, column and pen.': '8x8 board, one bull per row, column and pen.',

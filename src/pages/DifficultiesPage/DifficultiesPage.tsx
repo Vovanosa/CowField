@@ -89,7 +89,7 @@ export function DifficultiesPage() {
       <Panel className={styles.panel}>
         <p className={styles.lead}>
           {t(
-            'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.',
+            'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away, so pick by how big a board you feel like.',
           )}
         </p>
 

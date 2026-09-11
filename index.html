@@ -2,7 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/Cow.svg" />
+
+    <!--
+      Icons. All three are generated from `public/favicon.svg` by `npm run icons` — edit that file
+      and re-run; the `.ico` and `.png` are build output and hand-editing them will be overwritten.
+
+      **The order is the point.** A browser takes the last `rel="icon"` it understands, so the SVG
+      wins everywhere current and the ICO is only ever fetched by something that cannot read it.
+      Google's favicon crawler is the reason the ICO exists at all: it wants a square raster at 48px
+      or a multiple, and has been unreliable about SVG. `sizes="32x32"` on the ICO is a hint, not a
+      description — the file holds 16, 32 and 48.
+
+      The icon before this was a near-white cow on a **transparent** background, which is invisible
+      in a search result row and in a light tab. It now carries its own cream (`--color-background`),
+      because an icon has no page behind it.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!--

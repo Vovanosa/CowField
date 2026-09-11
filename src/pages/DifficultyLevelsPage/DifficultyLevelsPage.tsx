@@ -319,9 +319,6 @@ function DifficultyLevelsPageScreen() {
               {t(paragraph)}
             </p>
           ))}
-          <p className={styles.introParagraph}>
-            {t('Nothing is locked. Any level on this page opens straight away, in any order.')}
-          </p>
           {/*
             Navigational, and deliberately the one thing every difficulty page repeats. A crawler
             expects boilerplate links; what it does not forgive is five pages sharing a paragraph.

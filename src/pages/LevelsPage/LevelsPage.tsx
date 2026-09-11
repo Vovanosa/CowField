@@ -70,7 +70,7 @@ export function LevelsPage() {
   useDocumentMeta({
     title: brandedTitle(t('Star Battle puzzles by board size')),
     description: t(
-      '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.',
+      '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. Pick a size and start, no account needed.',
     ),
   })
   const [progressByDifficulty, setProgressByDifficulty] = useState<
@@ -144,9 +144,6 @@ export function LevelsPage() {
         backTo="/"
         backLabel={t('Back to home')}
         title={t('Choose a difficulty to play.')}
-        description={t(
-          'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.',
-        )}
       />
 
       {showLoadError ? (
