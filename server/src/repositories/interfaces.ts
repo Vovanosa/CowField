@@ -40,8 +40,9 @@ export interface PlayerProgressRepository {
     difficulty: Difficulty,
   ): Promise<BestTimesByLevelRecord>
   /**
-   * Several specific levels in one query. Used by the completion guard, which needs the level being
-   * completed *and* the one before it — two `getByDifficultyAndNumber` calls before this existed.
+   * Several specific levels in one query. It took two — the level being completed and the one before
+   * it — until P18 removed level locking and the ordering guard with it; `completeLevel` now asks
+   * for one. The plural shape is kept because the guest-progress import (P18 workstream C) needs it.
    */
   listByLevelNumbers(
     actorKey: string,
@@ -61,6 +62,14 @@ export interface PlayerProgressRepository {
     levelNumber: number,
   ): Promise<LevelProgressRecord | null>
   save(actorKey: string, progress: LevelProgressRecord): Promise<LevelProgressRecord>
+  /**
+   * A guest's local record, adopted by the account they just created (P18, decision D5). One
+   * transaction, never a loop over `saveCompletion`, and the merge keeps the better time.
+   */
+  importCompletions(
+    actorKey: string,
+    entries: Array<{ difficulty: Difficulty; levelNumber: number; timeSeconds: number }>,
+  ): Promise<{ importedCount: number }>
   /**
    * Records a completion: the progress row **and** the lifetime counters, in one transaction.
    *
@@ -115,8 +124,9 @@ export interface LevelRepository {
     nextLevelNumber: number | null
   }>
   /**
-   * The neighbours alone, without loading the board. For the completion guard (which needs to know
-   * the level exists and which one precedes it) and for a save (which needs what follows it).
+   * The neighbours alone, without loading the board. For `completeLevel` (which only needs to know
+   * the level exists — the ordering guard that wanted `previousLevelNumber` went in P18) and for a
+   * save (which needs what follows it).
    */
   getNeighbourLevelNumbers(
     difficulty: Difficulty,

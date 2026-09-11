@@ -16,7 +16,8 @@ import {
   register as registerRequest,
 } from '../game/storage/authSessionStorage'
 import { readStoredValue, writeStoredValue } from '../game/storage/browserStorage'
-import { resetPlayerCaches } from '../game/storage/resources'
+import { countGuestProgressEntries } from '../game/storage/guestProgressStorage'
+import { importGuestProgressIntoAccount, resetPlayerCaches } from '../game/storage/resources'
 import type { AuthSession } from '../game/types'
 import { AuthContext, type AdminPreviewRole, type AuthContextValue } from './authContextValue'
 import { reportUnexpectedError } from './reportUnexpectedError'
@@ -92,10 +93,38 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return nextSession
   }, [])
 
+  /**
+   * Creating an account, and — if this browser was a guest — bringing its progress along
+   * (P18, decision D5).
+   *
+   * **Here rather than on the server**, because registration goes through Neon Auth in the browser:
+   * there is no point in our own backend that sees "this person just became an account holder", and
+   * the data being carried lives in `localStorage`, which only the client can read.
+   *
+   * **After the session swap, not before.** The import is authenticated as the *new* account, so it
+   * cannot run until that account is the one holding the bearer.
+   *
+   * **A failed import must not fail the registration.** The account exists either way, and telling
+   * someone their sign-up failed when it did not is worse than the missing times. `importGuestProgress`
+   * leaves the local record untouched on failure, so nothing is lost and the data is still there.
+   *
+   * Only on **register**, never on `login` — signing in to an existing account leaves guest progress
+   * alone and warns first. See the confirmation on the sign-in page.
+   */
   const register = useCallback(async (email: string, password: string) => {
+    const hadGuestProgress = countGuestProgressEntries() > 0
     resetCachedPlayerData()
     const nextSession = await registerRequest(email, password)
     setSession(nextSession)
+
+    if (hadGuestProgress) {
+      try {
+        await importGuestProgressIntoAccount()
+      } catch (error) {
+        reportUnexpectedError(error, 'importing guest progress into a new account')
+      }
+    }
+
     return nextSession
   }, [])
 

@@ -29,5 +29,21 @@ export function createPlayerProgressRoutes(
     asyncHandler(playerProgressController.completeLevel),
   )
 
+  /*
+    The guest-to-account handover (P18, decision D5), and the **one** place guest progress reaches
+    the backend. `requireNonGuest` for the same reason the completion route has it: the caller is by
+    definition no longer a guest at this point — they just created an account — and a guest token
+    here would write nowhere and answer 201 as though it had.
+
+    No dedicated rate limit. It writes only to the calling account, it needs a real session to reach,
+    and it runs at most once in an account's life; the global backstop in `app.ts` is the right
+    ceiling for something with that blast radius.
+  */
+  router.post(
+    '/import',
+    createRequireNonGuestMiddleware(),
+    asyncHandler(playerProgressController.importProgress),
+  )
+
   return router
 }

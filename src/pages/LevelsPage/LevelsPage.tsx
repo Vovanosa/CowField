@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from '../../app/navigation'
+import { useAuth } from '../../app/useAuth'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
@@ -23,21 +24,33 @@ const difficultyChipClassNames: Record<Difficulty, string> = {
 type DifficultyProgressSummary = {
   completed: number
   total: number
-  percent: number
 }
 
 const emptyProgressSummary: DifficultyProgressSummary = {
   completed: 0,
   total: 0,
-  percent: 0,
+}
+
+/**
+ * The share of a difficulty that is finished, 0–100. Drives both the bar's width and the "38% done"
+ * label beside the heading.
+ *
+ * Derived rather than stored on the summary, which is what it used to be: one number in two places
+ * that could disagree is worse than one function called twice.
+ *
+ * Guarding the divide matters — a difficulty with no levels yet is a real state (`totalCount` comes
+ * from the database), and `0/0` is `NaN`, which CSS silently drops.
+ */
+function toCompletedShare({ completed, total }: DifficultyProgressSummary) {
+  return total > 0 ? Math.round((completed / total) * 100) : 0
 }
 
 /**
  * A summary for every difficulty this page renders, whatever the API sent.
  *
- * The page always draws all four tiles from `DIFFICULTIES`, but the record used to be built purely
- * from the response — so a response missing one (a difficulty with no levels, a partial read) left
- * `summary` undefined and the very next line, `summary.percent`, threw and took the whole page down
+ * The page always draws a tile per difficulty, but the record used to be built purely from the
+ * response — so a response missing one (a difficulty with no levels, a partial read) left `summary`
+ * undefined and the very next line, which read a field off it, threw and took the whole page down
  * with it.
  */
 function createProgressSummaryRecord() {
@@ -48,7 +61,18 @@ function createProgressSummaryRecord() {
 
 export function LevelsPage() {
   const { t } = useTranslation()
-  useDocumentMeta({ title: brandedTitle(t('Level Select')), robots: 'noindex' })
+  const { isAuthenticated } = useAuth()
+  /*
+    **Indexable since P18 (D-1).** This is the hub the five difficulty pages hang off, and the only
+    page on the site that names all five sizes in one place. It was `noindex` for the same reason
+    everything else was: it needed a session, so a crawler only ever saw it redirect to a login form.
+  */
+  useDocumentMeta({
+    title: brandedTitle(t('Star Battle puzzles by board size')),
+    description: t(
+      '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.',
+    ),
+  })
   const [progressByDifficulty, setProgressByDifficulty] = useState<
     Record<Difficulty, DifficultyProgressSummary>
   >(createProgressSummaryRecord)
@@ -72,13 +96,9 @@ export function LevelsPage() {
         const nextProgress = createProgressSummaryRecord()
 
         for (const item of overview.difficulties) {
-          const completed = item.completedCount
-          const total = item.totalCount
-
           nextProgress[item.difficulty] = {
-            completed,
-            total,
-            percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+            completed: item.completedCount,
+            total: item.totalCount,
           }
         }
 
@@ -113,10 +133,20 @@ export function LevelsPage() {
 
   return (
     <div className={`${styles.levelsPage} page-shell`}>
+      {/*
+        **The heading says what the page is for, not what it ranks for.** The query-first phrase lives
+        in the `<title>` and the meta description, where it is what a search result shows; on the page
+        itself a player wants "choose a difficulty", and the five chips are the content either way.
+        Same correction as the difficulty pages: the functional reading comes first.
+      */}
       <PageHeader
+        titleAs="h1"
         backTo="/"
         backLabel={t('Back to home')}
         title={t('Choose a difficulty to play.')}
+        description={t(
+          'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.',
+        )}
       />
 
       {showLoadError ? (
@@ -140,48 +170,83 @@ export function LevelsPage() {
                 to={`/levels/${difficulty}`}
                 aria-busy={isLoading}
               >
+                {/*
+                  **The chip is back to what it was**, minus the wording (P18, decision D10 as
+                  amended twice).
+
+                  The first pass replaced the percentage, the `76/200 completed` line and the filled
+                  bar with a single count, on the argument that three renderings of one number is two
+                  too many. That was wrong in practice: each one is read differently — the percentage
+                  is the number you compare between difficulties, the count is the one you compare
+                  with yourself, and the bar is the one you do not read at all. What actually changed
+                  for the better was the wording, and that stays: "47 of 200 solved" rather than
+                  "47/200 completed".
+
+                  A visitor with no session gets the level total and neither of the other two. An
+                  empty bar and a "0% done" read as things you are behind on, which is the wrong
+                  first impression of a game with nothing to complete.
+                */}
                 <div className={styles.difficultyLinkTop}>
                   <span className={styles.difficultyLinkLabel}>
                     {getDifficultyLabel(t, difficulty)}
                   </span>
-                  {isLoading ? (
-                    <span className={`${styles.loadingBlock} ${styles.loadingPercent}`} />
-                  ) : (
-                    <span className={styles.difficultyLinkPercent}>
-                      {t('{{percent}}% done', { percent: summary.percent })}
-                    </span>
-                  )}
+                  {isAuthenticated ? (
+                    isLoading ? (
+                      <span className={`${styles.loadingBlock} ${styles.loadingPercent}`} />
+                    ) : (
+                      <span className={styles.difficultyLinkPercent}>
+                        {t('{{percent}}% done', { percent: toCompletedShare(summary) })}
+                      </span>
+                    )
+                  ) : null}
                 </div>
 
-                <div className={styles.difficultyLinkMeta}>
-                  {isLoading ? (
-                    <span className={`${styles.loadingBlock} ${styles.loadingText}`} />
-                  ) : (
-                    <span className={styles.difficultyLinkProgressText}>
-                      {t('{{completed}}/{{total}} completed', {
-                        completed: summary.completed,
-                        total: summary.total,
-                      })}
-                    </span>
-                  )}
-                </div>
+                {isLoading ? (
+                  <span className={`${styles.loadingBlock} ${styles.loadingText}`} />
+                ) : (
+                  <span className={styles.difficultyLinkProgressText}>
+                    {isAuthenticated
+                      ? t('{{completed}} of {{total}} solved', {
+                          completed: summary.completed,
+                          total: summary.total,
+                        })
+                      : t('{{count}} levels', { count: summary.total })}
+                  </span>
+                )}
 
-                <div className={styles.difficultyLinkProgressTrack} aria-hidden="true">
-                  <div
-                    className={[
-                      styles.difficultyLinkProgressFill,
-                      isLoading ? styles.difficultyLinkProgressFillLoading : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={{ width: isLoading ? '38%' : `${summary.percent}%` }}
-                  />
-                </div>
+                {/*
+                  `aria-hidden`, because the count above already says this in words. A screen reader
+                  reading a bar as well would be announcing the same number three times over.
+                */}
+                {isAuthenticated ? (
+                  <div className={styles.difficultyLinkProgressTrack} aria-hidden="true">
+                    <div
+                      className={[
+                        styles.difficultyLinkProgressFill,
+                        isLoading ? styles.difficultyLinkProgressFillLoading : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      style={{ width: isLoading ? '38%' : `${toCompletedShare(summary)}%` }}
+                    />
+                  </div>
+                ) : null}
               </Link>
             )
           })}
         </section>
       )}
+
+      {/* Navigational boilerplate, the same pair every difficulty page carries. It is also how a
+          crawler finds the two technique pages from the busiest branch of the site. */}
+      <div className={styles.hubLinks}>
+        <Link className={styles.hubLink} to="/how-to-solve">
+          {t('Solving techniques')}
+        </Link>
+        <Link className={styles.hubLink} to="/difficulties">
+          {t('What changes between sizes')}
+        </Link>
+      </div>
     </div>
   )
 }

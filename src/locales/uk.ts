@@ -102,8 +102,59 @@
   About: 'Про гру',
   Statistics: 'Статистика',
   Settings: 'Налаштування',
-  'Level Select': 'Вибір рівня',
+  // `/levels` і `/levels/:difficulty` — публічні та індексовані з P18 (D-1). Це ті самі десять
+  // сторінок, заради яких усе й робилося: українською пошуку Star Battle досі ніхто не пропонує.
+  // Написано, а не перекладено. «Зірки» в заголовках — бо саме так це шукають; у тексті вони бики,
+  // як і всюди в грі.
+  'Star Battle puzzles by board size': 'Головоломки Star Battle за розміром поля',
   'Choose a difficulty to play.': 'Оберіть складність для гри.',
+  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.':
+    '1000 безкоштовних головоломок Star Battle у п’яти розмірах поля: від 6x6 з однією зіркою до 15x15 з трьома. Акаунт не потрібен, і жоден рівень не заблокований.',
+  'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.':
+    'Оберіть розмір. Нічого не заблоковано, тож будь-який рівень будь-якої складності відкриється одразу.',
+  'What changes between sizes': 'Що змінюється між розмірами',
+  'Nothing is locked. Any level on this page opens straight away, in any order.':
+    'Нічого не заблоковано. Будь-який рівень на цій сторінці відкриється одразу, у будь-якому порядку.',
+  '6x6 Star Battle puzzles, one star per row':
+    'Головоломки Star Battle 6x6, одна зірка в рядку',
+  '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.':
+    '200 безкоштовних головоломок Star Battle 6x6: одна зірка в кожному рядку, стовпці та області. Найменші поля на CowField і місце, де варто розібратися з крапками.',
+  'Light is the smallest size here: every board is 6 by 6, with one bull in every row, every column and every pen. If you know this puzzle as Star Battle or Two Not Touch, the stars are bulls and the regions are pens, and nothing else about it changes.':
+    'Light — найменший розмір тут: кожне поле 6 на 6, по одному бику в кожному рядку, стовпці та загоні. Якщо ви знаєте цю головоломку як Star Battle або Two Not Touch, то зірки тут бики, області загони, а більше нічого не змінюється.',
+  'Thirty-six cells is small enough to hold the whole grid in your head, which is what makes this the right place to find out what the dots are for.':
+    'Тридцять шість клітинок ще можна тримати в голові цілком, і саме тому тут найзручніше з’ясувати, навіщо потрібні крапки.',
+  '8x8 Star Battle puzzles, one star per row':
+    'Головоломки Star Battle 8x8, одна зірка в рядку',
+  '200 free 8x8 Star Battle puzzles, one star in every row, column and region. A step up from 6x6, with enough room that the obvious rows run out.':
+    '200 безкоштовних головоломок Star Battle 8x8: одна зірка в кожному рядку, стовпці та області. Крок уперед після 6x6, де очевидні рядки швидко закінчуються.',
+  'Easy keeps one bull in every row, column and pen, and moves the board to 8 by 8. Same rules as the 6x6 boards, with twenty-eight more cells to be wrong in.':
+    'Easy залишає одного бика в кожному рядку, стовпці та загоні, а поле збільшує до 8 на 8. Правила ті самі, що й на 6x6, тільки місця помилитися на двадцять вісім клітинок більше.',
+  'This is the size where counting rows stops being enough on its own and you start leaning on the shape of the pens instead.':
+    'Це той розмір, де самого лише підрахунку рядків уже замало і починаєш спиратися на форму загонів.',
+  '10x10 Star Battle puzzles, one star per row':
+    'Головоломки Star Battle 10x10, одна зірка в рядку',
+  '200 free 10x10 Star Battle puzzles, one star in every row, column and region. The size most Star Battle puzzles come in, and the usual place to start.':
+    '200 безкоштовних головоломок Star Battle 10x10: одна зірка в кожному рядку, стовпці та області. Найпоширеніший розмір Star Battle і звичне місце для початку.',
+  'Medium is 10 by 10 with one bull in every row, column and pen. This is the size most Star Battle puzzles come in, so if you have played the game somewhere else it will feel familiar straight away.':
+    'Medium — це 10 на 10 з одним биком у кожному рядку, стовпці та загоні. Саме в такому розмірі Star Battle трапляється найчастіше, тож якщо ви грали в неї деінде, тут одразу буде знайомо.',
+  'A hundred cells is enough that guessing stops paying and you have to eliminate properly, which is the part of this puzzle people come back for.':
+    'Сто клітинок — це вже достатньо, щоб вгадування перестало виправдовуватися і довелося відсікати варіанти як слід. Власне, заради цього до головоломки й повертаються.',
+  '10x10 Star Battle puzzles, two stars per row':
+    'Головоломки Star Battle 10x10, дві зірки в рядку',
+  '200 free 10x10 Star Battle puzzles with two stars in every row, column and region. This is what most people mean by Two Not Touch.':
+    '200 безкоштовних головоломок Star Battle 10x10 із двома зірками в кожному рядку, стовпці та області. Саме це більшість людей має на увазі під Two Not Touch.',
+  'Hard stays at 10 by 10 and puts two bulls in every row, column and pen. That is a different puzzle from the one-bull boards rather than a bigger one, and it is what most people mean by Two Not Touch.':
+    'Hard залишається на 10 на 10 і ставить по два бики в кожен рядок, стовпець і загін. Це не більша версія полів з одним биком, а інша головоломка. Саме її більшість людей має на увазі під Two Not Touch.',
+  'Finding one bull in a row no longer retires the row, because the second is still out there. The rule that no two bulls may touch ends up doing most of the work.':
+    'Знайти одного бика в рядку вже не означає закрити рядок, бо десь лишається другий. Основну роботу тут виконує правило, що бики не можуть торкатися.',
+  '15x15 Star Battle puzzles, three stars per row':
+    'Головоломки Star Battle 15x15, три зірки в рядку',
+  '200 free 15x15 Star Battle puzzles with three stars in every row, column and region. 225 cells and 45 stars, the hardest boards on CowField.':
+    '200 безкоштовних головоломок Star Battle 15x15 із трьома зірками в кожному рядку, стовпці та області. 225 клітинок і 45 зірок, найважчі поля на CowField.',
+  'Extreme is 15 by 15 with three bulls in every row, column and pen. That is 225 cells and 45 bulls, and one of these will take a while.':
+    'Extreme — це 15 на 15 із трьома биками в кожному рядку, стовпці та загоні. Виходить 225 клітинок і 45 биків, і на одне таке поле піде чимало часу.',
+  'Worth knowing before you start: unlike the smaller sizes, these boards are not checked to have exactly one answer. A few have several, any legal arrangement wins, and you will never be told you found the wrong one.':
+    'Що варто знати до початку: на відміну від менших розмірів, ці поля не перевіряються на єдиність відповіді. У кількох із них розв’язків більше ніж один, зараховується будь-яке правильне розташування, і вам ніколи не скажуть, що ви знайшли не той.',
   'Available levels': 'Доступні рівні',
   'Unknown difficulty.': 'Невідома складність.',
   'Choose one of the available difficulty groups to browse levels.':
@@ -113,12 +164,16 @@
   Previous: 'Попередня',
   Next: 'Наступна',
   'Page {{page}} of {{totalPages}}': 'Сторінка {{page}} з {{totalPages}}',
-  '{{completed}}/{{total}} completed': '{{completed}}/{{total}} виконано',
+  '{{completed}} of {{total}} solved': '{{completed}} з {{total}} розв’язано',
   '{{percent}}% done': '{{percent}}% завершено',
+  // Three forms, because 200 will not always be the only number here: 1 рівень, 2–4 рівні,
+  // 5+ рівнів.
+  '{{count}} levels_one': '{{count}} рівень',
+  '{{count}} levels_few': '{{count}} рівні',
+  '{{count}} levels_many': '{{count}} рівнів',
+  '{{count}} levels_other': '{{count}} рівнів',
   'Open level {{levelNumber}}': 'Відкрити рівень {{levelNumber}}',
   'Edit level {{levelNumber}}': 'Редагувати рівень {{levelNumber}}',
-  'This level is locked. Complete the previous level first to open it.':
-    'Цей рівень заблокований. Спочатку пройдіть попередній рівень, щоб його відкрити.',
   // `/about` — сторінка правил. Переписано разом з англійською (P17).
   'How to play Star Battle': 'Як грати у Star Battle',
   'CowField is a Star Battle puzzle. If you have seen the same game called Two Not Touch, that is this. The stars are bulls here and the regions are pens, but nothing about the rules changes.':
@@ -194,8 +249,8 @@
   // `/difficulties` — що саме змінюється між розмірами поля (P17).
   'Board sizes': 'Розміри поля',
   'Star Battle board sizes and difficulty': 'Розміри поля та складність у Star Battle',
-  'Five sizes, 200 levels each. They are independent of one another, so there is nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.':
-    'П’ять розмірів, по 200 рівнів на кожному. Вони не залежать один від одного, тож нічого не треба відкривати, щоб узятися за більше поле. А от усередині однієї складності рівні йдуть по порядку.',
+  'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.':
+    'П’ять розмірів, по 200 рівнів на кожному, і нічого не заблоковано. Проходити по порядку не треба: і перший рівень light, і 173-й рівень extreme відкриті з першого ж візиту. Обирайте за розміром поля, який зараз хочеться.',
   '200 levels': '200 рівнів',
   '6x6 board, one bull per row, column and pen.':
     'Поле 6x6, один бик у рядку, стовпці й загоні.',
@@ -387,6 +442,26 @@
   Password: 'Пароль',
   'Log in': 'Увійти',
   'Play as guest': 'Грати як гість',
+  // P18 — ворота на рівні, кнопка «Поділитися» та перенесення гостьового прогресу.
+  'Ready when you are': 'Починайте, коли готові',
+  'Play right away without an account, or make one so your times follow you between devices.':
+    'Грайте одразу без акаунта або створіть його, щоб ваші результати були з вами на будь-якому пристрої.',
+  Share: 'Поділитися',
+  'Play this Star Battle level on CowField': 'Зіграйте цей рівень Star Battle на CowField',
+  'Link copied.': 'Посилання скопійовано.',
+  "Couldn't share this level.": 'Не вдалося поділитися цим рівнем.',
+  'Browse all levels': 'Переглянути всі рівні',
+  'Sign up': 'Зареєструватися',
+  'Your guest progress stays here': 'Гостьовий прогрес залишиться тут',
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._one':
+    'Якщо увійти, єдиний рівень, який ви пройшли як гість, залишиться на цьому пристрої. Створіть натомість акаунт, і він перейде разом з вами.',
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._few':
+    'Якщо увійти, {{count}} рівні, які ви пройшли як гість, залишаться на цьому пристрої. Створіть натомість акаунт, і вони перейдуть разом з вами.',
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._many':
+    'Якщо увійти, {{count}} рівнів, які ви пройшли як гість, залишаться на цьому пристрої. Створіть натомість акаунт, і вони перейдуть разом з вами.',
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._other':
+    'Якщо увійти, {{count}} рівнів, які ви пройшли як гість, залишаться на цьому пристрої. Створіть натомість акаунт, і вони перейдуть разом з вами.',
+  'Sign in anyway': 'Усе одно увійти',
   'Statistics is available only for logged users.':
     'Статистика доступна лише для зареєстрованих користувачів.',
   'Create account': 'Створити акаунт',

@@ -389,4 +389,103 @@ export class PrismaPlayerProgressRepository implements PlayerProgressRepository 
 
     return toLevelProgressRecord(savedRecord)
   }
+
+  /**
+   * A guest's whole local record, written in **one** transaction at the moment they create an
+   * account.
+   *
+   * **Not a loop over `saveCompletion`.** That would be one round trip and one transaction per
+   * level — up to a thousand of each — and a failure part-way through would leave an account holding
+   * some of their history and no way to tell which part was missing.
+   *
+   * Existing rows are read first so the merge can keep the **better** time rather than the newer
+   * one. Decision D5 only ever runs this on a brand-new account, where that read finds nothing; it
+   * exists so the method is still correct if that ever changes, because "import overwrote my real
+   * best time with a worse one from a guest session" is not a recoverable mistake.
+   *
+   * `totalCompletionTimeSeconds` moves by the sum. Those are real seconds the player spent, and the
+   * per-entry bounds in `importProgressInputSchema` are the same ones every completion already
+   * passes, so this adds no trust that was not already being extended.
+   */
+  async importCompletions(
+    actorKey: string,
+    entries: Array<{ difficulty: AppDifficulty; levelNumber: number; timeSeconds: number }>,
+  ) {
+    const actor = await resolveActorReference(this.prisma, actorKey)
+
+    if (!actor.userId || entries.length === 0) {
+      return { importedCount: 0 }
+    }
+
+    const existingRows = await this.prisma.levelProgress.findMany({
+      where: { userId: actor.userId },
+      select: { difficulty: true, levelNumber: true, bestTimeSeconds: true },
+    })
+    const existingByKey = new Map(
+      existingRows.map((row) => [`${row.difficulty}:${row.levelNumber}`, row.bestTimeSeconds]),
+    )
+
+    const writtenAt = new Date()
+    const rowsToCreate: Array<{
+      actorType: typeof actor.actorType
+      userId: string
+      difficulty: Difficulty
+      levelNumber: number
+      bestTimeSeconds: number
+      completedAt: Date
+      updatedAt: Date
+    }> = []
+    const rowsToImprove: Array<{ difficulty: AppDifficulty; levelNumber: number; timeSeconds: number }> = []
+
+    for (const entry of entries) {
+      const existingBest = existingByKey.get(`${entry.difficulty}:${entry.levelNumber}`)
+
+      if (existingBest === undefined) {
+        rowsToCreate.push({
+          actorType: actor.actorType,
+          userId: actor.userId,
+          difficulty: toPrismaDifficulty(entry.difficulty),
+          levelNumber: entry.levelNumber,
+          bestTimeSeconds: entry.timeSeconds,
+          completedAt: writtenAt,
+          updatedAt: writtenAt,
+        })
+        continue
+      }
+
+      if (existingBest === null || entry.timeSeconds < existingBest) {
+        rowsToImprove.push(entry)
+      }
+    }
+
+    const totalSeconds = entries.reduce((total, entry) => total + entry.timeSeconds, 0)
+
+    await this.prisma.$transaction([
+      this.prisma.levelProgress.createMany({ data: rowsToCreate, skipDuplicates: true }),
+      ...rowsToImprove.map((entry) =>
+        this.prisma.levelProgress.update({
+          where: {
+            userId_difficulty_levelNumber: {
+              userId: actor.userId as string,
+              difficulty: toPrismaDifficulty(entry.difficulty),
+              levelNumber: entry.levelNumber,
+            },
+          },
+          data: { bestTimeSeconds: entry.timeSeconds, updatedAt: writtenAt },
+        }),
+      ),
+      this.prisma.playerStatisticsTotal.upsert({
+        where: { userId: actor.userId },
+        update: { totalCompletionTimeSeconds: { increment: totalSeconds } },
+        create: {
+          actorType: actor.actorType,
+          userId: actor.userId,
+          totalCompletionTimeSeconds: totalSeconds,
+          totalBullPlacements: 0,
+        },
+      }),
+    ])
+
+    return { importedCount: rowsToCreate.length + rowsToImprove.length }
+  }
 }

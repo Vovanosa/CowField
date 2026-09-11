@@ -56,6 +56,41 @@ export function createRequireAuthMiddleware(authService: AuthService) {
   }
 }
 
+/**
+ * `requireAuth` for a route that works with or without a session.
+ *
+ * Added in P18 for the public level reads. A board is the thing a shared link points at, so it has
+ * to answer an anonymous request — but the *same* route still has to recognise an admin, because an
+ * admin's copy carries the authored solution and must not be cached like everyone else's.
+ *
+ * **A token that does not resolve is treated as no token, not as an error.** A stale bearer left in
+ * a browser after a session expired would otherwise turn a public page into a 401, and the reader
+ * has no way to act on that. Every route that actually needs a session still uses `requireAuth`,
+ * which rejects exactly as before.
+ */
+export function createOptionalAuthMiddleware(authService: AuthService) {
+  return async function optionalAuth(
+    request: Request,
+    _response: Response,
+    next: NextFunction,
+  ) {
+    const token = getBearerToken(request)
+
+    if (!token) {
+      next()
+      return
+    }
+
+    const session = await authService.getSessionByToken(token)
+
+    if (session) {
+      ;(request as RequestWithAuth).auth = session
+    }
+
+    next()
+  }
+}
+
 export function getAuthenticatedActor(request: Request) {
   const actor = (request as RequestWithAuth).auth
 
@@ -64,6 +99,14 @@ export function getAuthenticatedActor(request: Request) {
   }
 
   return actor
+}
+
+/**
+ * The caller, or `null` when there is no session. Only for routes behind `optionalAuth` — anywhere
+ * else `request.auth` is guaranteed and `getAuthenticatedActor` says so in its type.
+ */
+export function getOptionalActor(request: Request): AuthenticatedActor | null {
+  return (request as RequestWithAuth).auth ?? null
 }
 
 export function requireAdmin(request: Request) {

@@ -1,7 +1,7 @@
 import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { CowIcon } from '../../components/icons'
 import { PageHeader, Panel } from '../../components/ui'

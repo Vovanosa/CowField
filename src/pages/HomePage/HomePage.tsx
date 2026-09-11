@@ -1,7 +1,7 @@
 import { BarChart3, BookOpenText, Play, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useGuestStatisticsToast } from '../../app/useGuestStatisticsToast'
 import { useAuth } from '../../app/useAuth'

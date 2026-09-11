@@ -60,6 +60,14 @@
     {
       "source": "/game/:path*",
       "destination": "/"
+    },
+    {
+      "source": "/uk",
+      "destination": "/"
+    },
+    {
+      "source": "/uk/:path*",
+      "destination": "/"
     }
   ]
 }

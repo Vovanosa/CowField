@@ -80,7 +80,6 @@ export function useGameSession({
   const [isBoardLocked, setIsBoardLocked] = useState(false)
   const [completionModal, setCompletionModal] = useState<CompletionModalState | null>(null)
   const [nextLevelNumber, setNextLevelNumber] = useState<number | null>(null)
-  const [isUnlocked, setIsUnlocked] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
   const [activeCellIndex, setActiveCellIndex] = useState<number | null>(null)
 
@@ -126,17 +125,12 @@ export function useGameSession({
 
     async function loadLevel() {
       try {
-        // Both progress reads are lookups in the one cached collection for this difficulty, not
-        // requests. They used to be a request each — and the rows were already inside the collection
-        // the levels page had just fetched. The unlock rule itself is unchanged: the level before
-        // this one by number, the same rule the levels page applies when it decides which cards are
-        // locked.
-        const [nextLevel, nextBestTime, previousBestTime] = await Promise.all([
+        // The best time is a lookup in the one cached collection for this difficulty, not a
+        // request. The previous level's time used to be read alongside it, to decide whether this
+        // level was unlocked; P18 removed level locking entirely, so that read went with it.
+        const [nextLevel, nextBestTime] = await Promise.all([
           getLevelByDifficultyAndNumber(difficultyKey, currentLevelNumber),
           getBestTime(difficultyKey, currentLevelNumber),
-          currentLevelNumber > 1
-            ? getBestTime(difficultyKey, currentLevelNumber - 1)
-            : Promise.resolve(null),
         ])
 
         if (!isActive) {
@@ -146,7 +140,6 @@ export function useGameSession({
         setLevel(nextLevel)
         setBestTimeSeconds(nextBestTime)
         setNextLevelNumber(nextLevel?.nextLevelNumber ?? null)
-        setIsUnlocked(currentLevelNumber === 1 || previousBestTime !== null)
         setCellMarks(nextLevel ? createEmptyBoard(nextLevel) : [])
         setActiveCellIndex(null)
         setHasLoadError(false)
@@ -676,7 +669,6 @@ export function useGameSession({
     isBoardLocked,
     completionModal,
     nextLevelNumber,
-    isUnlocked,
     canUndo,
     activeCellIndex,
     invalidBullIndexes: solutionState?.invalidBullIndexes ?? new Set<number>(),

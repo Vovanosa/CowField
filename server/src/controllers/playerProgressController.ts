@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 
 import {
   completeLevelInputSchema,
+  importProgressInputSchema,
   progressDifficultyParamsSchema,
   progressParamsSchema,
 } from '../schemas/progressSchemas'
@@ -46,6 +47,18 @@ export class PlayerProgressController {
       params.levelNumber,
       body,
     )
+
+    response.status(201).json(payload)
+  }
+
+  /**
+   * The guest-to-account handover (P18, decision D5). One request for the whole record — see
+   * `PlayerProgressService.importGuestProgress` for why it may only ever write to the caller.
+   */
+  importProgress = async (request: Request, response: Response) => {
+    const body = importProgressInputSchema.parse(request.body)
+    const actor = getAuthenticatedActor(request)
+    const payload = await this.playerProgressService.importGuestProgress(actor.actorKey, body.entries)
 
     response.status(201).json(payload)
   }

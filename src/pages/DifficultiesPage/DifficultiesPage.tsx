@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { PageHeader, Panel } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
@@ -89,7 +89,7 @@ export function DifficultiesPage() {
       <Panel className={styles.panel}>
         <p className={styles.lead}>
           {t(
-            'Five sizes, 200 levels each. They are independent of one another, so there is nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.',
+            'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.',
           )}
         </p>
 

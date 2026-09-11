@@ -1,13 +1,12 @@
-import { Lock, Plus, SquarePen } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Plus, SquarePen } from 'lucide-react'
 
+import { Link } from '../../app/navigation'
 import { Panel } from '../ui'
 import styles from './LevelCard.module.css'
 
 type PlayLevelCardProps = {
   levelNumber: number
   bestTime?: string | null
-  isLocked?: boolean
   openTo?: string
   openLabel?: string
   editTo?: string
@@ -34,28 +33,11 @@ export function LevelCard(props: LevelCardProps) {
     )
   }
 
-  const {
-    levelNumber,
-    bestTime,
-    isLocked = false,
-    openTo,
-    openLabel,
-    editTo,
-    editLabel,
-  } = props
+  const { levelNumber, bestTime, openTo, openLabel, editTo, editLabel } = props
 
   return (
-    <Panel
-      as="article"
-      className={[
-        styles.card,
-        !isLocked ? styles.clickable : '',
-        isLocked ? styles.locked : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    >
-      {!isLocked && openTo && openLabel ? (
+    <Panel as="article" className={`${styles.card} ${styles.clickable}`}>
+      {openTo && openLabel ? (
         <Link className={styles.linkOverlay} to={openTo} aria-label={openLabel} />
       ) : null}
 
@@ -63,12 +45,6 @@ export function LevelCard(props: LevelCardProps) {
         <span className={styles.number}>{levelNumber}</span>
         {bestTime ? <span className={styles.time}>{bestTime}</span> : null}
       </div>
-
-      {isLocked ? (
-        <div className={styles.lock} aria-hidden="true">
-          <Lock size={16} />
-        </div>
-      ) : null}
 
       {editTo && editLabel ? (
         <div className={styles.actions}>

@@ -1,31 +1,186 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Four URLs, and that is correct: they are the only pages that do not need a session. Listing level
-  URLs would list a thousand pages that redirect a crawler to a login form, which is worse than
-  nothing.
+  **Twenty URLs: ten pages, each in two languages.**
+
+  Every entry carries the full `hreflang` set as `xhtml:link` alternates, and that is the point of
+  doing it here rather than trusting the tags `useDocumentMeta` injects. Those tags are written by
+  JavaScript; these are in a static file a crawler reads before it renders anything. It is the one
+  place the Ukrainian half of the site can be declared without depending on a render pass.
+
+  Both halves of every pair declare each other, and `x-default` points at English. A one-way
+  `hreflang` is ignored silently, with no warning in Search Console and no error anywhere, which is
+  why `npm run check:seo` asserts reciprocity rather than leaving it to review.
+
+  **Boards are not listed, deliberately** (P18, decision D3). All 1,000 are public and shareable; a
+  blurred board behind a gate is a thin page and a thousand of them is the doorway-page pattern. The
+  ten listing pages carry the content worth ranking, and `robots.txt` disallows `/game/` to match.
 
   The domain is hardcoded because a sitemap has to carry absolute URLs. **If the site moves to a
-  custom domain, this file and `robots.txt` both need updating** — `npm run check:seo` compares them
-  against the URL it is pointed at, so it will fail rather than let them drift silently.
+  custom domain, this file, `robots.txt` and the `og:image` URL in `index.html` all change
+  together** — `npm run check:seo` compares them against the URL it is pointed at, so it fails
+  rather than letting them drift silently.
 -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
   <url>
     <loc>https://cowfield.vercel.app/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/" />
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://cowfield.vercel.app/uk</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/" />
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels" />
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels" />
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://cowfield.vercel.app/about</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/about" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/about</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/about" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/about" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://cowfield.vercel.app/how-to-solve</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/how-to-solve" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/how-to-solve" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/how-to-solve" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cowfield.vercel.app/uk/how-to-solve</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/how-to-solve" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/how-to-solve" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/how-to-solve" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels/light</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/light" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/light" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/light" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels/light</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/light" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/light" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/light" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels/easy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/easy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/easy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/easy" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels/easy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/easy" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/easy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/easy" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels/medium</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/medium" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/medium" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/medium" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels/medium</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/medium" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/medium" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/medium" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels/hard</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/hard" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/hard" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/hard" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels/hard</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/hard" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/hard" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/hard" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/levels/extreme</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/extreme" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/extreme" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/extreme" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/levels/extreme</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/levels/extreme" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/levels/extreme" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/levels/extreme" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cowfield.vercel.app/difficulties</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/difficulties" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/difficulties" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/difficulties" />
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/difficulties</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/difficulties" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/difficulties" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/difficulties" />
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

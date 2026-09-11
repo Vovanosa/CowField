@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { Link, type LinkProps } from 'react-router-dom'
+import type { LinkProps } from 'react-router-dom'
 
+import { Link } from '../../../app/navigation'
 import styles from './IconButton.module.css'
 
 export type IconButtonVariant = 'secondary' | 'ghost'

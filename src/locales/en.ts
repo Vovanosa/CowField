@@ -117,8 +117,56 @@ const en = {
   About: 'About',
   Statistics: 'Statistics',
   Settings: 'Settings',
-  'Level Select': 'Level Select',
+  // -------------------------------------------------------------------------------------------
+  // `/levels` and `/levels/:difficulty` — public and indexable since P18 (D-1). These ten pages
+  // (five, twice, once per language) are what the programme actually asks Google to rank, so the
+  // headings spend their words on what people type rather than on what the app calls things.
+  // The per-difficulty copy lives in `pages/DifficultyLevelsPage/difficultyPageContent.ts`.
+  // -------------------------------------------------------------------------------------------
+  'Star Battle puzzles by board size': 'Star Battle puzzles by board size',
   'Choose a difficulty to play.': 'Choose a difficulty to play.',
+  '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.':
+    '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. No account needed, and no level is locked.',
+  'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.':
+    'Pick a size. Nothing is locked, so any level in any difficulty opens straight away.',
+  'What changes between sizes': 'What changes between sizes',
+  'Nothing is locked. Any level on this page opens straight away, in any order.':
+    'Nothing is locked. Any level on this page opens straight away, in any order.',
+  '6x6 Star Battle puzzles, one star per row': '6x6 Star Battle puzzles, one star per row',
+  '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.':
+    '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.',
+  'Light is the smallest size here: every board is 6 by 6, with one bull in every row, every column and every pen. If you know this puzzle as Star Battle or Two Not Touch, the stars are bulls and the regions are pens, and nothing else about it changes.':
+    'Light is the smallest size here: every board is 6 by 6, with one bull in every row, every column and every pen. If you know this puzzle as Star Battle or Two Not Touch, the stars are bulls and the regions are pens, and nothing else about it changes.',
+  'Thirty-six cells is small enough to hold the whole grid in your head, which is what makes this the right place to find out what the dots are for.':
+    'Thirty-six cells is small enough to hold the whole grid in your head, which is what makes this the right place to find out what the dots are for.',
+  '8x8 Star Battle puzzles, one star per row': '8x8 Star Battle puzzles, one star per row',
+  '200 free 8x8 Star Battle puzzles, one star in every row, column and region. A step up from 6x6, with enough room that the obvious rows run out.':
+    '200 free 8x8 Star Battle puzzles, one star in every row, column and region. A step up from 6x6, with enough room that the obvious rows run out.',
+  'Easy keeps one bull in every row, column and pen, and moves the board to 8 by 8. Same rules as the 6x6 boards, with twenty-eight more cells to be wrong in.':
+    'Easy keeps one bull in every row, column and pen, and moves the board to 8 by 8. Same rules as the 6x6 boards, with twenty-eight more cells to be wrong in.',
+  'This is the size where counting rows stops being enough on its own and you start leaning on the shape of the pens instead.':
+    'This is the size where counting rows stops being enough on its own and you start leaning on the shape of the pens instead.',
+  '10x10 Star Battle puzzles, one star per row': '10x10 Star Battle puzzles, one star per row',
+  '200 free 10x10 Star Battle puzzles, one star in every row, column and region. The size most Star Battle puzzles come in, and the usual place to start.':
+    '200 free 10x10 Star Battle puzzles, one star in every row, column and region. The size most Star Battle puzzles come in, and the usual place to start.',
+  'Medium is 10 by 10 with one bull in every row, column and pen. This is the size most Star Battle puzzles come in, so if you have played the game somewhere else it will feel familiar straight away.':
+    'Medium is 10 by 10 with one bull in every row, column and pen. This is the size most Star Battle puzzles come in, so if you have played the game somewhere else it will feel familiar straight away.',
+  'A hundred cells is enough that guessing stops paying and you have to eliminate properly, which is the part of this puzzle people come back for.':
+    'A hundred cells is enough that guessing stops paying and you have to eliminate properly, which is the part of this puzzle people come back for.',
+  '10x10 Star Battle puzzles, two stars per row': '10x10 Star Battle puzzles, two stars per row',
+  '200 free 10x10 Star Battle puzzles with two stars in every row, column and region. This is what most people mean by Two Not Touch.':
+    '200 free 10x10 Star Battle puzzles with two stars in every row, column and region. This is what most people mean by Two Not Touch.',
+  'Hard stays at 10 by 10 and puts two bulls in every row, column and pen. That is a different puzzle from the one-bull boards rather than a bigger one, and it is what most people mean by Two Not Touch.':
+    'Hard stays at 10 by 10 and puts two bulls in every row, column and pen. That is a different puzzle from the one-bull boards rather than a bigger one, and it is what most people mean by Two Not Touch.',
+  'Finding one bull in a row no longer retires the row, because the second is still out there. The rule that no two bulls may touch ends up doing most of the work.':
+    'Finding one bull in a row no longer retires the row, because the second is still out there. The rule that no two bulls may touch ends up doing most of the work.',
+  '15x15 Star Battle puzzles, three stars per row': '15x15 Star Battle puzzles, three stars per row',
+  '200 free 15x15 Star Battle puzzles with three stars in every row, column and region. 225 cells and 45 stars, the hardest boards on CowField.':
+    '200 free 15x15 Star Battle puzzles with three stars in every row, column and region. 225 cells and 45 stars, the hardest boards on CowField.',
+  'Extreme is 15 by 15 with three bulls in every row, column and pen. That is 225 cells and 45 bulls, and one of these will take a while.':
+    'Extreme is 15 by 15 with three bulls in every row, column and pen. That is 225 cells and 45 bulls, and one of these will take a while.',
+  'Worth knowing before you start: unlike the smaller sizes, these boards are not checked to have exactly one answer. A few have several, any legal arrangement wins, and you will never be told you found the wrong one.':
+    'Worth knowing before you start: unlike the smaller sizes, these boards are not checked to have exactly one answer. A few have several, any legal arrangement wins, and you will never be told you found the wrong one.',
   'Available levels': 'Available levels',
   'Unknown difficulty.': 'Unknown difficulty.',
   'Choose one of the available difficulty groups to browse levels.':
@@ -128,12 +176,14 @@ const en = {
   Previous: 'Previous',
   Next: 'Next',
   'Page {{page}} of {{totalPages}}': 'Page {{page}} of {{totalPages}}',
-  '{{completed}}/{{total}} completed': '{{completed}}/{{total}} completed',
+  '{{completed}} of {{total}} solved': '{{completed}} of {{total}} solved',
   '{{percent}}% done': '{{percent}}% done',
+  // For a visitor with no session, where there is nothing to count yet. A plural key even though
+  // every difficulty currently holds exactly 200 — see the note in `uk.ts`.
+  '{{count}} levels_one': '{{count}} level',
+  '{{count}} levels_other': '{{count}} levels',
   'Open level {{levelNumber}}': 'Open level {{levelNumber}}',
   'Edit level {{levelNumber}}': 'Edit level {{levelNumber}}',
-  'This level is locked. Complete the previous level first to open it.':
-    'This level is locked. Complete the previous level first to open it.',
   // -------------------------------------------------------------------------------------------
   // `/about` — the rules page, and the best keyword surface on the site.
   //
@@ -222,8 +272,8 @@ const en = {
   // -------------------------------------------------------------------------------------------
   'Board sizes': 'Board sizes',
   'Star Battle board sizes and difficulty': 'Star Battle board sizes and difficulty',
-  'Five sizes, 200 levels each. They are independent of one another, so there is nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.':
-    "Five sizes, 200 levels each. They're independent of one another, so there's nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.",
+  'Five sizes, 200 levels each, and nothing is locked. There is no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.':
+    "Five sizes, 200 levels each, and nothing is locked. There's no order to work through: level 1 of light and level 173 of extreme are both one click away on your first visit. Pick by how big a board you feel like.",
   '200 levels': '200 levels',
   '6x6 board, one bull per row, column and pen.': '6x6 board, one bull per row, column and pen.',
   '8x8 board, one bull per row, column and pen.': '8x8 board, one bull per row, column and pen.',
@@ -407,6 +457,26 @@ const en = {
   'Completing Google login...': 'Completing Google login...',
   'Verifying your email...': 'Verifying your email...',
   'Play as guest': 'Play as guest',
+  // -------------------------------------------------------------------------------------------
+  // P18 — the level gate, sharing, and the guest-to-account handover.
+  // -------------------------------------------------------------------------------------------
+  'Ready when you are': 'Ready when you are',
+  'Play right away without an account, or make one so your times follow you between devices.':
+    'Play right away without an account, or make one so your times follow you between devices.',
+  Share: 'Share',
+  'Play this Star Battle level on CowField': 'Play this Star Battle level on CowField',
+  'Link copied.': 'Link copied.',
+  "Couldn't share this level.": "Couldn't share this level.",
+  'Browse all levels': 'Browse all levels',
+  'Sign up': 'Sign up',
+  'Your guest progress stays here': 'Your guest progress stays here',
+  // `{{count}}` does not appear in the singular on purpose: "the 1 level" is not a sentence anyone
+  // writes. i18next picks the form, and each form is allowed its own wording.
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._one':
+    'Signing in leaves behind the level you finished as a guest on this device. Create an account instead and it comes with you.',
+  'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._other':
+    'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you.',
+  'Sign in anyway': 'Sign in anyway',
   'Statistics is available only for logged users.':
     'Statistics is available only for logged users.',
   'Create account': 'Create account',

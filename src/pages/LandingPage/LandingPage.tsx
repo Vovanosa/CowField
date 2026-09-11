@@ -1,22 +1,33 @@
 import { BookOpenText, Play, Rows3, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
 
+import { Link, useNavigate } from '../../app/navigation'
 import { useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
 import { StatusMessage } from '../../components/ui'
 import styles from './LandingPage.module.css'
 
 /**
- * Where both primary actions land — the guest start and a signed-in player's "back to your levels".
+ * Where the primary actions land.
  *
- * "Play now" used to drop a new guest straight into `/game/light/1`. Landing on the difficulty
- * chooser instead costs one tap and shows them what they actually arrived at: five difficulties and
- * a thousand levels, which is the thing the page just spent 250 words describing. Jumping into one
- * 6x6 grid hid all of it and gave them no idea where they were or how to get anywhere else.
+ * **"Play now" goes straight to a board again** (P18, decision C4), reversing a call made earlier in
+ * P14. The reasoning then was sound and is worth keeping: dropping a visitor into one 6x6 grid hides
+ * the five difficulties and thousand levels the page has just spent 250 words describing, and leaves
+ * them with no idea where they are.
+ *
+ * Two things changed underneath it. Level locking is gone, so the board is no longer the end of a
+ * corridor — every other level is reachable from it. And the count of clicks between arriving and
+ * playing turned out to be the number that matters most for a site nobody has heard of: it was
+ * three, and it is one.
+ *
+ * The old argument is answered rather than ignored. **Browse all levels** sits beside the button for
+ * anyone who would rather choose, and it now works with no session at all.
  */
 const LEVELS_PATH = '/levels'
+
+/** The gentlest board in the game: 6x6, one bull per row. A first move, not a commitment. */
+const FIRST_LEVEL_PATH = '/game/light/1'
 
 /** How long a start may take silently before the page explains itself. */
 const SLOW_START_NOTICE_MS = 3000
@@ -66,7 +77,7 @@ export function LandingPage() {
 
     try {
       await auth.loginAsGuest()
-      navigate(LEVELS_PATH)
+      navigate(FIRST_LEVEL_PATH)
     } catch (requestError) {
       // The API can be cold or unreachable. Saying so beats a button that looks broken.
       setError(
@@ -157,9 +168,16 @@ export function LandingPage() {
             </button>
           )}
           {isPlayer ? null : (
-            <Link className={styles.secondaryAction} to="/login">
-              {t('Sign in to save your progress')}
-            </Link>
+            <>
+              {/* The answer to what the straight-to-a-board jump hides. Public since P18, so it
+                  needs no session and no guest token to follow. */}
+              <Link className={styles.secondaryAction} to={LEVELS_PATH}>
+                {t('Browse all levels')}
+              </Link>
+              <Link className={styles.secondaryAction} to="/login">
+                {t('Sign in to save your progress')}
+              </Link>
+            </>
           )}
         </div>
 

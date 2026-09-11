@@ -2,6 +2,7 @@ import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-re
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useLanguage, useSwitchLanguage } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
 import gbFlag from '../../assets/flags/gb.svg'
@@ -13,7 +14,6 @@ import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import type { PlayerSettings } from '../../game/types'
 import type { PlayerLanguage } from '../../game/types/settings'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
-import i18n from '../../i18n'
 import styles from './SettingsPage.module.css'
 
 type ToggleSettingKey =
@@ -74,6 +74,10 @@ const languageOptions: Array<{
 export function SettingsPage() {
   const { isGuest } = useAuth()
   const settings = usePlayerSettings()
+  // The URL decides what language the page is in; `settings.language` is only the preference for
+  // the next visit. See `LanguageSwitcher`, which makes the same distinction.
+  const language = useLanguage()
+  const switchLanguage = useSwitchLanguage()
   const { t } = useTranslation()
   useDocumentMeta({ title: brandedTitle(t('Settings')), robots: 'noindex' })
   const [hasStorageFailed, setHasStorageFailed] = useState(false)
@@ -112,7 +116,7 @@ export function SettingsPage() {
   }
 
   function handleLanguageChange(nextLanguage: PlayerLanguage) {
-    if (settings.language === nextLanguage) {
+    if (language === nextLanguage) {
       return
     }
 
@@ -122,7 +126,7 @@ export function SettingsPage() {
       ...settings,
       language: nextLanguage,
     })
-    void i18n.changeLanguage(nextLanguage)
+    switchLanguage(nextLanguage)
   }
 
   function getSettingTitle(key: ToggleSettingKey) {
@@ -205,11 +209,11 @@ export function SettingsPage() {
                       type="button"
                       className={[
                         styles.languageOption,
-                        settings.language === option.value ? styles.languageOptionActive : '',
+                        language === option.value ? styles.languageOptionActive : '',
                       ]
                         .filter(Boolean)
                         .join(' ')}
-                      aria-pressed={settings.language === option.value}
+                      aria-pressed={language === option.value}
                       onClick={() => handleLanguageChange(option.value)}
                     >
                       <img className={styles.languageOptionFlag} src={option.flag} alt="" aria-hidden="true" />

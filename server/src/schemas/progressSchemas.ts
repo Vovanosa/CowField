@@ -3,6 +3,7 @@ import { z } from 'zod'
 import {
   INT4_MAX,
   MAX_BULL_PLACEMENTS_PER_REQUEST,
+  MAX_IMPORTED_PROGRESS_ENTRIES,
   MAX_LEVEL_TIME_SECONDS,
   MIN_LEVEL_TIME_SECONDS,
 } from '../../../shared/apiLimits'
@@ -41,3 +42,30 @@ export const completeLevelInputSchema = z.object({
 })
 
 export type CompleteLevelInput = z.infer<typeof completeLevelInputSchema>
+
+/**
+ * One guest's locally-stored progress, handed over at the moment they create an account.
+ *
+ * **The one place rule 7 bends** (P18, decision D5): guest progress is otherwise never sent to the
+ * backend and never read by it. This is a single, user-initiated export, not a sync.
+ *
+ * Every entry is bounded exactly as a completion is, because that is what each one claims to be.
+ * The array is bounded too — a guest cannot have finished more levels than exist.
+ */
+export const importProgressInputSchema = z.object({
+  entries: z
+    .array(
+      z.object({
+        difficulty: difficultySchema,
+        levelNumber: z.number().int().positive().max(INT4_MAX),
+        timeSeconds: z
+          .number()
+          .int()
+          .min(MIN_LEVEL_TIME_SECONDS)
+          .max(MAX_LEVEL_TIME_SECONDS),
+      }),
+    )
+    .max(MAX_IMPORTED_PROGRESS_ENTRIES),
+})
+
+export type ImportProgressInput = z.infer<typeof importProgressInputSchema>

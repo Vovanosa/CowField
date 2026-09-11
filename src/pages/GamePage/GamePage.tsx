@@ -1,19 +1,25 @@
 import { SquarePen } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
+import { useNavigate } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
-import { Button, Panel, StatusMessage } from '../../components/ui'
+import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
+import { GameAccessGate } from './GameAccessGate'
 import { GameBoardPanel } from './GameBoardPanel'
 import { GameCompletionDialog } from './GameCompletionDialog'
 import { GameRouteHeader } from './GameRouteHeader'
 import { isDifficulty } from './gameSession.helpers'
 import { useGameSession } from './useGameSession'
 import styles from './GamePage.module.css'
+
+/** Long enough to read four words, short enough not to sit over the board. */
+const SHARE_TOAST_DURATION_MS = 2600
 
 function GamePageScreen() {
   const { difficulty, levelNumber } = useParams()
@@ -23,6 +29,22 @@ function GamePageScreen() {
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const isAutoPlaceDotsEnabled = settings?.autoPlaceDotsEnabled === true
   const { t } = useTranslation()
+  // One line, shown after a clipboard copy. `navigator.share` needs none — the native sheet is its
+  // own confirmation — so this only ever appears on the fallback path.
+  const [shareMessage, setShareMessage] = useState<string | null>(null)
+
+  // Clears itself. Keyed on the message rather than on a ref, so sharing twice in a row restarts
+  // the timer instead of the first copy dismissing the second.
+  useEffect(() => {
+    if (!shareMessage) {
+      return
+    }
+
+    const timer = window.setTimeout(() => setShareMessage(null), SHARE_TOAST_DURATION_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [shareMessage])
+
   const {
     level,
     isLoading,
@@ -33,7 +55,6 @@ function GamePageScreen() {
     isBoardLocked,
     completionModal,
     nextLevelNumber,
-    isUnlocked,
     canUndo,
     activeCellIndex,
     invalidBullIndexes,
@@ -61,8 +82,18 @@ function GamePageScreen() {
       ? `${getDifficultyLabel(t, difficulty)} / ${t('Level {{levelNumber}}', { levelNumber })}`
       : t('The requested level route is invalid.')
 
-  // `noindex`: this route needs a session, so a crawler only ever sees it redirect to a login form.
-  // The title still names the level, which is what makes browser history and tabs usable.
+  /*
+    `noindex`, still — but for a different reason than before P18.
+
+    It used to be that a crawler only ever saw this route redirect to a login form. The route is
+    public now, and the reason survives the change: a board behind a gate is a thin page, and a
+    thousand of them is the doorway-page pattern (decision D3). **Shareable, not searchable.** The
+    listing pages are what this programme asks Google to rank; `robots.txt` keeps `/game/` disallowed
+    to match.
+
+    The title still names the level, which is what makes browser history, tabs and a shared link
+    preview usable.
+  */
   useDocumentMeta({ title: brandedTitle(routeLevelLabel), robots: 'noindex' })
 
   if (!isDifficulty(difficulty) || !levelNumber) {
@@ -159,22 +190,6 @@ function GamePageScreen() {
     )
   }
 
-  if (!isUnlocked && !isAdmin) {
-    return (
-      <div className={styles.page}>
-        <GameRouteHeader
-          backTo={`/levels/${difficulty}`}
-          backLabel={t('Back to levels')}
-          levelLabel={routeLevelLabel}
-        />
-        <EmptyState
-          className={styles.emptyState}
-          message={t('This level is locked. Complete the previous level first to open it.')}
-        />
-      </div>
-    )
-  }
-
   function handleBackToLevels() {
     setCompletionModal((currentModal) => (currentModal ? { ...currentModal, isOpen: false } : null))
     navigate(`/levels/${difficulty}`)
@@ -204,29 +219,40 @@ function GamePageScreen() {
         levelLabel={routeLevelLabel}
       />
 
-      <GameBoardPanel
-        level={level}
-        difficulty={difficulty}
-        cellMarks={cellMarks}
-        invalidBullIndexes={invalidBullIndexes}
-        isBoardLocked={isBoardLocked}
-        activeCellIndex={activeCellIndex}
-        canUndo={canUndo}
-        hasNextLevel={hasNextLevel}
-        isCompletionModalOpen={completionModal?.isOpen === true}
-        isAdmin={isAdmin}
-        isTakeYourTimeEnabled={isTakeYourTimeEnabled}
-        elapsedSeconds={elapsedSeconds}
-        remainingBulls={remainingBulls}
-        onUndo={handleUndoMove}
-        onRestart={handleRestartBoard}
-        onNextLevel={handleNextLevel}
-        onCellPointerDown={handleCellPointerDown}
-        onCellPointerEnter={handleCellPointerEnter}
-        onCellPointerUp={handleCellPointerUp}
-        onCellActivate={handleCellActivate}
-        t={t}
-      />
+      {/*
+        The board is built and rendered the same way for everyone; the gate is a layer over it for a
+        visitor with no session, and renders nothing at all for a player. Wrapping rather than
+        branching is what lets *Play as guest* unblur **in place** — the board underneath is already
+        loaded, so there is no second wait and no chance of landing somewhere else.
+      */}
+      <GameAccessGate t={t}>
+        <GameBoardPanel
+          level={level}
+          difficulty={difficulty}
+          cellMarks={cellMarks}
+          invalidBullIndexes={invalidBullIndexes}
+          isBoardLocked={isBoardLocked}
+          activeCellIndex={activeCellIndex}
+          canUndo={canUndo}
+          hasNextLevel={hasNextLevel}
+          isCompletionModalOpen={completionModal?.isOpen === true}
+          isAdmin={isAdmin}
+          isTakeYourTimeEnabled={isTakeYourTimeEnabled}
+          elapsedSeconds={elapsedSeconds}
+          remainingBulls={remainingBulls}
+          onUndo={handleUndoMove}
+          onRestart={handleRestartBoard}
+          onNextLevel={handleNextLevel}
+          onCellPointerDown={handleCellPointerDown}
+          onCellPointerEnter={handleCellPointerEnter}
+          onCellPointerUp={handleCellPointerUp}
+          onCellActivate={handleCellActivate}
+          onShared={setShareMessage}
+          t={t}
+        />
+      </GameAccessGate>
+
+      {shareMessage ? <Toast title={shareMessage} /> : null}
 
       {completionModal?.isOpen ? (
         <GameCompletionDialog

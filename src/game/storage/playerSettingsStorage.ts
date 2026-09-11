@@ -1,4 +1,4 @@
-import i18n, {
+import {
   LANGUAGE_STORAGE_KEY,
   getStoredLanguage,
   normalizeLanguage,
@@ -101,19 +101,19 @@ function persistPlayerSettings(settings: PlayerSettings) {
  * So every cross-tab change re-rendered with the identical object and looked inert. Re-reading here
  * is what the listener was always missing.
  *
- * The theme and the language are pulled across too: both are global page state, and a settings page
- * showing "Ukrainian, dark" over an English page in light mode is worse than not syncing at all.
+ * The theme is pulled across too, because it is global page state and a settings page showing "dark"
+ * over a light page is worse than not syncing at all.
+ *
+ * **The language is not**, since P18. It used to call `i18n.changeLanguage` here, which now
+ * contradicts the URL: language is a path prefix (`/uk/...`), so another tab changing the stored
+ * *preference* must not re-translate the page this tab is on — that page's canonical and `hreflang`
+ * say what language it is. The preference still updates; it takes effect on the next visit to `/`.
  */
 function refreshFromStorage() {
   const nextSettings = readStoredPlayerSettings()
 
   setCurrentPlayerSettings(nextSettings)
   applyThemeMode(nextSettings.darkModeEnabled)
-
-  if (i18n.language !== nextSettings.language) {
-    void i18n.changeLanguage(nextSettings.language)
-  }
-
   emitSettingsChanged()
 }
 

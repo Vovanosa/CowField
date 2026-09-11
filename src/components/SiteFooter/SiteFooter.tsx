@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from '../../app/navigation'
 import styles from './SiteFooter.module.css'
 
 /**

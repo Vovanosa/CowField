@@ -2,6 +2,7 @@ import { SquarePen, Timer, TimerReset, Undo2 } from 'lucide-react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
 import { GameBoard } from '../../components/GameBoard'
+import { ShareLevelButton } from './ShareLevelButton'
 import { CowIcon } from '../../components/icons'
 import { Button, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
@@ -29,6 +30,7 @@ type GameBoardPanelProps = {
   onCellPointerEnter: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellPointerUp: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellActivate: (cellIndex: number, timestampMs: number) => void
+  onShared: (message: string) => void
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
@@ -52,6 +54,7 @@ export function GameBoardPanel({
   onCellPointerEnter,
   onCellPointerUp,
   onCellActivate,
+  onShared,
   t,
 }: GameBoardPanelProps) {
   return (
@@ -114,6 +117,15 @@ export function GameBoardPanel({
             >
               {t('Restart')}
             </Button>
+
+            {/* Always available, signed in or not — see `ShareLevelButton` for why it carries no
+                time. It sits with Restart rather than after the solve, because the reason to send
+                someone a level is usually that you are looking at it. */}
+            <ShareLevelButton
+              className={[styles.boardActionButton, styles.boardIconAction].join(' ')}
+              t={t}
+              onShared={onShared}
+            />
 
             {isAdmin ? (
               <Button

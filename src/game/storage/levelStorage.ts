@@ -5,7 +5,12 @@ import type {
   LevelEditorDefinition,
 } from '../types'
 import { getGridSizeForDifficulty } from '../validation'
-import { buildApiUrl, getStoredSessionRole, requestAuthenticatedJson } from './http'
+import {
+  buildApiUrl,
+  getStoredSessionRole,
+  requestAuthenticatedJson,
+  requestOptionallyAuthenticatedJson,
+} from './http'
 import { invalidateDifficultyOverviewCache } from './resources/difficultyOverview'
 import {
   getLevelBoard,
@@ -101,7 +106,10 @@ export async function getLevelsByDifficulty(difficulty: Difficulty): Promise<num
 export async function getDifficultyLevelSummary(
   difficulty: Difficulty,
 ): Promise<DifficultyLevelSummary> {
-  return requestJson<DifficultyLevelSummaryResponse>(`/${difficulty}/summary`)
+  // Public since P18, like the other three level reads.
+  return requestOptionallyAuthenticatedJson<DifficultyLevelSummaryResponse>(
+    `${API_BASE}/${difficulty}/summary`,
+  )
 }
 
 export async function getLevelByDifficultyAndNumber(

@@ -20,6 +20,11 @@
  *
  * PowerShell eats `--` in `npm run x -- --flag`; use `A11Y_APP_URL=... npm run check:seo` or call
  * `npx tsx scripts/check-seo.mts --url=…` directly there.
+ *
+ * **Since P18 this needs the API running.** Six of the ten indexable pages are `/levels` and the five
+ * `/levels/:difficulty` pages, and their content is the level grid — which comes from
+ * `GET /api/levels/...`. Those reads are public now, so no session is needed, but a check run with
+ * the API down reports thin pages rather than a broken server, which is the wrong diagnosis.
  */
 import { spawn } from 'node:child_process'
 import { existsSync, mkdtempSync } from 'node:fs'
@@ -31,10 +36,41 @@ const TARGET = (urlArgument?.slice('--url='.length) ?? process.env.A11Y_APP_URL 
   .replace(/\/+$/, '')
 const DEBUG_PORT = Number(process.env.A11Y_DEBUG_PORT ?? 9224)
 
-/** The pages that must be indexable, and what each one has to say. */
-const PUBLIC_ROUTES = ['/', '/about', '/how-to-solve', '/difficulties']
-/** Needs a session, or is a credential form: must report `noindex`. */
-const PRIVATE_ROUTES = ['/levels', '/settings', '/login']
+/**
+ * The pages that must be indexable, written **language-neutral**. Each one exists twice since P18 —
+ * once at the root in English, once under `/uk` — and both halves are checked.
+ *
+ * `/` must stay first: the landing-page word-count and structured-data assertions read the first
+ * entry.
+ */
+const PUBLIC_PATHS = [
+  '/',
+  '/levels',
+  '/about',
+  '/how-to-solve',
+  '/levels/light',
+  '/levels/easy',
+  '/levels/medium',
+  '/levels/hard',
+  '/levels/extreme',
+  '/difficulties',
+]
+
+/** Where a language-neutral path lives in the Ukrainian tree. `/` is `/uk`, not `/uk/`. */
+function ukPath(path: string) {
+  return path === '/' ? '/uk' : `/uk${path}`
+}
+
+const PUBLIC_ROUTES = [...PUBLIC_PATHS, ...PUBLIC_PATHS.map(ukPath)]
+
+/**
+ * Needs a session, is a credential form, or is deliberately not searchable: must report `noindex`.
+ *
+ * `/game/*` is the interesting one. It is **public** since P18 — a link to a board works for anyone —
+ * but a board behind a gate is a thin page and a thousand of them is the doorway-page pattern
+ * (decision D3). Shareable, not searchable, and this is what keeps the two apart.
+ */
+const PRIVATE_ROUTES = ['/settings', '/login', '/game/light/1', '/uk/settings', '/uk/game/light/1']
 /** The landing page's second URL, for players who cannot reach it at `/`. Must canonicalise to `/`. */
 const ALIAS_ROUTE = '/welcome'
 /** Must not resolve to the app at all. */
@@ -132,11 +168,24 @@ check(
   sitemap.status === 200 && /xml/.test(sitemap.type),
   `${sitemap.status} ${sitemap.type}`,
 )
+/*
+  Parsed out of `<loc>` rather than matched against the whole file. The sitemap carries a comment
+  explaining why boards are absent, and that comment necessarily contains the string `/game/` — so a
+  naive `body.includes` test fails on its own documentation.
+*/
+const sitemapLocations = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
+
 check(
-  'sitemap lists every public route and nothing that needs a session',
-  PUBLIC_ROUTES.every((route) => sitemap.body.includes(`${declaredOrigin}${route}`)) &&
-    !/\/game\/|\/settings|\/statistics/.test(sitemap.body),
-  `relative to the origin the sitemap declares: ${declaredOrigin}`,
+  'sitemap lists every public route, in both languages',
+  PUBLIC_ROUTES.every((route) =>
+    sitemapLocations.includes(`${declaredOrigin}${route === '/' ? '/' : route}`),
+  ),
+  `${sitemapLocations.length} URLs, relative to the origin the sitemap declares: ${declaredOrigin}`,
+)
+check(
+  'and nothing that needs a session or is deliberately unsearchable',
+  !sitemapLocations.some((location) => /\/game\/|\/settings|\/statistics|\/login/.test(location)),
+  sitemapLocations.filter((location) => /\/game\/|\/settings|\/statistics/.test(location)).join(', '),
 )
 
 const unknown = await head(UNKNOWN_ROUTE)
@@ -272,6 +321,16 @@ type PageFacts = {
   jsonLd: number
   h1: string[]
   words: number
+  /** hreflang → href, from the `<link rel="alternate">` set `useDocumentMeta` emits. */
+  alternates: Record<string, string>
+  /**
+   * Paragraphs carrying a real sentence, not a label.
+   *
+   * A word count cannot tell a listing page apart from a thin one: 200 level numbers are 200
+   * "words", so a page that lost all its copy would still look substantial. Counting paragraphs long
+   * enough to be prose is what actually distinguishes them.
+   */
+  proseParagraphs: number
 }
 
 const PROBE = `
@@ -287,6 +346,15 @@ const PROBE = `
     jsonLd: document.querySelectorAll('script[type="application/ld+json"]').length,
     h1: Array.from(document.querySelectorAll('h1')).map((h) => h.textContent.trim()),
     words: text ? text.split(' ').length : 0,
+    alternates: Object.fromEntries(
+      Array.from(document.querySelectorAll('link[rel="alternate"][hreflang]')).map((link) => [
+        link.getAttribute('hreflang'),
+        link.getAttribute('href'),
+      ]),
+    ),
+    proseParagraphs: Array.from(document.querySelectorAll('#root p')).filter(
+      (paragraph) => (paragraph.textContent || '').trim().length > 80,
+    ).length,
   }
 `
 
@@ -302,10 +370,12 @@ async function inspect(path: string): Promise<PageFacts> {
 console.log('\n--- the public pages ---')
 
 const publicFacts: PageFacts[] = []
+const factsByRoute = new Map<string, PageFacts>()
 
 for (const route of PUBLIC_ROUTES) {
   const facts = await inspect(route)
   publicFacts.push(facts)
+  factsByRoute.set(route, facts)
 
   check(
     `${route} stays on its own URL instead of redirecting to a login form`,
@@ -340,6 +410,23 @@ for (const route of PUBLIC_ROUTES) {
   )
 }
 
+/*
+  The six pages P18 added to the index are `/levels` and the five `/levels/:difficulty`, in both
+  languages. Their grid is genuine content, but a grid alone is a doorway page — the copy is what
+  makes them worth ranking, and it is the part that can silently go missing (a locale key renamed, a
+  component refactored, a difficulty added without its entry in `difficultyPageContent`).
+*/
+const DIFFICULTY_PAGE_PATTERN = /\/levels\/[a-z]+$/
+
+for (const route of PUBLIC_ROUTES.filter((candidate) => DIFFICULTY_PAGE_PATTERN.test(candidate))) {
+  const facts = factsByRoute.get(route)
+  check(
+    `${route} carries real copy, not just a grid of numbers`,
+    (facts?.proseParagraphs ?? 0) >= 2,
+    `${facts?.proseParagraphs ?? 0} paragraph(s) over 80 characters`,
+  )
+}
+
 const [landing] = publicFacts
 check(
   `the landing page renders more than ${MINIMUM_LANDING_WORDS} words of real content`,
@@ -354,8 +441,59 @@ check(
 check(
   'the public pages do not share one title',
   new Set(publicFacts.map((facts) => facts.title)).size === publicFacts.length,
-  publicFacts.map((facts) => `"${facts.title}"`).join(' vs '),
+  `${new Set(publicFacts.map((facts) => facts.title)).size} distinct titles across ${publicFacts.length} pages`,
 )
+
+/*
+  ---------------------------------------------------------------- P18, D-3
+
+  **Two assertions, because both failure modes are completely silent.**
+
+  A one-way `hreflang` is ignored: if `/about` claims `/uk/about` and that page does not claim
+  `/about` back, Google drops the relationship with no warning in Search Console and no error
+  anywhere. And a Ukrainian page that canonicalises to its English counterpart is not a small bug —
+  it is an instruction to drop every Ukrainian URL on the site, which is the entire asset this
+  programme built.
+
+  Neither can be caught by reading the code, because the tags are produced by an effect at runtime
+  and the sitemap is generated separately. They have to be read off the rendered page.
+*/
+console.log('\n--- the two languages declare each other ---')
+
+for (const path of PUBLIC_PATHS) {
+  const english = factsByRoute.get(path)
+  const ukrainian = factsByRoute.get(ukPath(path))
+
+  if (!english || !ukrainian) {
+    check(`${path} was inspected in both languages`, false)
+    continue
+  }
+
+  check(
+    `${path} and ${ukPath(path)} declare each other (hreflang is reciprocal)`,
+    english.alternates.uk === `${TARGET}${ukPath(path)}` &&
+      english.alternates.en === `${TARGET}${path}` &&
+      ukrainian.alternates.en === `${TARGET}${path}` &&
+      ukrainian.alternates.uk === `${TARGET}${ukPath(path)}`,
+    `en→${english.alternates.uk} | uk→${ukrainian.alternates.en}`,
+  )
+  check(
+    `${ukPath(path)} canonicalises to itself, not to ${path}`,
+    ukrainian.canonical === `${TARGET}${ukPath(path)}`,
+    `canonical=${ukrainian.canonical}`,
+  )
+  check(
+    `${path} and ${ukPath(path)} say different things`,
+    english.title !== ukrainian.title,
+    `"${english.title}" vs "${ukrainian.title}"`,
+  )
+  check(
+    `x-default points at the English ${path}`,
+    english.alternates['x-default'] === `${TARGET}${path}` &&
+      ukrainian.alternates['x-default'] === `${TARGET}${path}`,
+    `${english.alternates['x-default']} / ${ukrainian.alternates['x-default']}`,
+  )
+}
 
 /*
   `/welcome` is the same page as `/`, on a URL a signed-in player can reach — `/` is their home

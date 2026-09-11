@@ -1,6 +1,13 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
+import {
+  languageFromPathname,
+  localizePath,
+  stripLanguagePrefix,
+  supportedLanguages,
+} from '../i18n'
+
 /**
  * Per-route `<title>`, description, canonical and `robots` — the whole of the "say what this page
  * is" work, in one hook and with no dependency.
@@ -34,6 +41,11 @@ export type DocumentMeta = {
    * signed-in player cannot reach it at `/` — that URL is their home menu. Two URLs serving one
    * page is a duplicate, and the canonical tag is the standard answer: both say `/`, which is the
    * URL that is shared, linked and listed in the sitemap (scope decision D2 stands).
+   *
+   * **Write it language-neutral** — `/`, not `/uk`. The hook adds the prefix of whichever language
+   * tree the page was reached in, so `/uk/welcome` canonicalises to `/uk` and not to `/`. Getting
+   * that wrong is the single worst thing this hook could do: a Ukrainian page pointing its canonical
+   * at the English one tells Google to drop every Ukrainian URL on the site.
    */
   canonicalPath?: string
 }
@@ -88,6 +100,40 @@ function upsertCanonical(href: string) {
   }
 }
 
+/**
+ * The `hreflang` set: one `<link rel="alternate">` per language, plus `x-default`.
+ *
+ * **Both halves of a pair have to declare each other or neither counts.** A one-way hreflang is
+ * ignored silently — no warning in Search Console, no error in the console, the page simply never
+ * gets associated with its counterpart. Emitting the *whole* set from one place, on every page, is
+ * what makes reciprocity structural rather than something to remember: `/about` and `/uk/about` run
+ * the same code over the same neutral path, so they cannot disagree.
+ *
+ * `x-default` points at English, which is the root and the version to serve a reader whose language
+ * we have nothing better for.
+ *
+ * Replaced wholesale rather than updated in place: the set is three tags, and a stale one left
+ * behind from the previous route is worse than the cost of recreating them.
+ */
+function replaceAlternates(hrefsByHreflang: Record<string, string> | null) {
+  document.head
+    .querySelectorAll('link[data-language-alternate]')
+    .forEach((element) => element.remove())
+
+  if (!hrefsByHreflang) {
+    return
+  }
+
+  Object.entries(hrefsByHreflang).forEach(([hreflang, href]) => {
+    const element = document.createElement('link')
+    element.setAttribute('rel', 'alternate')
+    element.setAttribute('hreflang', hreflang)
+    element.setAttribute('href', href)
+    element.setAttribute('data-language-alternate', '')
+    document.head.appendChild(element)
+  })
+}
+
 export function useDocumentMeta({
   title,
   description,
@@ -106,11 +152,32 @@ export function useDocumentMeta({
     // correct on localhost, on a preview deployment and on whatever domain this ends up on, with
     // nothing to forget to update. The pathname is stripped of a trailing slash so `/about/` and
     // `/about` cannot both be indexed.
-    const servedPath = canonicalPath ?? pathname
-    const indexedPath = servedPath === '/' ? '/' : servedPath.replace(/\/+$/, '')
-    const canonicalUrl = `${window.location.origin}${indexedPath}`
+    //
+    // Everything is computed from the **language-neutral** path, and the prefix is put back on at
+    // the end. That is what lets one expression produce both the canonical for this page and the
+    // href of each of its alternates.
+    const servedPath = canonicalPath ?? stripLanguagePrefix(pathname)
+    const neutralPath = servedPath === '/' ? '/' : servedPath.replace(/\/+$/, '')
+    const language = languageFromPathname(pathname)
+    const toAbsoluteUrl = (targetLanguage: (typeof supportedLanguages)[number]) =>
+      `${window.location.origin}${localizePath(neutralPath, targetLanguage)}`
+    const canonicalUrl = toAbsoluteUrl(language)
 
     upsertCanonical(canonicalUrl)
+
+    // Only for pages that are actually indexable. Declaring alternates for a `noindex` page asks
+    // Google to relate two pages it has been told to drop.
+    replaceAlternates(
+      robots === 'noindex'
+        ? null
+        : {
+            ...Object.fromEntries(
+              supportedLanguages.map((code) => [code, toAbsoluteUrl(code)] as const),
+            ),
+            'x-default': toAbsoluteUrl('en'),
+          },
+    )
+
     upsertMeta('property', 'og:url', canonicalUrl)
     upsertMeta('property', 'og:title', title || DEFAULT_TITLE)
     upsertMeta('name', 'twitter:title', title || DEFAULT_TITLE)

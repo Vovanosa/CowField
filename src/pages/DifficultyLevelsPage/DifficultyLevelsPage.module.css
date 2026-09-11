@@ -172,3 +172,52 @@
     padding: 0 8px;
   }
 }
+
+/*
+  The copy that makes this page worth indexing (P18, D-1).
+
+  **Below the grid**, after one pass tried it above and the answer was a flat no: a player came here
+  to pick a level, and two paragraphs between the heading and the first number is two paragraphs of
+  nothing they asked for. A crawler reads the whole document regardless of order.
+*/
+.introPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.introTitle {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: var(--color-heading);
+}
+
+.introParagraph {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.introLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.introLink {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-soft);
+  text-underline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .introLink:hover {
+    text-decoration-color: currentColor;
+  }
+}

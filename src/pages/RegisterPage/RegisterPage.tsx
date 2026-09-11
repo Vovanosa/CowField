@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
+import { useNavigate } from '../../app/navigation'
+import { readReturnTo } from '../../app/returnTo'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthError } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
@@ -16,6 +18,9 @@ export function RegisterPage() {
   const { t } = useTranslation()
   useDocumentMeta({ title: brandedTitle(t('Create account')), robots: 'noindex' })
   const navigate = useNavigate()
+  // Where the reader came from, when they got here through the level gate. `null` for anyone who
+  // arrived at `/register` directly, which is still the common case.
+  const returnTo = readReturnTo(useLocation().search)
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +48,7 @@ export function RegisterPage() {
 
     try {
       await auth.register(email, password)
-      navigate('/', { replace: true })
+      navigate(returnTo ?? '/', { replace: true })
     } catch (error) {
       if (error instanceof Error && error.message === 'EMAIL_VERIFICATION_REQUIRED') {
         // The account exists and the email is on its way — the opposite of a failure, and it used

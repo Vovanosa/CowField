@@ -36,3 +36,12 @@ export const MIN_LEVEL_TIME_SECONDS = 1
  * lifetime counter cannot be set to anything it likes in one call.
  */
 export const MAX_BULL_PLACEMENTS_PER_REQUEST = 100_000
+
+/**
+ * The most progress rows one guest-to-account import may carry — the whole library, 5 × 200.
+ *
+ * A guest cannot have finished more levels than exist, so anything above this is not a migration.
+ * The bound matters because the payload is client-supplied by construction: it is read out of the
+ * browser's own storage at the moment a guest becomes an account holder (P18, decision D5).
+ */
+export const MAX_IMPORTED_PROGRESS_ENTRIES = 1_000

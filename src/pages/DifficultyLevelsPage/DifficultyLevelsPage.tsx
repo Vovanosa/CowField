@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { useAuth } from '../../app/useAuth'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
+import { Link } from '../../app/navigation'
 import { LevelCard } from '../../components/LevelCard'
 import { Button, PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
@@ -15,6 +17,7 @@ import { isDifficulty } from '../../game/levels/constants'
 import { getDifficultyLevelsPageData } from '../../game/storage/resources'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { BestTimesByLevel } from '../../game/types'
+import { difficultyPageContent } from './difficultyPageContent'
 import styles from './DifficultyLevelsPage.module.css'
 import { useGridColumnCount } from './useGridColumnCount'
 
@@ -53,19 +56,28 @@ function DifficultyLevelsPageScreen() {
   const showLoadError = hasLoadError && !isLoading
   const columnCount = useGridColumnCount(gridElement)
   const { isAdmin, isGuest } = useRole()
+  const { isAuthenticated } = useAuth()
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
 
-  // Before the `isDifficulty` guard at the bottom of this component, so the hook runs on every
-  // render rather than only on the valid-route path.
+  /*
+    **This page is the SEO asset the whole programme is for** (P18, D-1). It was `noindex` because it
+    needed a session; it is public now, and the grid of 200 level links plus the copy below is real
+    content rather than a doorway.
+
+    An unknown difficulty stays out of the index: it renders an error, and `/levels/nonsense` is an
+    unbounded supply of those.
+
+    Before the `isDifficulty` guard at the bottom of this component, so the hook runs on every render
+    rather than only on the valid-route path.
+  */
+  const content = isDifficulty(difficulty) ? difficultyPageContent[difficulty] : null
+
   useDocumentMeta({
-    title: brandedTitle(
-      isDifficulty(difficulty)
-        ? t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })
-        : t('Unknown difficulty.'),
-    ),
-    robots: 'noindex',
+    title: brandedTitle(content ? t(content.title) : t('Unknown difficulty.')),
+    description: content ? t(content.description) : undefined,
+    robots: content ? 'index' : 'noindex',
   })
 
   useEffect(() => {
@@ -110,6 +122,24 @@ function DifficultyLevelsPageScreen() {
     }
   }, [difficulty, reloadKey])
 
+  /*
+    **A count, not a target** (P18, decision D10). The same quiet line the difficulty chooser shows,
+    on the page where the grid it describes actually is. A key exists in `bestTimes` only for a level
+    that has been finished, so its size *is* the count.
+
+    Shown as the header description rather than anywhere near the grid: it is context for the page,
+    not a status attached to any card, and nothing about it should read as progress towards an end.
+  */
+  const solvedCount = Object.keys(bestTimes).length
+  const levelCountLabel = isLoading
+    ? null
+    : isAuthenticated
+      ? t('{{completed}} of {{total}} solved', {
+          completed: solvedCount,
+          total: levelNumbers.length,
+        })
+      : t('{{count}} levels', { count: levelNumbers.length })
+
   const normalizedPageSize = columnCount * ROWS_PER_PAGE
   const levelItems = [
     ...levelNumbers.map((levelNumber) => ({ type: 'level' as const, levelNumber })),
@@ -143,10 +173,23 @@ function DifficultyLevelsPageScreen() {
 
   return (
     <div className={[styles.page, 'page-shell'].join(' ')}>
+      {/*
+        **The heading is the difficulty's own name, and the grid starts immediately under it.**
+
+        An earlier pass made this the query-first phrase — "10x10 Star Battle puzzles, one star per
+        row" — and put two paragraphs between it and the levels. That optimised the page for someone
+        arriving from a search and made it worse for everyone who came to play, which is nearly
+        everyone. The words a crawler wants are still on the page, in the `<title>`, the description,
+        and the `<h2>` below the grid; they do not also need to be the first thing a player reads.
+
+        `titleAs="h1"` because the page is indexable and a document should have one.
+      */}
       <PageHeader
+        titleAs="h1"
         backTo="/levels"
         backLabel={t('Back to all difficulties')}
         title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
+        description={levelCountLabel ?? undefined}
       />
 
       {showLoadError ? (
@@ -187,13 +230,6 @@ function DifficultyLevelsPageScreen() {
                       !isTakeYourTimeEnabled
                         ? formatElapsedTime(bestTimes[item.levelNumber] ?? null)
                         : null
-                    }
-                    // An absent entry is exactly "not finished", which is what the API now says by
-                    // omitting the level rather than sending a row with a null time.
-                    isLocked={
-                      !isAdmin &&
-                      item.levelNumber > 1 &&
-                      bestTimes[item.levelNumber - 1] === undefined
                     }
                     openTo={`/game/${difficulty}/${item.levelNumber}`}
                     openLabel={t('Open level {{levelNumber}}', { levelNumber: item.levelNumber })}
@@ -265,6 +301,40 @@ function DifficultyLevelsPageScreen() {
             </Button>
           </div>
         </div>
+      ) : null}
+
+      {/*
+        **Below the grid, on purpose.** This is what makes the page worth indexing rather than a
+        doorway — board size, bulls per row, what this tier is actually like — but a player who came
+        to pick a level should not have to scroll past it to reach one.
+
+        Nothing is lost by putting it here. A crawler reads the whole document and does not care
+        about order; a reader who wants the explanation scrolls, and one who does not never sees it.
+      */}
+      {content ? (
+        <Panel className={styles.introPanel}>
+          <h2 className={styles.introTitle}>{t(content.title)}</h2>
+          {content.body.map((paragraph) => (
+            <p key={paragraph} className={styles.introParagraph}>
+              {t(paragraph)}
+            </p>
+          ))}
+          <p className={styles.introParagraph}>
+            {t('Nothing is locked. Any level on this page opens straight away, in any order.')}
+          </p>
+          {/*
+            Navigational, and deliberately the one thing every difficulty page repeats. A crawler
+            expects boilerplate links; what it does not forgive is five pages sharing a paragraph.
+          */}
+          <div className={styles.introLinks}>
+            <Link className={styles.introLink} to="/how-to-solve">
+              {t('Solving techniques')}
+            </Link>
+            <Link className={styles.introLink} to="/difficulties">
+              {t('Board sizes')}
+            </Link>
+          </div>
+        </Panel>
       ) : null}
     </div>
   )

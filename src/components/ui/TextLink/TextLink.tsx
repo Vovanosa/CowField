@@ -1,6 +1,7 @@
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
-import { Link, type LinkProps } from 'react-router-dom'
+import type { LinkProps } from 'react-router-dom'
 
+import { Link } from '../../../app/navigation'
 import styles from './TextLink.module.css'
 
 type SharedProps = {

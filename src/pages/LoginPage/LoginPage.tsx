@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
+import { useNavigate } from '../../app/navigation'
+import { readReturnTo } from '../../app/returnTo'
+import { Dialog } from '../../components/Dialog'
+import { countGuestProgressEntries } from '../../game/storage/guestProgressStorage'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthError, translateKnownAuthMessage } from '../../app/translateAuthMessage'
 import { useAuth } from '../../app/useAuth'
@@ -17,12 +21,24 @@ export function LoginPage() {
   useDocumentMeta({ title: brandedTitle(t('Login')), robots: 'noindex' })
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // Where the reader came from, when they got here through the level gate.
+  const returnTo = readReturnTo(searchParams.toString())
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState<AuthMessage | null>(null)
   const [needsVerification, setNeedsVerification] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  /*
+    **Signing in abandons guest progress, so it asks first** (P18, decision D5).
+
+    Only *creating* an account carries a guest's times over; signing in to an existing one leaves
+    them on this device, unreachable, because merging two real histories is a different and much
+    worse problem than adopting an empty one. Nothing should disappear silently, so the count is read
+    once on mount — before any handler can change it — and shown in the question.
+  */
+  const [guestLevelCount] = useState(countGuestProgressEntries)
+  const [isAbandonGuestConfirmOpen, setIsAbandonGuestConfirmOpen] = useState(false)
 
   function toErrorMessage(error: unknown): AuthMessage {
     return {
@@ -34,21 +50,34 @@ export function LoginPage() {
     }
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function performLogin() {
+    setIsAbandonGuestConfirmOpen(false)
     setIsSubmitting(true)
     setMessage(null)
     setNeedsVerification(false)
 
     try {
       await auth.login(email, password)
-      navigate('/', { replace: true })
+      navigate(returnTo ?? '/', { replace: true })
     } catch (error) {
       setNeedsVerification(error instanceof Error && error.message === 'Email not verified')
       setMessage(toErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    // The form still validates and submits normally; the question only stands between the submit
+    // and the request, and only when there is something to lose.
+    if (guestLevelCount > 0) {
+      setIsAbandonGuestConfirmOpen(true)
+      return
+    }
+
+    void performLogin()
   }
 
   async function handleGuestLogin() {
@@ -58,7 +87,7 @@ export function LoginPage() {
 
     try {
       await auth.loginAsGuest()
-      navigate('/', { replace: true })
+      navigate(returnTo ?? '/', { replace: true })
     } catch (error) {
       setMessage(toErrorMessage(error))
     } finally {
@@ -184,6 +213,31 @@ export function LoginPage() {
             </Button>
           </div>
         </form>
+
+        {isAbandonGuestConfirmOpen ? (
+          <Dialog
+            role="alertdialog"
+            title={t('Your guest progress stays here')}
+            // Escape and a backdrop click both mean "don't sign in yet", which is the half of this
+            // that keeps the times.
+            onClose={() => setIsAbandonGuestConfirmOpen(false)}
+            labelledById="abandon-guest-progress-title"
+            describedById="abandon-guest-progress-description"
+            description={t(
+              'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you.',
+              { count: guestLevelCount },
+            )}
+            actions={
+              <>
+                <Button onClick={() => setIsAbandonGuestConfirmOpen(false)}>{t('Cancel')}</Button>
+                <Button to="/register" variant="primary">
+                  {t('Create account')}
+                </Button>
+                <Button onClick={() => void performLogin()}>{t('Sign in anyway')}</Button>
+              </>
+            }
+          />
+        ) : null}
     </AuthLayout>
   )
 }

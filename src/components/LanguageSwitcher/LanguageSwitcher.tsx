@@ -1,16 +1,13 @@
 import { MoonStar, SunMedium } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useLanguage, useSwitchLanguage } from '../../app/navigation'
 import gbFlag from '../../assets/flags/gb.svg'
 import uaFlag from '../../assets/flags/ua.svg'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
-import i18n, {
-  getStoredLanguage,
-  normalizeLanguage,
-  type SupportedLanguage,
-} from '../../i18n'
+import type { SupportedLanguage } from '../../i18n'
 import { DropdownMenu, DropdownMenuItem, useDropdownMenu } from '../ui'
 import styles from './LanguageSwitcher.module.css'
 
@@ -23,9 +20,9 @@ type LanguageSwitcherProps = {
    * crowd the page title.
    *
    * **Both are always rendered and CSS picks one**, rather than a width hook choosing in JS. The
-   * state here is not local — the language lives in i18n and the theme in player settings, and both
-   * instances read the same source — so a second copy in the DOM costs two buttons and keeps the
-   * switch on a media query, where it belongs.
+   * state here is not local — the language lives in the URL and the theme in player settings, and
+   * both instances read the same source — so a second copy in the DOM costs two buttons and keeps
+   * the switch on a media query, where it belongs.
    */
   variant?: 'pills' | 'menu'
 }
@@ -33,7 +30,16 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = {}) {
   const { t } = useTranslation()
   const settings = usePlayerSettings()
-  const [language, setLanguage] = useState<SupportedLanguage>(getStoredLanguage())
+  /*
+    The active language is read from the **URL**, not from stored settings.
+
+    Those two can legitimately disagree: a reader whose preference is English can be sent a
+    `/uk/about` link, and the page they are looking at is Ukrainian. Before P18 this component held
+    its own copy of the stored value and forced i18n to match it on mount, which would now fight the
+    route and re-render the Ukrainian page in English.
+  */
+  const language = useLanguage()
+  const switchLanguage = useSwitchLanguage()
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const languageMenuRef = useRef<HTMLDivElement | null>(null)
   const currentFlag = language === 'uk' ? uaFlag : gbFlag
@@ -48,32 +54,27 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
     onClose: closeLanguageMenu,
   })
 
-  useEffect(() => {
-    const nextLanguage = getStoredLanguage()
-
-    if (normalizeLanguage(i18n.resolvedLanguage) !== nextLanguage) {
-      void i18n.changeLanguage(nextLanguage)
-    }
-
-    function handleLanguageChanged(nextLanguageCode: string) {
-      setLanguage(normalizeLanguage(nextLanguageCode))
-    }
-
-    i18n.on('languageChanged', handleLanguageChanged)
-
-    return () => {
-      i18n.off('languageChanged', handleLanguageChanged)
-    }
-  }, [])
-
   function handleLanguageSelect(nextLanguage: SupportedLanguage) {
-    setLanguage(nextLanguage)
     closeLanguageMenu()
+
+    if (nextLanguage === language) {
+      return
+    }
+
+    /*
+      Two separate things, and they are not the same thing.
+
+      The save records the **preference for the next visit** — what `/` should redirect to when this
+      reader comes back (decision D7). The navigation changes the page being rendered right now, by
+      changing the URL; `LanguageRoute` moves i18n to match. Calling `i18n.changeLanguage` here as
+      well, which is what this used to do, would translate the UI while leaving the URL — and with it
+      the canonical and the hreflang pair — pointing at the other language.
+    */
     savePlayerSettings({
       ...settings,
       language: nextLanguage,
     })
-    void i18n.changeLanguage(nextLanguage)
+    switchLanguage(nextLanguage)
   }
 
   function handleThemeToggle() {

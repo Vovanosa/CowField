@@ -1,7 +1,13 @@
 import { DIFFICULTIES } from '../../levels/constants'
 import type { Difficulty } from '../../types'
 import { createResource } from '../cache'
-import { buildApiUrl, isGuestSession, requestAuthenticatedJson } from '../http'
+import {
+  buildApiUrl,
+  getStoredSessionRole,
+  isGuestSession,
+  requestAuthenticatedJson,
+  requestOptionallyAuthenticatedJson,
+} from '../http'
 import { getGuestBestTimes } from '../guestProgressStorage'
 
 type DifficultyOverviewItem = {
@@ -31,8 +37,18 @@ function cloneOverview(overview: DifficultyOverviewResponse): DifficultyOverview
   }
 }
 
-async function loadGuestOverview(): Promise<DifficultyOverviewResponse> {
-  const levelsOverview = await requestAuthenticatedJson<LevelsOverviewResponse>(
+/**
+ * The overview for anyone whose progress is **not** on the server: a guest, and — since P18 — a
+ * visitor with no session at all, who can now reach `/levels` without signing in.
+ *
+ * The two are the same problem. `GET /api/progress/overview` needs a session and would answer 401
+ * for one of them and "no rows" for the other, when what both want is the level counts plus whatever
+ * this device happens to remember. A signed-out visitor usually remembers nothing, and the count is
+ * not shown to them anyway (decision D10) — but it costs nothing to answer honestly if they have
+ * played as a guest before.
+ */
+async function loadLocalOverview(): Promise<DifficultyOverviewResponse> {
+  const levelsOverview = await requestOptionallyAuthenticatedJson<LevelsOverviewResponse>(
     `${LEVELS_API_BASE}/overview`,
   )
   const guestBestTimes = await Promise.all(
@@ -60,8 +76,8 @@ const OVERVIEW_KEY = 'self'
 
 const overviewResource = createResource<string, DifficultyOverviewResponse>({
   load: () =>
-    isGuestSession()
-      ? loadGuestOverview()
+    isGuestSession() || !getStoredSessionRole()
+      ? loadLocalOverview()
       : requestAuthenticatedJson<DifficultyOverviewResponse>(`${PROGRESS_API_BASE}/overview`),
   clone: cloneOverview,
 })

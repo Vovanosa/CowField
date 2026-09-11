@@ -25,6 +25,7 @@ export {
   completeLevelProgress,
   getBestTime,
   getBestTimes,
+  importGuestProgressIntoAccount,
   invalidateProgress,
   peekBestTime,
   type CompleteLevelResult,

@@ -4,9 +4,9 @@
 # in `vercel.json`, and until this file existed the `/(.*)` catch-all answered /robots.txt with the
 # app's HTML — measured 2026-09-10: 200, text/html.
 #
-# Only the four public pages are worth a crawler's time. Everything else needs a session, so a bot
-# can only ever see it redirect to a login form; those are disallowed rather than crawled and
-# discarded, and they carry `noindex` in the app as well.
+# Since P18 the site is bilingual: the same tree is mounted at `/` (English) and `/uk` (Ukrainian),
+# so **every rule below needs its `/uk` twin**. A rule that only covers one language leaves the other
+# half of the site either uncrawlable or uncontrolled, and neither failure announces itself.
 
 User-agent: *
 
@@ -17,17 +17,44 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
 Disallow: /auth/
+Disallow: /uk/login
+Disallow: /uk/register
+Disallow: /uk/forgot-password
+Disallow: /uk/reset-password
+Disallow: /uk/verify-email
+Disallow: /uk/auth/
 
-# Behind the session guard. A thousand level URLs are the reason this matters: crawl budget on them
-# is budget not spent on the four pages that can actually rank.
-Disallow: /levels
+# **Boards are shareable, not searchable** (P18, decision D3). They are public now — a link to one
+# works for anyone — but a board behind a gate is a thin page, and a thousand of them is the
+# doorway-page pattern. The listing pages below are what carries the content worth ranking, and
+# crawl budget spent on 1,000 near-identical grids is budget not spent on them.
 Disallow: /game/
+Disallow: /uk/game/
+
+# Still behind a session.
 Disallow: /settings
 Disallow: /statistics
+Disallow: /uk/settings
+Disallow: /uk/statistics
+
+# Authoring. Admin-only on the server, and `/levels/*` is allowed below, so these are named
+# explicitly rather than left to be discovered and discarded.
+Disallow: /levels/*/create
+Disallow: /levels/*/*/edit
+Disallow: /uk/levels/*/create
+Disallow: /uk/levels/*/*/edit
 
 Allow: /
 Allow: /about
 Allow: /how-to-solve
 Allow: /difficulties
+Allow: /levels
+Allow: /levels/
+Allow: /uk
+Allow: /uk/about
+Allow: /uk/how-to-solve
+Allow: /uk/difficulties
+Allow: /uk/levels
+Allow: /uk/levels/
 
 Sitemap: https://cowfield.vercel.app/sitemap.xml

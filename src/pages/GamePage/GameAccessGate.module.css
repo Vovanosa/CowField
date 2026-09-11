@@ -1,0 +1,89 @@
+/*
+  The gate is a **layer over the board**, not a replacement for it. Everything here exists to keep
+  the real puzzle visible and completely out of reach at the same time.
+*/
+.gate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+  Blurred enough that the shape of the board reads and no cell can be counted.
+
+  `pointer-events: none` is belt and braces beside the `inert` attribute on the same element —
+  `inert` already blocks pointers, focus and the accessibility tree, but it is recent enough that a
+  browser without it should still not let anyone play through the overlay.
+
+  `user-select: none` stops a drag across the card selecting the numbers underneath, which looks
+  broken more than it looks clever.
+*/
+.board {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  filter: blur(7px);
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(100%, 380px);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-soft);
+  background:
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
+    var(--color-surface);
+  box-shadow: var(--shadow-raised);
+  animation: fade-up-in 280ms var(--ease-emphasized) both;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--color-heading);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-5);
+    gap: var(--space-3);
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+}

@@ -1,6 +1,6 @@
 import type { Difficulty } from '../../types'
 import { createResource } from '../cache'
-import { buildApiUrl, requestAuthenticatedJson } from '../http'
+import { buildApiUrl, requestOptionallyAuthenticatedJson } from '../http'
 
 /**
  * Which level numbers exist in a difficulty — **immutable until an admin writes**, cached for the
@@ -26,7 +26,7 @@ type LevelCatalogueResponse = {
 
 const catalogueResource = createResource<Difficulty, number[]>({
   load: async (difficulty) => {
-    const response = await requestAuthenticatedJson<LevelCatalogueResponse>(
+    const response = await requestOptionallyAuthenticatedJson<LevelCatalogueResponse>(
       `${API_BASE}/${difficulty}`,
     )
 

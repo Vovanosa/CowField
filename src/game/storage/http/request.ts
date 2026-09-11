@@ -1,5 +1,6 @@
 import { ApiError, NETWORK_ERROR_STATUS } from './ApiError'
 import { clearBearerToken, getBearerToken } from './bearer'
+import { getStoredSessionRole } from './sessionToken'
 
 /**
  * The one place an HTTP request leaves the app.
@@ -91,4 +92,31 @@ export async function requestAuthenticatedJson<T>(url: string, init?: RequestIni
 
     throw error
   }
+}
+
+/**
+ * For an endpoint that answers **with or without a session** — the four level reads, since P18.
+ *
+ * The difference from `requestAuthenticatedJson` is what happens when nobody is signed in, and it
+ * matters more than it looks. `getBearerToken` asks Neon for a JWT whenever there is no guest token
+ * cached, and a `null` answer is **not** cached — so routing a signed-out visitor through it would
+ * add a round trip to Neon in front of *every* level request, and a Neon outage would throw where a
+ * public board should simply have loaded.
+ *
+ * The stored role is what makes that avoidable: it exists precisely so a signed-out visit makes no
+ * requests it does not need (see `sessionToken.ts`). No role means no session, so there is nothing
+ * to attach and nobody to ask.
+ *
+ * When there *is* a session this is `requestAuthenticatedJson` exactly — the bearer still goes, which
+ * is what keeps an admin's `cowsByCell` coming and keeps their response out of a shared cache.
+ */
+export async function requestOptionallyAuthenticatedJson<T>(
+  url: string,
+  init?: RequestInit,
+): Promise<T> {
+  if (!getStoredSessionRole()) {
+    return requestJson<T>(url, { ...init, headers: buildHeaders(init?.headers) })
+  }
+
+  return requestAuthenticatedJson<T>(url, init)
 }

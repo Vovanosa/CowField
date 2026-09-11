@@ -1,6 +1,6 @@
 import type { Difficulty } from '../../types'
 import { createResource } from '../cache'
-import { ApiError, buildApiUrl, requestAuthenticatedJson } from '../http'
+import { ApiError, buildApiUrl, requestOptionallyAuthenticatedJson } from '../http'
 
 /**
  * One level's board. **Immutable content with no cache at all before this.**
@@ -37,7 +37,7 @@ type BoardKey = {
 const boardResource = createResource<BoardKey, LevelDetailApiRecord | null>({
   load: async (key) => {
     try {
-      return await requestAuthenticatedJson<LevelDetailApiRecord>(
+      return await requestOptionallyAuthenticatedJson<LevelDetailApiRecord>(
         `${API_BASE}/${key.difficulty}/${key.levelNumber}`,
       )
     } catch (error) {

@@ -1,8 +1,15 @@
 import type { BestTimesByLevel, Difficulty, LevelProgress } from '../../types'
 import { createResource } from '../cache'
-import { buildApiUrl, isGuestSession, requestAuthenticatedJson } from '../http'
 import {
+  buildApiUrl,
+  getStoredSessionRole,
+  isGuestSession,
+  requestAuthenticatedJson,
+} from '../http'
+import {
+  clearGuestProgress,
   completeGuestLevelProgress,
+  getAllGuestProgressEntries,
   getGuestBestTimes,
 } from '../guestProgressStorage'
 import {
@@ -38,10 +45,13 @@ type CompleteLevelResponse = {
 }
 
 const progressResource = createResource<Difficulty, BestTimesByLevel>({
-  // The one place that asks whether this is a guest. Guest progress never leaves the device and
-  // answers in the same shape, so from here up nothing else needs to know which backend it came from.
+  // The one place that asks where progress lives. Guest progress never leaves the device and answers
+  // in the same shape, so from here up nothing else needs to know which backend it came from.
   load: async (difficulty) => {
-    if (isGuestSession()) {
+    // Since P18 a visitor with no session can open `/levels` and a board. There is no progress
+    // endpoint that answers them — and no request worth making, because whatever this device
+    // remembers from a previous guest session is the honest answer and it is already local.
+    if (isGuestSession() || !getStoredSessionRole()) {
       return getGuestBestTimes(difficulty)
     }
 
@@ -150,4 +160,41 @@ export async function completeLevelProgress(
 
 export function invalidateProgress(difficulty?: Difficulty) {
   progressResource.invalidate(difficulty)
+}
+
+/**
+ * Hands this browser's guest progress to the account that has just been created (P18, decision D5).
+ *
+ * **One request, not a loop.** A loop over `completeLevelProgress` would be up to a thousand round
+ * trips and could fail half-way, leaving an account with part of its history and no record of which
+ * part. The endpoint writes the lot in one transaction.
+ *
+ * **The local copy is cleared only after the server acknowledges**, in that order and no other: it
+ * is the only copy in existence until the response arrives. A failure leaves it exactly where it
+ * was, so the next attempt still has something to send.
+ *
+ * Returns the number of levels carried over, or `null` when there was nothing to carry.
+ */
+export async function importGuestProgressIntoAccount() {
+  const entries = getAllGuestProgressEntries()
+
+  if (entries.length === 0) {
+    return null
+  }
+
+  const result = await requestAuthenticatedJson<{ importedCount: number }>(`${API_BASE}/import`, {
+    method: 'POST',
+    body: JSON.stringify({ entries }),
+  })
+
+  clearGuestProgress()
+
+  // Everything derived from progress is now wrong: the per-difficulty maps, the counts on the
+  // difficulty chips, and every statistic. None of it is patchable from this response, and this
+  // happens once in an account's life, so invalidating outright is both correct and cheap.
+  progressResource.invalidate()
+  invalidateDifficultyOverviewCache()
+  invalidatePlayerStatisticsCache()
+
+  return result.importedCount
 }

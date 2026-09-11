@@ -1,4 +1,4 @@
-import { readStoredValue, writeStoredValue } from './browserStorage'
+import { readStoredValue, removeStoredValue, writeStoredValue } from './browserStorage'
 import type { Difficulty, LevelProgress } from '../types'
 
 const GUEST_PROGRESS_STORAGE_KEY = 'cowfield.guest-level-progress'
@@ -80,6 +80,44 @@ export async function getGuestBestTimes(difficulty: Difficulty) {
   }
 
   return bestTimes
+}
+
+export type GuestProgressEntry = {
+  difficulty: Difficulty
+  levelNumber: number
+  timeSeconds: number
+}
+
+/**
+ * Everything this browser remembers, flattened into the shape the import endpoint takes.
+ *
+ * Only finished levels: a `null` best time means the row exists for some other reason and there is
+ * nothing to carry over. Synchronous, unlike `getGuestBestTimes`, because the caller is a sign-up
+ * handler that needs the answer *before* it decides whether there is anything to do.
+ */
+export function getAllGuestProgressEntries(): GuestProgressEntry[] {
+  return Object.values(readGuestProgressRecord())
+    .filter((progress) => progress.bestTimeSeconds !== null)
+    .map((progress) => ({
+      difficulty: progress.difficulty,
+      levelNumber: progress.levelNumber,
+      timeSeconds: progress.bestTimeSeconds as number,
+    }))
+}
+
+/** How many levels a guest would be leaving behind. For the warning on the sign-in page. */
+export function countGuestProgressEntries() {
+  return getAllGuestProgressEntries().length
+}
+
+/**
+ * Drops the local record.
+ *
+ * **Only after an import has been acknowledged.** Clearing first and importing second would lose the
+ * lot on any failure between the two, and this is the one copy of that data in existence.
+ */
+export function clearGuestProgress() {
+  removeStoredValue(GUEST_PROGRESS_STORAGE_KEY)
 }
 
 export async function completeGuestLevelProgress(

@@ -49,16 +49,74 @@ export class PlayerProgressService {
   }
 
   /**
+   * Adopts a guest's locally-stored progress into the account they have just created.
+   *
+   * **This is a write taking client-supplied times, so it is validated like one.** Two rules do the
+   * work, and both matter:
+   *
+   * - It can only ever write to **the calling account** — `actorKey` comes from the session, never
+   *   from the body, so there is no shape of request that writes to someone else.
+   * - It only accepts levels that **exist**. The payload is read out of a browser's own storage and
+   *   could name anything; without this, an account could claim a best time on a level that was
+   *   never authored, and every count derived from `level_progress` would be wrong.
+   *
+   * There is deliberately **no ordering check**, because P18 removed the concept — see
+   * `completeLevel`. A guest who played level 40 and nothing before it imports exactly that.
+   *
+   * One query per distinct difficulty to learn which levels exist, then one transaction. This runs
+   * at most once in an account's life.
+   */
+  async importGuestProgress(
+    actorKey: string,
+    entries: Array<{ difficulty: Difficulty; levelNumber: number; timeSeconds: number }>,
+  ) {
+    if (entries.length === 0) {
+      return { importedCount: 0, skippedCount: 0 }
+    }
+
+    const difficulties = [...new Set(entries.map((entry) => entry.difficulty))]
+    const catalogues = await Promise.all(
+      difficulties.map((difficulty) => this.levelRepository.listByDifficulty(difficulty)),
+    )
+    const knownLevels = new Map(
+      catalogues.map((catalogue) => [
+        catalogue.difficulty,
+        new Set(catalogue.levelNumbers),
+      ]),
+    )
+
+    // Last one wins on a duplicate. The client sends a map, so duplicates should not arise; the
+    // dedup is here because `createMany` would otherwise reject the whole batch on one.
+    const deduped = new Map<string, (typeof entries)[number]>()
+
+    for (const entry of entries) {
+      if (knownLevels.get(entry.difficulty)?.has(entry.levelNumber)) {
+        deduped.set(`${entry.difficulty}:${entry.levelNumber}`, entry)
+      }
+    }
+
+    const accepted = [...deduped.values()]
+    const { importedCount } = await this.repository.importCompletions(actorKey, accepted)
+
+    return { importedCount, skippedCount: entries.length - accepted.length }
+  }
+
+  /**
    * Records a completion.
    *
-   * **Three queries**, down from six across two requests: the level's neighbours, this level's and
-   * the previous level's progress together, and one transactional write covering the progress row
-   * and both lifetime counters.
+   * **Three queries**: the level's neighbours, this level's progress row, and one transactional
+   * write covering the progress row and both lifetime counters.
    *
-   * The unlock check is not a formality — the levels page enforces order too, by disabling the
-   * card, but that is a UX affordance and this endpoint is reachable directly. Guests never arrive
-   * here: the route is behind `createRequireNonGuestMiddleware`,
-   * because they hold no backend rows for any of this to read or write.
+   * **There is no ordering check.** Until P18 this threw `403 'Finish the previous level first.'`
+   * when the preceding level had no recorded time, which is why it also read that level's row. Level
+   * locking was removed across the product: any level in any difficulty is open immediately, so a
+   * completion arriving out of order is now a legitimate request and not an attempt to skip
+   * something. The consequence worth naming is that a run of completion rows no longer implies a
+   * path through a difficulty.
+   *
+   * What still holds: the level must exist (404), and guests never arrive here — the route is behind
+   * `createRequireNonGuestMiddleware`, because they hold no backend rows for any of this to read or
+   * write.
    */
   async completeLevel(
     actorKey: string,
@@ -66,32 +124,17 @@ export class PlayerProgressService {
     levelNumber: number,
     input: CompleteLevelInput,
   ) {
-    const { exists, previousLevelNumber } = await this.levelRepository.getNeighbourLevelNumbers(
-      difficulty,
-      levelNumber,
-    )
+    // Only `exists` is wanted here, but `getNeighbourLevelNumbers` is one indexed window query and
+    // `LevelService.save` needs the rest of it, so this stays one method rather than two.
+    const { exists } = await this.levelRepository.getNeighbourLevelNumbers(difficulty, levelNumber)
 
     if (!exists) {
       throw new HttpError(404, 'Level not found.')
     }
 
-    // One query for both rows. The guard needs the previous level's, the write needs this level's,
-    // and they used to be a `findFirst` each.
-    const relevantProgress = await this.repository.listByLevelNumbers(
-      actorKey,
-      difficulty,
-      previousLevelNumber === null ? [levelNumber] : [previousLevelNumber, levelNumber],
-    )
-
-    if (previousLevelNumber !== null) {
-      const previousProgress = relevantProgress.find(
-        (row) => row.levelNumber === previousLevelNumber,
-      )
-
-      if (previousProgress?.bestTimeSeconds == null) {
-        throw new HttpError(403, 'Finish the previous level first.')
-      }
-    }
+    const relevantProgress = await this.repository.listByLevelNumbers(actorKey, difficulty, [
+      levelNumber,
+    ])
 
     const existing = relevantProgress.find((row) => row.levelNumber === levelNumber)
     const timestamp = new Date().toISOString()

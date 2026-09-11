@@ -39,6 +39,114 @@ export function setStoredLanguage(language: SupportedLanguage) {
 }
 
 /**
+ * Where each language lives in the URL.
+ *
+ * **English is the root and carries no prefix**; Ukrainian sits under `/uk`. That asymmetry is
+ * deliberate (scope P18, decision D1): every URL Google had already indexed keeps working with no
+ * redirect, and the language that earns the traffic today pays no cost for the one being added.
+ *
+ * The prefix is the *only* place the shape of a localised URL is written down. Everything that
+ * builds, reads or mirrors a path goes through the four functions below.
+ */
+export const LANGUAGE_PATH_PREFIXES: Record<SupportedLanguage, string> = {
+  en: '',
+  uk: '/uk',
+}
+
+const prefixedLanguages = supportedLanguages.filter(
+  (language) => LANGUAGE_PATH_PREFIXES[language] !== '',
+)
+
+/**
+ * Which language a path declares. The URL is the source of truth — a stored preference never
+ * overrides the page you are actually on, or `/uk/about` would render English and become a
+ * duplicate of `/about`.
+ *
+ * Matches the prefix as a whole segment, so `/ukraine` is an English path and not a Ukrainian one.
+ */
+export function languageFromPathname(pathname: string): SupportedLanguage {
+  for (const language of prefixedLanguages) {
+    const prefix = LANGUAGE_PATH_PREFIXES[language]
+
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
+      return language
+    }
+  }
+
+  return 'en'
+}
+
+/** The language-neutral path: `/uk/about` and `/about` both come back as `/about`, `/uk` as `/`. */
+export function stripLanguagePrefix(pathname: string): string {
+  const prefix = LANGUAGE_PATH_PREFIXES[languageFromPathname(pathname)]
+
+  if (!prefix) {
+    return pathname || '/'
+  }
+
+  const remainder = pathname.slice(prefix.length)
+
+  return remainder.startsWith('/') ? remainder : '/'
+}
+
+/**
+ * The same page, in the given language. **Idempotent**: it strips whatever prefix is already there
+ * before adding the right one, so passing an already-localised path is safe and double prefixes
+ * (`/uk/uk/about`) cannot happen.
+ */
+export function localizePath(path: string, language: SupportedLanguage): string {
+  const prefix = LANGUAGE_PATH_PREFIXES[language]
+  const neutralPath = stripLanguagePrefix(path.startsWith('/') ? path : `/${path}`)
+
+  if (!prefix) {
+    return neutralPath
+  }
+
+  return neutralPath === '/' ? prefix : `${prefix}${neutralPath}`
+}
+
+/** `localizePath` for a path that may carry a query string or a hash, which must survive untouched. */
+export function localizeHref(href: string, language: SupportedLanguage): string {
+  const markerIndex = href.search(/[?#]/)
+
+  if (markerIndex === -1) {
+    return localizePath(href, language)
+  }
+
+  return `${localizePath(href.slice(0, markerIndex), language)}${href.slice(markerIndex)}`
+}
+
+/**
+ * What the language switcher navigates to: this page, in the other language, keeping the query and
+ * hash. Switching language is **navigation**, not a client-side re-render — see `LanguageSwitcher`.
+ */
+export function mirrorLocationForLanguage(
+  location: { pathname: string; search?: string; hash?: string },
+  language: SupportedLanguage,
+): string {
+  return `${localizePath(location.pathname, language)}${location.search ?? ''}${location.hash ?? ''}`
+}
+
+/**
+ * The language a given URL should render in.
+ *
+ * The URL decides everywhere **except `/`** (scope P18, decision D7): the root is the one path
+ * where a returning visitor's stored preference wins, and `AppRouter` turns that into a redirect to
+ * `/uk`. A crawler has no stored preference, so `/` is always English to it.
+ */
+export function getLanguageForLocation(pathname: string): SupportedLanguage {
+  return pathname === '/' ? getStoredLanguage() : languageFromPathname(pathname)
+}
+
+function getInitialLanguage(): SupportedLanguage {
+  if (typeof window === 'undefined') {
+    return getStoredLanguage()
+  }
+
+  return getLanguageForLocation(window.location.pathname)
+}
+
+/**
  * Keeps `<html lang>` in step with the active language.
  *
  * `index.html` hardcodes `lang="en"`, so without this a Ukrainian page announces itself as English
@@ -61,7 +169,7 @@ void i18n.use(initReactI18next).init({
       translation: uk,
     },
   },
-  lng: getStoredLanguage(),
+  lng: getInitialLanguage(),
   fallbackLng: 'en',
   keySeparator: false,
   nsSeparator: false,
