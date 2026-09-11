@@ -1,6 +1,6 @@
 export type CellMark = 'empty' | 'dot' | 'bull'
 
-export type Difficulty = 'light' | 'easy' | 'medium' | 'hard'
+export type Difficulty = 'light' | 'easy' | 'medium' | 'hard' | 'extreme'
 
 /**
  * A playable board.

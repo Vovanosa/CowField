@@ -3,6 +3,7 @@ import 'dotenv/config'
 import {
   formatBoardValidationIssue,
   generateUniqueBoard,
+  getVerificationNodeBudget,
   getBullsPerGroupForDifficulty,
   validateBoard,
   type Difficulty,
@@ -10,6 +11,7 @@ import {
 import { getPrismaClient } from '../db/prismaClient'
 import { PrismaLevelRepository } from '../repositories/PrismaLevelRepository'
 import { DIFFICULTIES } from '../types/level'
+import { MAX_SOLUTIONS_BY_DIFFICULTY } from './levelQuality'
 
 /**
  * Bulk-generates levels that are guaranteed to have exactly one solution.
@@ -35,6 +37,7 @@ import { DIFFICULTIES } from '../types/level'
  *
  * The whole batch is written in **one transaction**, so a run can never land half-finished.
  */
+
 
 type Options = {
   difficulty: Difficulty
@@ -169,6 +172,7 @@ async function main() {
     pensByCell: number[]
     bullsByCell: boolean[]
   }> = []
+  const maxSolutions = MAX_SOLUTIONS_BY_DIFFICULTY[options.difficulty]
   const startedAt = Date.now()
 
   for (const levelNumber of targetNumbers) {
@@ -180,6 +184,7 @@ async function main() {
         // Generous: this is a batch job, not a click in the editor.
         timeBudgetMs: 30000,
         attempts: 200,
+        maxSolutions,
       })
 
       if (!board) {
@@ -187,13 +192,26 @@ async function main() {
         continue
       }
 
-      // Independent re-check. The generator claims uniqueness; verify it before it reaches the DB.
+      // Independent re-check. The generator claims a solution count; verify it before it reaches
+      // the DB. `solutionLimit` is one past what we will accept, so the count is only ever computed
+      // far enough to decide.
       const validation = validateBoard(
         { difficulty: options.difficulty, ...board },
-        { countSolutions: true, solutionLimit: 2 },
+        {
+          countSolutions: true,
+          solutionLimit: maxSolutions + 1,
+          // Bounded for the same reason the generator's own verification is: proving a 15x15 board
+          // has no further solution can run for minutes. Generous, because this decides what ships.
+          maxNodes: getVerificationNodeBudget(options.difficulty),
+        },
       )
 
-      if (!validation.isValid || validation.solutionCount !== 1) {
+      if (
+        !validation.isValid ||
+        validation.solutionCount == null ||
+        validation.solutionCount < 1 ||
+        validation.solutionCount > maxSolutions
+      ) {
         console.log(
           `  level ${levelNumber}: rejected — valid=${validation.isValid} ` +
             `solutions=${validation.solutionCount} ${validation.issues.map(formatBoardValidationIssue).join(' | ')}`,
@@ -216,6 +234,9 @@ async function main() {
       }
       console.log(
         `  level ${levelNumber}: ok (${bullsPerGroup} bull${bullsPerGroup > 1 ? 's' : ''} per group, ` +
+          // The solution count is printed because on `extreme` it is not 1, and a number nobody can
+          // see is a quality decision nobody can review.
+          `${validation.solutionCount} solution${validation.solutionCount === 1 ? '' : 's'}, ` +
           `${board.attempts} attempt${board.attempts > 1 ? 's' : ''}, ${board.elapsedMs}ms)`,
       )
     }

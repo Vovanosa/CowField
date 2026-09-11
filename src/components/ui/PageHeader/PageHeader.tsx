@@ -9,10 +9,16 @@ import styles from './PageHeader.module.css'
  * width from 769px to 1440px. If a page ever needs header actions, the top-right of the frame is
  * taken; put them somewhere else or reserve space for them first.
  */
+/*
+  **No `eyebrow` either, as of 2026-09-11.** Every page carried a small uppercase word above its
+  title — "Rules" above "How to play Star Battle", "Levels" above "Light Levels" — which said
+  nothing the title did not already say and is one of the more recognisable marks of generated
+  layout. Removing it lets the title move up and grow, which is what a reader actually uses to work
+  out where they are.
+*/
 type PageHeaderProps = {
   backTo?: string
   backLabel?: string
-  eyebrow?: string
   title?: string
   description?: string
   className?: string
@@ -34,7 +40,6 @@ type PageHeaderProps = {
 export function PageHeader({
   backTo,
   backLabel,
-  eyebrow,
   title,
   description,
   className,
@@ -48,7 +53,6 @@ export function PageHeader({
       <div className={styles.intro}>
         <section className={styles.pageIntro}>
           <div className={styles.pageIntroCopy}>
-            {eyebrow ? <p className={styles.pageIntroEyebrow}>{eyebrow}</p> : null}
             {title ? <TitleTag className={styles.pageIntroTitle}>{title}</TitleTag> : null}
             {description ? <p className={styles.pageIntroDescription}>{description}</p> : null}
           </div>

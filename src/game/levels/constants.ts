@@ -11,6 +11,11 @@ export const COLOR_PALETTE = [
   'var(--color-pen-8)',
   'var(--color-pen-9)',
   'var(--color-pen-10)',
+  'var(--color-pen-11)',
+  'var(--color-pen-12)',
+  'var(--color-pen-13)',
+  'var(--color-pen-14)',
+  'var(--color-pen-15)',
 ] as const
 
 export const COLOR_GAP_PALETTE = [
@@ -24,6 +29,11 @@ export const COLOR_GAP_PALETTE = [
   'var(--color-pen-gap-8)',
   'var(--color-pen-gap-9)',
   'var(--color-pen-gap-10)',
+  'var(--color-pen-gap-11)',
+  'var(--color-pen-gap-12)',
+  'var(--color-pen-gap-13)',
+  'var(--color-pen-gap-14)',
+  'var(--color-pen-gap-15)',
 ] as const
 
 export function getColorForId(colorId: number) {
@@ -49,4 +59,17 @@ export function getGapColorForId(colorId: number) {
  * `resources/difficultyOverview` among others — and they already import each other, so putting it in
  * any one of them would make the group circular.
  */
-export const DIFFICULTIES: readonly Difficulty[] = ['light', 'easy', 'medium', 'hard']
+export const DIFFICULTIES: readonly Difficulty[] = ['light', 'easy', 'medium', 'hard', 'extreme']
+
+/**
+ * Is this URL segment a difficulty we actually have?
+ *
+ * **Derived from `DIFFICULTIES`, and deliberately the only copy.** Three pages each carried their own
+ * `value === 'light' || value === 'easy' || ...` chain, and when `extreme` was added all three still
+ * said no — so `/levels/extreme` rendered "Unknown difficulty." while the route, the API and the
+ * database were all perfectly happy. A list that has to be edited in four places is a list that will
+ * be edited in three.
+ */
+export function isDifficulty(value: string | undefined): value is Difficulty {
+  return value !== undefined && DIFFICULTIES.includes(value as Difficulty)
+}

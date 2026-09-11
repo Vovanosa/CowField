@@ -26,6 +26,14 @@
       "destination": "/"
     },
     {
+      "source": "/how-to-solve",
+      "destination": "/"
+    },
+    {
+      "source": "/difficulties",
+      "destination": "/"
+    },
+    {
       "source": "/welcome",
       "destination": "/"
     },

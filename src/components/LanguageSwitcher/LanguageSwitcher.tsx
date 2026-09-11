@@ -14,7 +14,23 @@ import i18n, {
 import { DropdownMenu, DropdownMenuItem, useDropdownMenu } from '../ui'
 import styles from './LanguageSwitcher.module.css'
 
-export function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  /**
+   * Where this instance is being rendered.
+   *
+   * `pills` is the pair of floating controls in the shell's top-right corner. `menu` is the same two
+   * settings as labelled rows inside the profile dropdown, for the widths where the pills would
+   * crowd the page title.
+   *
+   * **Both are always rendered and CSS picks one**, rather than a width hook choosing in JS. The
+   * state here is not local — the language lives in i18n and the theme in player settings, and both
+   * instances read the same source — so a second copy in the DOM costs two buttons and keeps the
+   * switch on a media query, where it belongs.
+   */
+  variant?: 'pills' | 'menu'
+}
+
+export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = {}) {
   const { t } = useTranslation()
   const settings = usePlayerSettings()
   const [language, setLanguage] = useState<SupportedLanguage>(getStoredLanguage())
@@ -65,6 +81,69 @@ export function LanguageSwitcher() {
       ...settings,
       darkModeEnabled: !settings.darkModeEnabled,
     })
+  }
+
+  const themeToggle = (
+    <button
+      type="button"
+      className={
+        settings.darkModeEnabled
+          ? `${styles.themeTrigger} ${styles.themeTriggerActive}`
+          : styles.themeTrigger
+      }
+      aria-label={settings.darkModeEnabled ? t('Switch to light mode') : t('Switch to dark mode')}
+      aria-pressed={settings.darkModeEnabled}
+      onClick={handleThemeToggle}
+    >
+      <span className={styles.themeTriggerTrack}>
+        <span className={styles.themeTriggerThumb}>
+          {settings.darkModeEnabled ? <MoonStar size={14} /> : <SunMedium size={14} />}
+        </span>
+      </span>
+    </button>
+  )
+
+  /*
+    Inside the profile dropdown the two settings are labelled rows, and the language picker is two
+    flag buttons rather than a second dropdown. A menu nested inside a menu is worse to use and
+    worse to describe to a screen reader, and there are exactly two languages.
+  */
+  if (variant === 'menu') {
+    return (
+      <div className={styles.menuVariant}>
+        <div className={styles.menuRow}>
+          <span className={styles.menuLabel}>{t('Dark mode')}</span>
+          {themeToggle}
+        </div>
+        <div className={styles.menuRow}>
+          <span className={styles.menuLabel}>{t('Language')}</span>
+          <div className={styles.menuLanguages} role="radiogroup" aria-label={t('Language')}>
+            {(['en', 'uk'] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={
+                  language === option
+                    ? `${styles.menuLanguage} ${styles.menuLanguageActive}`
+                    : styles.menuLanguage
+                }
+                role="radio"
+                aria-checked={language === option}
+                onClick={() => handleLanguageSelect(option)}
+              >
+                <img
+                  className={styles.languageOptionFlag}
+                  src={option === 'uk' ? uaFlag : gbFlag}
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span className={styles.languageOptionCode}>{option === 'uk' ? 'UA' : 'EN'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

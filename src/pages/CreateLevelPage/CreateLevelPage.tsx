@@ -6,6 +6,7 @@ import { useRole } from '../../app/role'
 import { EmptyState } from '../../components/EmptyState'
 import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
+import { isDifficulty } from '../../game/levels/constants'
 import type { Difficulty } from '../../game/types'
 import { CreateLevelConfirmDialog } from './CreateLevelConfirmDialog'
 import { CreateLevelDeleteDialog } from './CreateLevelDeleteDialog'
@@ -13,10 +14,6 @@ import { CreateLevelEditorPanel } from './CreateLevelEditorPanel'
 import { CreateLevelHeader } from './CreateLevelHeader'
 import { useLevelEditor } from './useLevelEditor'
 import styles from './CreateLevelPage.module.css'
-
-function isDifficulty(value: string | undefined): value is Difficulty {
-  return value === 'light' || value === 'easy' || value === 'medium' || value === 'hard'
-}
 
 type CreateLevelPageViewProps = {
   difficulty: Difficulty

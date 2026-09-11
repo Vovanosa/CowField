@@ -1,6 +1,7 @@
 import {
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
@@ -9,7 +10,14 @@ import { useTranslation } from 'react-i18next'
 import { CowIcon } from '../icons'
 import type { LevelDefinition } from '../../game/types'
 import type { CellMark } from '../../game/types'
-import { getBoardCellStyle, getBoardIntersectionStyle } from './GameBoard.helpers'
+import {
+  getBoardCellStyle,
+  getBoardIntersectionStyle,
+  getCowMarkerPercent,
+} from './GameBoard.helpers'
+
+/** What a cow fills on `light`, the size every board used to use. */
+const PLAY_COW_BASE_PERCENT = 56
 import { moveFocusIndex, releaseImplicitPointerCapture } from './GameBoard.keyboard'
 import { useCrampedBoardNotice } from './useCrampedBoardNotice'
 import styles from './GameBoard.module.css'
@@ -132,7 +140,10 @@ export function GameBoard({
 
       <div
         className={styles.boardPreviewGrid}
-        style={{ gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))`,
+          '--play-cow-size': `${getCowMarkerPercent(level.gridSize, PLAY_COW_BASE_PERCENT)}%`,
+        } as CSSProperties}
       >
         {level.pensByCell.map((penId, index) => {
           const isInvalid = invalidBullIndexes.has(index)

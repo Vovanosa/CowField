@@ -1,0 +1,36 @@
+.footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-8);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  /* Wide column gap, narrow row gap: on a phone these wrap to two lines and should read as two
+     rows of links rather than a loose grid. */
+  gap: var(--space-2) var(--space-5);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  /* 44px, so every one of these is a real tap target even though the text is small. */
+  min-height: 44px;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--color-accent-strong);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}

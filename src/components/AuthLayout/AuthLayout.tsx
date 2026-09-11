@@ -19,7 +19,6 @@ export type AuthMessage = {
 }
 
 type AuthLayoutProps = {
-  eyebrow: string
   title: string
   description: string
   children: ReactNode
@@ -34,7 +33,6 @@ type AuthLayoutProps = {
 }
 
 export function AuthLayout({
-  eyebrow,
   title,
   description,
   children,
@@ -48,7 +46,6 @@ export function AuthLayout({
     <div className={styles.authPage}>
       <Panel className={styles.authPanel}>
         <div className={styles.authHeader}>
-          <p className={styles.eyebrow}>{eyebrow}</p>
           <h1 className={styles.title}>{title}</h1>
           <p className={styles.description}>{description}</p>
         </div>

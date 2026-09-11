@@ -32,7 +32,7 @@ const TARGET = (urlArgument?.slice('--url='.length) ?? process.env.A11Y_APP_URL 
 const DEBUG_PORT = Number(process.env.A11Y_DEBUG_PORT ?? 9224)
 
 /** The pages that must be indexable, and what each one has to say. */
-const PUBLIC_ROUTES = ['/', '/about']
+const PUBLIC_ROUTES = ['/', '/about', '/how-to-solve', '/difficulties']
 /** Needs a session, or is a credential form: must report `noindex`. */
 const PRIVATE_ROUTES = ['/levels', '/settings', '/login']
 /** The landing page's second URL, for players who cannot reach it at `/`. Must canonicalise to `/`. */

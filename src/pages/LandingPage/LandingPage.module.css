@@ -16,20 +16,21 @@
   animation: fade-up-in 360ms var(--ease-emphasized);
 }
 
-.eyebrow {
-  color: var(--color-accent-strong);
-  letter-spacing: 0.16em;
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .title {
-  /* The one `h1` on the page. Sized down from the wordmark on the signed-in home page: this one is
-     a sentence naming the genre, not a logo, so it has to stay readable at two or three lines. */
-  max-width: 22ch;
-  font-size: clamp(2rem, 6vw, 3rem);
-  line-height: 1.1;
+  /* The one `h1` on the page, and now the first thing on it: the small uppercase line that used to
+     sit above it was removed on 2026-09-11. It said "Star Battle puzzle, free in your browser",
+     which the title tag, the description and the chips below all say already, and an eyebrow above
+     a heading is one of the more recognisable marks of generated layout.
+
+     Sized down from the wordmark on the signed-in home page even so: this is a sentence naming the
+     genre, not a logo, so it has to stay readable at two lines. */
+  /* The shell control row floats over this corner; see `--app-controls-gutter` in `App.css`. The
+     gutter is added *on top of* the 22ch measure rather than taken out of it — `box-sizing` is
+     border-box here, so a bare `max-width: 22ch` would have handed the gutter the text's column. */
+  max-width: calc(22ch + var(--app-controls-gutter, 0px));
+  padding-right: var(--app-controls-gutter, 0px);
+  font-size: clamp(2.2rem, 6.4vw, 3.3rem);
+  line-height: 1.08;
   color: var(--color-heading);
 }
 
@@ -221,4 +222,13 @@
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
+}
+
+/* The two internal links out of the rules block. Wraps on a phone rather than squeezing both onto
+   one line, and keeps each one a 44px target. */
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
 }

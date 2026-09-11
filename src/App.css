@@ -23,9 +23,39 @@
 .app-content {
   position: relative;
   flex: 1;
+  /*
+    A flex item's automatic minimum size is its **content's** minimum, not zero, so without this the
+    shell grows to whatever the widest unbreakable thing inside it needs and `.app-frame`'s
+    `overflow: hidden` silently clips the difference. Measured at a 307px viewport: this element came
+    out 306px wide inside a 281px frame, which put the profile control 12px off-screen with no way to
+    scroll to it. `min-width: 0` makes it obey the frame and pushes the problem down to whichever
+    child actually cannot fit, where it can be fixed.
+  */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   padding: var(--space-8);
+}
+
+/*
+  The gutter a page header keeps clear so its title cannot run under the control row.
+
+  **`--app-controls-width` is written by `AppShell`, from a `ResizeObserver` on the row itself.** It
+  has to be measured: the row's width changes with the display name, with the language the pills
+  show, with whether anyone is signed in, and with the 940px breakpoint that moves the pills into
+  the profile dropdown. Any fixed value big enough for the worst case wastes that much room in the
+  common one, and this way the gutter is zero-ish for a signed-out visitor with no profile pill.
+
+  A horizontal gutter rather than a reserved band above the content, which is what this was for
+  about an hour: the band left an empty strip across the top of every page at widths where there was
+  never a problem. This costs nothing until the title is actually long enough to reach the row, and
+  then it wraps the title instead of overlapping it.
+
+  The fallback matters. Until the observer has run — the first paint, and any environment without
+  `ResizeObserver` — this is the old fixed clearance rather than zero.
+*/
+.app-content {
+  --app-controls-gutter: calc(var(--app-controls-width, 180px) + var(--space-4));
 }
 
 .app-shell-controls {
@@ -72,10 +102,7 @@
   }
 
   .app-content {
-    /* Reserves the band the control row sits in. This lived in `HomePage.module.css` while the
-       profile menu was home-only; every page needs it now, and a page-level reserve would have to
-       be repeated five times to say the same thing. */
-    padding: calc(var(--space-5) + 44px + var(--space-3)) var(--space-5) var(--space-5);
+    padding: var(--space-5);
   }
 
   .app-shell-controls {
@@ -85,20 +112,47 @@
 }
 
 /*
-  Phone: the control row stops costing a row of its own.
+  **The last rung: below 560px the row stops sharing the line and takes the one above it.**
 
-  Above this width the row is reserved a 44px band (see `.app-content` at 768px) and every page's
-  header starts underneath it. On a phone that spent one of very few rows on a display name, pushing
-  the back button and the level title down — which is exactly what it looked like on a 412px screen.
+  This is the same ladder, not a new regime. Every step so far has made the row narrower so the title
+  could keep the rest; this is what happens when there is no "rest" left to keep. Measured at a 307px
+  viewport, signed out — the widest the row ever gets on a phone, because those readers have no
+  dropdown to move the pills into — the gutter was 126px of a 241px column, which left the title
+  about 70px and broke "difficulty" across two lines mid-word.
 
-  Below 640px the profile trigger collapses to a 40px circle (`ProfileMenu.module.css`), so it fits
-  in the top-right corner of the header line itself. The reserve is dropped and the two page headers
-  keep their own clearance from that corner instead: `PageHeader.header` and the game's `.topbar`
-  both take a right padding of 52px = the 40px control + the 12px gap it needs. Those two cover
-  every route, because `PageHeader` is shared by the other five.
+  One threshold, and it does **not** branch on the session. A signed-in reader's 40px circle would
+  still fit beside the title here, but having the layout depend on who you are is exactly the kind of
+  thing that made this file confusing before. A row costs 56px; knowing what the page will look like
+  is worth more.
+
+  Zeroing the gutter is all the pages need: `PageHeader`, the game's topbar and the landing title all
+  read `--app-controls-gutter`, so none of them needs a rule of its own.
 */
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .app-content {
-    padding-top: var(--space-5);
+    --app-controls-gutter: 0px;
+    padding-top: calc(var(--space-5) + 44px + var(--space-3));
   }
 }
+
+/*
+  **One behaviour at every width: the control row shrinks, and gives up the line only when it must.**
+
+  Up to 2026-09-11 this file had four different layouts across the width range — a reserved band
+  above the content between 641 and 768px, a measured gutter above that, a 52px hardcoded gutter
+  below 640px, and a fifth case for signed-out readers. Which one you got depended on the window and
+  on whether you were signed in, and the band in particular dropped an empty strip above every page
+  title at widths where there was plenty of room. There is now a single ladder, and every step of it
+  gives the title more of the line — until the last one, which gives it all of the line:
+
+    full        profile pill with up to 14ch of name, plus the theme and language pills
+    <= 940px    theme and language move into the profile dropdown (only if there is one)
+    <= 768px    the name truncates to 8ch
+    <= 640px    the name goes entirely; the trigger is a 40px circle
+    <= 640px    for a signed-out reader, who has no dropdown, the pills lose their text labels
+    <= 560px    the row takes the line above and the title takes the full width
+
+  The title keeps whatever is left, through `--app-controls-gutter`, and wraps rather than colliding.
+  Only the last rung needs a rule here: the gutter is measured from the row at every other width, so
+  each step feeds it automatically.
+*/

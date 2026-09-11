@@ -153,9 +153,10 @@
   color: var(--color-board-label);
 }
 
+/* Set per board by `getCowMarkerPercent`; the fallback is the size a 6x6 editor board has. */
 .cowMarker {
-  width: 68%;
-  height: 68%;
+  width: var(--editor-cow-size, 68%);
+  height: var(--editor-cow-size, 68%);
   filter: drop-shadow(0 2px 2px rgba(94, 70, 34, 0.12));
 }
 

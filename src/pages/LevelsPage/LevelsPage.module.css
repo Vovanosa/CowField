@@ -56,7 +56,12 @@
     var(--color-surface);
 }
 
-.difficultyLinkChip:not(.difficultyLinkChipLight):not(.difficultyLinkChipEasy):not(.difficultyLinkChipMedium) {
+.difficultyLinkChipExtreme {
+  border-color: var(--color-difficulty-extreme-border);
+  background: linear-gradient(180deg, var(--color-difficulty-extreme-surface-start), var(--color-difficulty-extreme-surface-end));
+}
+
+.difficultyLinkChip:not(.difficultyLinkChipLight):not(.difficultyLinkChipEasy):not(.difficultyLinkChipMedium):not(.difficultyLinkChipExtreme) {
   border-color: var(--color-difficulty-hard-border);
   background:
     linear-gradient(180deg, var(--color-difficulty-hard-surface-start), var(--color-difficulty-hard-surface-end)),

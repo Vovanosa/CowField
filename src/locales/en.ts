@@ -5,57 +5,75 @@ const en = {
   // The landing page (P14 item 84) — the only page a stranger, or a crawler, can read.
   //
   // This block is deliberately prose rather than labels: it is the site's entire indexable content.
-  // Before it existed, every URL rendered the login form and the whole site was 31 words. The genre
-  // words matter as much as the wording — nobody searches "CowField", people search "Star Battle"
-  // and "Two Not Touch".
+  // Before it existed, every URL rendered the login form and the whole site was 31 words.
+  //
+  // **Rewritten 2026-09-11 (P17).** The first version read as generated text: eighteen em-dashes in
+  // this file, "calm" six times, "quiet" four, and three paragraphs that closed on a flourish. It
+  // also led with a brand nobody searches for. The rules this copy is held to now:
+  //   - no em-dashes in prose, only in title separators
+  //   - contractions, and sentences of uneven length
+  //   - a fact instead of a feeling — never "calm", say what makes it calm
+  //   - no closing flourish; end on something useful
+  //   - say the weak part out loud (extreme boards can have several answers)
+  // The genre words still matter most: nobody searches "CowField", they search "Star Battle",
+  // "Two Not Touch" and "star battle online".
   // ---------------------------------------------------------------------------------------------
-  'Star Battle logic puzzle': 'Star Battle logic puzzle',
-  'CowField — a calm Star Battle puzzle': 'CowField — a calm Star Battle puzzle',
-  'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
-    'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
-  'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
-    'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.',
+  'Star Battle, with cows': 'Star Battle, with cows',
+  'Play Star Battle online, free - CowField': 'Play Star Battle online, free - CowField',
+  'Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one.':
+    'Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one.',
+  'A grid of coloured pens. Every row, every column and every pen needs the same number of bulls, and no two bulls may touch, not even at a corner. That is the whole game. If you have played Star Battle or Two Not Touch before, you already know it.':
+    "A grid of coloured pens. Every row, every column and every pen needs the same number of bulls, and no two bulls may touch, not even at a corner. That's the whole game. If you've played Star Battle or Two Not Touch before, you already know it.",
   'Play now': 'Play now',
   'Starting...': 'Starting...',
   'Sign in to save your progress': 'Sign in to save your progress',
-  'No account, no email. Play as a guest right away.':
-    'No account, no email. Play as a guest right away.',
-  'Waking the server — the first visit after a quiet spell takes a moment.':
-    'Waking the server — the first visit after a quiet spell takes a moment.',
+  "You don't need an account. Click play and you're on a board.":
+    "You don't need an account. Click play and you're on a board.",
+  'The server is waking up. First visit of the day takes a few seconds.':
+    'The server is waking up. First visit of the day takes a few seconds.',
   "Couldn't start a game. Check your connection and try again.":
     "Couldn't start a game. Check your connection and try again.",
-  'The rules, in three lines': 'The rules, in three lines',
-  'Every row, column and pen holds its exact quota of bulls.':
-    'Every row, column and pen holds its exact quota of bulls.',
-  'No two bulls may touch — not side by side, not diagonally.':
-    'No two bulls may touch — not side by side, not diagonally.',
-  'Dots are notes for yourself. They never count as bulls.':
-    'Dots are notes for yourself. They never count as bulls.',
+  'How to play': 'How to play',
+  'Every row, column and pen gets the same number of bulls. One on the small boards, three on the biggest.':
+    'Every row, column and pen gets the same number of bulls. One on the small boards, three on the biggest.',
+  'Two bulls can never touch, including diagonally at a corner.':
+    'Two bulls can never touch, including diagonally at a corner.',
+  "Dots are your own notes. They don't count as bulls.":
+    "Dots are your own notes. They don't count as bulls.",
   'Read the full rules': 'Read the full rules',
-  'Made to be unhurried': 'Made to be unhurried',
-  'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.':
-    'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.',
-  'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.':
-    'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.',
-  '800 levels': '800 levels',
-  '4 difficulties': '4 difficulties',
-  'Exactly one solution each': 'Exactly one solution each',
-  'No account needed': 'No account needed',
-  'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.':
-    'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.',
+  'Solving techniques': 'Solving techniques',
+  'No timer unless you want one': 'No timer unless you want one',
+  'There is a clock if you want to race yourself, and a setting that hides it. Put a bull somewhere it breaks a rule and it lights up immediately, so you can try an idea and watch what happens. It will not tell you what is correct, only what is illegal. The solving is left to you.':
+    "There's a clock if you want to race yourself, and a setting that hides it. Put a bull somewhere it breaks a rule and it lights up immediately, so you can try an idea and watch what happens. It won't tell you what's correct, only what's illegal. The solving is left to you.",
+  '1,000 levels, five board sizes': '1,000 levels, five board sizes',
+  'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, and hard is 10x10 with two. Extreme is 15x15 with three, which is a different puzzle rather than a bigger one.':
+    'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, and hard is 10x10 with two. Extreme is 15x15 with three, which is a different puzzle rather than a bigger one.',
+  'Every board is generated and then solved again to check it. Light through hard have exactly one answer, so they can always be reasoned out. Extreme boards can have a few, which is the honest trade for having 15x15 boards at all. Any arrangement that follows the rules counts as a win.':
+    'Every board is generated and then solved again to check it. Light through hard have exactly one answer, so they can always be reasoned out. Extreme boards can have a few, which is the honest trade for having 15x15 boards at all. Any arrangement that follows the rules counts as a win.',
+  '1,000 levels': '1,000 levels',
+  'Five difficulties': 'Five difficulties',
+  'Up to 15x15': 'Up to 15x15',
+  'No sign-up': 'No sign-up',
+  'A CowField board: coloured pens with bulls and dot notes placed on them.':
+    'A CowField board: coloured pens with bulls and dot notes placed on them.',
 
   // The not-found view, which replaced a silent redirect to `/`.
   'Page not found': 'Page not found',
   'That link does not lead anywhere.': 'That link does not lead anywhere.',
   'Back to the start': 'Back to the start',
 
-  // Page descriptions — `<meta name="description">`, so ~150-160 characters each. Only the two
+  // Page descriptions — `<meta name="description">`, so ~150-160 characters each. Only the four
   // public pages genuinely need one; the rest are `noindex` and carry a title alone.
-  'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
-    'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.',
+  'The rules of Star Battle, also called Two Not Touch: the same number of bulls in every row, column and region, and no two touching. Plus what the dots do.':
+    'The rules of Star Battle, also called Two Not Touch: the same number of bulls in every row, column and region, and no two touching. Plus what the dots do.',
+  'Six techniques for solving Star Battle and Two Not Touch puzzles: fencing off bulls, pens trapped in a row, counting pens against rows, and what to do when stuck.':
+    'Six techniques for solving Star Battle and Two Not Touch puzzles: fencing off bulls, pens trapped in a row, counting pens against rows, and what to do when stuck.',
+  'What changes between a 6x6 one-bull Star Battle board and a 15x15 three-bull one, how many levels each size has, and which difficulty to start with.':
+    'What changes between a 6x6 one-bull Star Battle board and a 15x15 three-bull one, how many levels each size has, and which difficulty to start with.',
   'Loading...': 'Loading...',
   Hidden: 'Hidden',
   'Back to home': 'Back to home',
+  'Back to the rules': 'Back to the rules',
   'Back to levels': 'Back to levels',
   'Back to all difficulties': 'Back to all difficulties',
   Restart: 'Restart',
@@ -75,7 +93,9 @@ const en = {
   Easy: 'Easy',
   Medium: 'Medium',
   Hard: 'Hard',
+  Extreme: 'Extreme',
   'Home menu': 'Home menu',
+  'Site links': 'Site links',
   'Puzzle board': 'Puzzle board',
   // Cell names. Every one of these describes something conveyed only visually today — the pen by
   // its colour, the mark by an `aria-hidden` icon, the rule break by an animation.
@@ -114,32 +134,119 @@ const en = {
   'Edit level {{levelNumber}}': 'Edit level {{levelNumber}}',
   'This level is locked. Complete the previous level first to open it.':
     'This level is locked. Complete the previous level first to open it.',
-  'About the game': 'About the game',
-  'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
-    'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.',
+  // -------------------------------------------------------------------------------------------
+  // `/about` — the rules page, and the best keyword surface on the site.
+  //
+  // Rewritten with the landing page (P17). The old version explained how the game was *meant to
+  // feel* and never once used the words a person types into a search box. This one names the genre
+  // in the first sentence and bridges the vocabulary: stars are bulls, regions are pens.
+  // -------------------------------------------------------------------------------------------
+  'How to play Star Battle': 'How to play Star Battle',
+  'CowField is a Star Battle puzzle. If you have seen the same game called Two Not Touch, that is this. The stars are bulls here and the regions are pens, but nothing about the rules changes.':
+    "CowField is a Star Battle puzzle. If you've seen the same game called Two Not Touch, that's this. The stars are bulls here and the regions are pens, but nothing about the rules changes.",
   'How cell marks work': 'How cell marks work',
   'Each cell changes like this:': 'Each cell changes like this:',
   empty: 'empty',
   'dot note': 'dot note',
   bull: 'bull',
-  'The purpose of the game is simple: place the correct number of bulls so the whole board works at once. Every row must contain the required number of bulls, every column must contain the required number of bulls, and every colored pen must also contain the required number of bulls.':
-    'The purpose of the game is simple: place the correct number of bulls so the whole board works at once. Every row must contain the required number of bulls, every column must contain the required number of bulls, and every colored pen must also contain the required number of bulls.',
-  'There is one more important rule: bulls may not touch each other in any direction. That means not from the side, not from above or below, and not even diagonally at the corners. If two bulls are neighboring cells, the placement is wrong.':
-    'There is one more important rule: bulls may not touch each other in any direction. That means not from the side, not from above or below, and not even diagonally at the corners. If two bulls are neighboring cells, the placement is wrong.',
-  'Light, easy, and medium use 1 bull per row, column, and pen.':
-    'Light, easy, and medium use 1 bull per row, column, and pen.',
-  'Hard uses 2 bulls per row, column, and pen.':
-    'Hard uses 2 bulls per row, column, and pen.',
-  'Dots are just notes and never count as bulls.':
-    'Dots are just notes and never count as bulls.',
-  'You win with correct bull placement only.':
-    'You win with correct bull placement only.',
-  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.':
-    'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.',
-  'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
-    'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.',
-  'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
-    'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.',
+  'Every board has a number attached to it, depending on its size: one, two or three. Each row has to end up holding exactly that many bulls. So does each column, and so does each coloured pen. Get all three to agree at once and the level is done.':
+    'Every board has a number attached to it, depending on its size: one, two or three. Each row has to end up holding exactly that many bulls. So does each column, and so does each coloured pen. Get all three to agree at once and the level is done.',
+  'The second rule is the one that turns it into a puzzle. No two bulls may sit in neighbouring cells. Side by side, one above the other, or touching at a single corner, all of it is out. Every bull needs an empty ring around it.':
+    'The second rule is the one that turns it into a puzzle. No two bulls may sit in neighbouring cells. Side by side, one above the other, or touching at a single corner, all of it is out. Every bull needs an empty ring around it.',
+  'Light, easy and medium: one bull per row, column and pen.':
+    'Light, easy and medium: one bull per row, column and pen.',
+  'Hard: two. Extreme: three, on a 15x15 board.': 'Hard: two. Extreme: three, on a 15x15 board.',
+  'Dots are notes. They never count as bulls.': 'Dots are notes. They never count as bulls.',
+  'You win on bull placement alone.': 'You win on bull placement alone.',
+  'Dots are how most people actually solve these. Mark the cells you have ruled out and the board narrows itself. You can also just place a bull you are unsure about: if it breaks a rule it lights up, and you can take it straight back. Leftover dots do not matter at the end, so there is no tidying up to do.':
+    "Dots are how most people actually solve these. Mark the cells you've ruled out and the board narrows itself. You can also just place a bull you're unsure about: if it breaks a rule it lights up, and you can take it straight back. Leftover dots don't matter at the end, so there's no tidying up to do.",
+  'Settings has a few things worth finding. Take your time hides the timers. Auto-place dots rings each bull for you, which saves a lot of clicking on the big boards. There is a dark theme, and sound and music have their own volumes. Guests get take your time switched on and locked.':
+    "Settings has a few things worth finding. Take your time hides the timers. Auto-place dots rings each bull for you, which saves a lot of clicking on the big boards. There's a dark theme, and sound and music have their own volumes. Guests get take your time switched on and locked.",
+  'I built CowField because I wanted a puzzle I could think through at my own pace. Nothing to keep up with, nothing waiting for me if I put it down for a month.':
+    'I built CowField because I wanted a puzzle I could think through at my own pace. Nothing to keep up with, nothing waiting for me if I put it down for a month.',
+
+  // The FAQ. Question-shaped headings with short answers, which is the shape Google lifts into an
+  // answer box, and `FAQPage` structured data on the same content.
+  'Common questions': 'Common questions',
+  'What is Star Battle?': 'What is Star Battle?',
+  'A logic puzzle on a grid split into coloured regions. You place a fixed number of stars in every row, every column and every region, and no two stars may touch, including diagonally. In CowField the stars are bulls and the regions are pens.':
+    'A logic puzzle on a grid split into coloured regions. You place a fixed number of stars in every row, every column and every region, and no two stars may touch, including diagonally. In CowField the stars are bulls and the regions are pens.',
+  'Is Two Not Touch the same puzzle?': 'Is Two Not Touch the same puzzle?',
+  'Yes. Two Not Touch is the name usually given to the two-star version on a 10x10 board, which is what hard is here. Same rules, different name.':
+    'Yes. Two Not Touch is the name usually given to the two-star version on a 10x10 board, which is what hard is here. Same rules, different name.',
+  'Do I need an account?': 'Do I need an account?',
+  'No. The guest button drops you straight onto a board and keeps your progress in your browser. An account only matters if you want that progress on a second device.':
+    'No. The guest button drops you straight onto a board and keeps your progress in your browser. An account only matters if you want that progress on a second device.',
+  'Is it free?': 'Is it free?',
+  'Yes, all 1,000 levels. No ads, and nothing to buy.': 'Yes, all 1,000 levels. No ads, and nothing to buy.',
+  'Does every puzzle have one solution?': 'Does every puzzle have one solution?',
+  'Light, easy, medium and hard do, so every one of them can be reasoned out without guessing. Extreme boards can have more than one valid answer. Whichever you find, if it follows the rules it wins.':
+    'Light, easy, medium and hard do, so every one of them can be reasoned out without guessing. Extreme boards can have more than one valid answer. Whichever you find, if it follows the rules it wins.',
+  'Can I play on a phone?': 'Can I play on a phone?',
+  'Yes. The small boards fit a phone screen comfortably. For 10x10 and 15x15 turn the phone sideways, or use a tablet, since 225 cells need the room.':
+    'Yes. The small boards fit a phone screen comfortably. For 10x10 and 15x15 turn the phone sideways, or use a tablet, since 225 cells need the room.',
+  // -------------------------------------------------------------------------------------------
+  // `/how-to-solve` — solving techniques (P17). A new public page, and the one with the clearest
+  // search intent on the site: "how to solve star battle" is a question people actually type.
+  //
+  // The techniques are real and transfer to any Star Battle board, which is the point. A page that
+  // only worked for this app would deserve neither the traffic nor the link.
+  // -------------------------------------------------------------------------------------------
+  'How to solve Star Battle puzzles': 'How to solve Star Battle puzzles',
+  'None of this is specific to CowField. It is how Star Battle works, so it carries over to any board you meet, under any of the names the puzzle goes by. Roughly in the order the moves tend to come up.':
+    "None of this is specific to CowField. It's how Star Battle works, so it carries over to any board you meet, under any of the names the puzzle goes by. Roughly in the order the moves tend to come up.",
+  'Fence off every bull you place': 'Fence off every bull you place',
+  'The moment a bull goes down, the eight cells around it are dead. Dot them. This is the cheapest information on the board and it compounds, because those dots are what the next three techniques read. Turn on auto-place dots in Settings and the game does it for you.':
+    "The moment a bull goes down, the eight cells around it are dead. Dot them. This is the cheapest information on the board and it compounds, because those dots are what the next three techniques read. Turn on auto-place dots in Settings and the game does it for you.",
+  'A pen trapped in one row finishes that row': 'A pen trapped in one row finishes that row',
+  'If a whole pen sits inside a single row, that pen has to spend its bulls in that row, and the row has no quota left for anyone else. Every other cell in the row is dead. The same works for columns, and it works with the pen only mostly contained too: what matters is where its empty cells are, not its full shape.':
+    'If a whole pen sits inside a single row, that pen has to spend its bulls in that row, and the row has no quota left for anyone else. Every other cell in the row is dead. The same works for columns, and it works with the pen only mostly contained too: what matters is where its empty cells are, not its full shape.',
+  'Count pens against rows': 'Count pens against rows',
+  'The strongest move in the game, and the one people miss. If three pens fit entirely inside three rows, those three rows are spoken for: every cell in them belonging to a fourth pen is dead. It reads backwards as well. If three rows only ever touch three pens, those pens are used up and cannot appear anywhere else on the board.':
+    'The strongest move in the game, and the one people miss. If three pens fit entirely inside three rows, those three rows are spoken for: every cell in them belonging to a fourth pen is dead. It reads backwards as well. If three rows only ever touch three pens, those pens are used up and cannot appear anywhere else on the board.',
+  'Watch where a pen has room left': 'Watch where a pen has room left',
+  'A pen spread across five rows is not free if its remaining cells only sit in two of them. Needing two bulls in two rows claims both. On the two and three bull boards this is most of the work, because a pen with three bulls and barely enough room is almost solved already.':
+    "A pen spread across five rows isn't free if its remaining cells only sit in two of them. Needing two bulls in two rows claims both. On the two and three bull boards this is most of the work, because a pen with three bulls and barely enough room is almost solved already.",
+  'Start where the choices are fewest': 'Start where the choices are fewest',
+  'Small pens, corners and edges. A three-cell pen on a one-bull board offers three options; a twenty-cell pen offers twenty. Corners have fewer neighbours to rule out, so a bull placed there costs the board less. Open in the cramped part and the loose part solves itself later.':
+    'Small pens, corners and edges. A three-cell pen on a one-bull board offers three options; a twenty-cell pen offers twenty. Corners have fewer neighbours to rule out, so a bull placed there costs the board less. Open in the cramped part and the loose part solves itself later.',
+  'When nothing moves, assume one and follow it': 'When nothing moves, assume one and follow it',
+  'Take a pen with two options left, pick one, and push the consequences until something breaks. If it breaks, the cell you picked is dead and you have learned something real. Place actual bulls while you do this rather than working it out in your head: an illegal one lights up the instant it lands, so the board tells you where the chain failed.':
+    "Take a pen with two options left, pick one, and push the consequences until something breaks. If it breaks, the cell you picked is dead and you've learned something real. Place actual bulls while you do this rather than working it out in your head: an illegal one lights up the instant it lands, so the board tells you where the chain failed.",
+  'Go and try one': 'Go and try one',
+
+  // -------------------------------------------------------------------------------------------
+  // `/difficulties` — what actually changes between board sizes (P17). Its job is the long tail:
+  // "star battle 10x10", "star battle 2 stars", "15x15". It is also the honest place to say that
+  // extreme trades uniqueness for existing at all.
+  // -------------------------------------------------------------------------------------------
+  'Board sizes': 'Board sizes',
+  'Star Battle board sizes and difficulty': 'Star Battle board sizes and difficulty',
+  'Five sizes, 200 levels each. They are independent of one another, so there is nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.':
+    "Five sizes, 200 levels each. They're independent of one another, so there's nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.",
+  '200 levels': '200 levels',
+  '6x6 board, one bull per row, column and pen.': '6x6 board, one bull per row, column and pen.',
+  '8x8 board, one bull per row, column and pen.': '8x8 board, one bull per row, column and pen.',
+  '10x10 board, one bull per row, column and pen.': '10x10 board, one bull per row, column and pen.',
+  '10x10 board, two bulls per row, column and pen.': '10x10 board, two bulls per row, column and pen.',
+  '15x15 board, three bulls per row, column and pen.':
+    '15x15 board, three bulls per row, column and pen.',
+  'Where to start. Small enough to hold the whole board in your head, and the right place to work out what the dots are for.':
+    'Where to start. Small enough to hold the whole board in your head, and the right place to work out what the dots are for.',
+  'The same puzzle with more room to be wrong in. Rows stop being obvious and you start leaning on the pens.':
+    'The same puzzle with more room to be wrong in. Rows stop being obvious and you start leaning on the pens.',
+  'The size most Star Battle puzzles come in. If you have played this elsewhere, start here and it will feel familiar.':
+    "The size most Star Battle puzzles come in. If you've played this elsewhere, start here and it will feel familiar.",
+  'What most people mean by Two Not Touch. Two bulls per row changes the logic rather than the scale: finding one bull no longer finishes a row.':
+    'What most people mean by Two Not Touch. Two bulls per row changes the logic rather than the scale: finding one bull no longer finishes a row.',
+  '225 cells, 15 pens, 45 bulls. Expect to sit with one of these. They are also the boards that can have more than one valid answer.':
+    "225 cells, 15 pens, 45 bulls. Expect to sit with one of these. They're also the boards that can have more than one valid answer.",
+  'More bulls is not the same as a bigger board': 'More bulls is not the same as a bigger board',
+  'Going from 6x6 to 10x10 gives you more of the same work. Going from one bull to two changes what you are allowed to conclude. On a one-bull board, finding a row\'s bull retires the row. On a two-bull board it tells you almost nothing on its own, because the second one is still out there and the no-touching rule is the only thing constraining it. That is why hard is a real step up from medium and extreme is a real step up from hard.':
+    "Going from 6x6 to 10x10 gives you more of the same work. Going from one bull to two changes what you're allowed to conclude. On a one-bull board, finding a row's bull retires the row. On a two-bull board it tells you almost nothing on its own, because the second one is still out there and the no-touching rule is the only thing constraining it. That's why hard is a real step up from medium, and extreme is a real step up from hard.",
+  'One caveat on extreme. Light through hard are checked to have exactly one solution, so pure deduction always gets you there. At 15x15 with three bulls that check stops being achievable, and those boards are accepted with a small number of solutions instead. It means an extreme board can reach a point where you have to pick rather than deduce. Any legal arrangement wins, so you will never be told you found the wrong one.':
+    "One caveat on extreme. Light through hard are checked to have exactly one solution, so pure deduction always gets you there. At 15x15 with three bulls that check stops being achievable, and those boards are accepted with a small number of solutions instead. It means an extreme board can reach a point where you have to pick rather than deduce. Any legal arrangement wins, so you'll never be told you found the wrong one.",
+
   'Adjust your preferences here.':
     'Adjust your preferences here.',
   'Sound effects': 'Sound effects',
@@ -148,17 +255,17 @@ const en = {
   Music: 'Music',
   'Enable background music during play.': 'Enable background music during play.',
   'Dark mode': 'Dark mode',
-  'Use a darker visual theme for low-light play.':
-    'Use a darker visual theme for low-light play.',
+  'Switch to dark colours for playing in low light.':
+    'Switch to dark colours for playing in low light.',
   'Choose the language used across the game.': 'Choose the language used across the game.',
   'Switch to dark mode': 'Switch to dark mode',
   'Switch to light mode': 'Switch to light mode',
   'Take your time': 'Take your time',
-  'Hide visible timers so play can stay fully relaxed.':
-    'Hide visible timers so play can stay fully relaxed.',
+  'Hide the timers so nothing on screen is counting.':
+    'Hide the timers so nothing on screen is counting.',
   'Auto-place dots': 'Auto-place dots',
-  'Automatically place helper dots around confirmed bull placements.':
-    'Automatically place helper dots around confirmed bull placements.',
+  'Ring each bull with dots the moment you place it.':
+    'Ring each bull with dots the moment you place it.',
   'Player statistics': 'Player statistics',
   'Most progress': 'Most progress',
   'No data': 'No data',

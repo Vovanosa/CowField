@@ -117,7 +117,6 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      eyebrow={t('Login')}
       title={t('CowField')}
       description={t('Sign in with your email and password, create an account, or continue as a guest.')}
       message={visibleMessage}

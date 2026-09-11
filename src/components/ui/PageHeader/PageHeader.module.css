@@ -2,6 +2,10 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-4);
+  /* Keeps the title clear of the shell's control row, which floats in this corner. The value is
+     measured — see `--app-controls-gutter` in `App.css`. Below 768px the shell reserves a band above
+     the content instead, and the override further down zeroes this. */
+  padding-right: var(--app-controls-gutter, 0px);
 }
 
 .intro {
@@ -15,15 +19,6 @@
 
 .pageIntroCopy {
   max-width: 680px;
-}
-
-.pageIntroEyebrow {
-  margin-bottom: 12px;
-  color: var(--color-accent-strong);
-   
-  letter-spacing: 0.16em;
-  font-size: 0.76rem;
-  font-weight: 700;
 }
 
 .pageIntroDescription {
@@ -43,24 +38,39 @@
   }
 }
 
-/*
-  Below 640px the shell stops reserving a band for the profile control and collapses it to a 40px
-  circle in this corner instead (`App.css`, `ProfileMenu.module.css`), so the header shares its top
-  line with it. This keeps the eyebrow and title clear of that circle; the description is left alone
-  because it starts below the control and 52px is a lot of column to lose on a phone.
-*/
-@media (max-width: 640px) {
-  .pageIntroEyebrow,
-  .pageIntroTitle {
-    padding-right: 52px;
-  }
-}
-
 /* Pins the page title's appearance so `titleAs` only changes semantics. `h1` is styled globally as
-   the 4.4rem wordmark (`index.css`), which is right for the login screen and much too large here. */
+   the 4.4rem wordmark (`index.css`), which is right for the login screen and much too large here.
+
+   Grown from 1.45rem when the eyebrow above it was removed: it is now the only thing naming the
+   page, so it carries the weight the pair used to share.
+
+   **A fixed size, not a `clamp` against the viewport.** It was `clamp(1.4rem, 3.4vw, 2rem)`, which
+   held 2rem only above about 940px and then shrank continuously with the window — at 780px it was
+   already 1.65rem. Nothing needed it to: the title has a measured gutter and wraps rather than
+   running into the control row, so narrowing the window should cost it a line, not a type size. A
+   heading that changes size every time the window moves reads as unstable, which is what it looked
+   like. One deliberate step on phones, below, and nothing in between. */
 .pageIntroTitle {
   margin-bottom: 0;
-  font-size: 1.45rem;
-  line-height: 1.1;
+  font-size: 2rem;
+  line-height: 1.15;
   letter-spacing: normal;
+  /*
+    A heading's minimum width is its longest word, and on a 307px screen "difficulty" plus the back
+    button plus the control-row gutter added up to more than the column. Allowing a break is the only
+    thing that removes that floor. It costs nothing above phone widths, because a word only breaks
+    when there is genuinely nowhere else for it to go.
+  */
+  overflow-wrap: break-word;
+}
+
+/*
+  The one step. A phone is the only place where the column is genuinely too narrow for 2rem: at
+  320px a signed-out reader still has the theme and language pills in the corner, which leaves the
+  longest title on the site about 130px to wrap into.
+*/
+@media (max-width: 640px) {
+  .pageIntroTitle {
+    font-size: 1.4rem;
+  }
 }

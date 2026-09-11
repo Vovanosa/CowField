@@ -30,6 +30,7 @@ export {
 } from './validation'
 export {
   generateUniqueBoard,
+  getVerificationNodeBudget,
   type GeneratedBoard,
   type GenerateBoardOptions,
 } from './generator'

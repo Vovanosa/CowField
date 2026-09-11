@@ -1,11 +1,17 @@
 import type { MutableRefObject } from 'react'
 
 import { getBullsPerGroupForDifficulty } from '../../game/validation'
-import type { CellMark, Difficulty, LevelDefinition } from '../../game/types'
+import { isDifficulty } from '../../game/levels/constants'
+import type { CellMark, LevelDefinition } from '../../game/types'
 
 // `export type { CellMark } from '...'` alone re-exports without binding the name locally, so every
 // use of `CellMark` below was unresolved. Import it, then re-export for `useGameSession`.
 export type { CellMark }
+
+// Re-exported rather than redefined. `GamePage` and `useGameSession` both import it from here, and
+// the single definition lives beside `DIFFICULTIES` — three hand-written copies of this guard are
+// why `/levels/extreme` reported "Unknown difficulty." on a route that worked everywhere else.
+export { isDifficulty }
 export type DragMode = 'add-dot' | 'clear-dot' | null
 
 export type GameDragState = {
@@ -16,10 +22,6 @@ export type GameDragState = {
   dragged: boolean
   visited: Set<number>
   historyRecorded: boolean
-}
-
-export function isDifficulty(value: string | undefined): value is Difficulty {
-  return value === 'light' || value === 'easy' || value === 'medium' || value === 'hard'
 }
 
 export function getBullIndexes(marks: CellMark[]) {

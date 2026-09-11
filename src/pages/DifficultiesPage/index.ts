@@ -1,0 +1,1 @@
+export { DifficultiesPage } from './DifficultiesPage'

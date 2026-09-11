@@ -17,6 +17,7 @@ const difficultyChipClassNames: Record<Difficulty, string> = {
   easy: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipEasy}`,
   medium: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipMedium}`,
   hard: styles.difficultyLinkChip,
+  extreme: `${styles.difficultyLinkChip} ${styles.difficultyLinkChipExtreme}`,
 }
 
 type DifficultyProgressSummary = {
@@ -115,7 +116,6 @@ export function LevelsPage() {
       <PageHeader
         backTo="/"
         backLabel={t('Back to home')}
-        eyebrow={t('Level Select')}
         title={t('Choose a difficulty to play.')}
       />
 

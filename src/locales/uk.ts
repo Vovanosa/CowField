@@ -3,50 +3,64 @@
 
   // Лендінг (P14, пункт 84) — єдина сторінка, яку бачить незнайомець або пошуковий робот.
   // Жанрові слова (Star Battle, Two Not Touch) залишені англійською навмисно: саме їх шукають.
-  'Star Battle logic puzzle': 'Логічна головоломка Star Battle',
-  'CowField — a calm Star Battle puzzle': 'CowField — спокійна головоломка Star Battle',
-  'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.':
-    'Грайте в CowField — спокійну логічну головоломку Star Battle (Two Not Touch). 800 перевірених рівнів на чотирьох складностях, у кожного рівно один розв’язок. Без реєстрації та без поспіху.',
-  'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.':
-    'Поле, поділене на кольорові загони. Розставте биків так, щоб у кожному рядку, кожному стовпці й кожному загоні була потрібна кількість — і щоб жодні два бики не торкалися, ні збоку, ні по діагоналі через кут.',
+  //
+  // Переписано 2026-09-11 (P17) разом з англійською. Попередній варіант був перекладом рекламного
+  // тексту й читався як машинний: «спокійна», «затишна», урочисті кінцівки абзаців. Тут написано
+  // заново українською, а не перекладено: короткі речення впереміж із довгими, факт замість
+  // відчуття, жодних красивих завершальних фраз.
+  'Star Battle, with cows': 'Star Battle, але з коровами',
+  'Play Star Battle online, free - CowField': 'Star Battle онлайн, безкоштовно - CowField',
+  'Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one.':
+    'Грайте у Star Battle онлайн безкоштовно, без реєстрації. 1000 головоломок від 6x6 до 15x15, логічна гра, відома також як Two Not Touch. Таймер лише за бажанням.',
+  'A grid of coloured pens. Every row, every column and every pen needs the same number of bulls, and no two bulls may touch, not even at a corner. That is the whole game. If you have played Star Battle or Two Not Touch before, you already know it.':
+    'Поле з кольорових загонів. У кожному рядку, кожному стовпці й кожному загоні має бути однакова кількість биків, і жодні два бики не можуть торкатися, навіть кутами. Оце і вся гра. Якщо ви вже грали у Star Battle чи Two Not Touch, ви це знаєте.',
   'Play now': 'Грати зараз',
   'Starting...': 'Запускаємо...',
   'Sign in to save your progress': 'Увійти, щоб зберігати прогрес',
-  'No account, no email. Play as a guest right away.':
-    'Без акаунта й без email. Можна грати як гість просто зараз.',
-  'Waking the server — the first visit after a quiet spell takes a moment.':
-    'Пробуджуємо сервер — перший візит після паузи триває трохи довше.',
+  "You don't need an account. Click play and you're on a board.":
+    'Акаунт не потрібен. Тиснете «Грати» — і ви вже на полі.',
+  'The server is waking up. First visit of the day takes a few seconds.':
+    'Сервер прокидається. Перший візит за день триває кілька секунд.',
   "Couldn't start a game. Check your connection and try again.":
     'Не вдалося почати гру. Перевірте з’єднання та спробуйте ще раз.',
-  'The rules, in three lines': 'Правила у трьох рядках',
-  'Every row, column and pen holds its exact quota of bulls.':
-    'У кожному рядку, стовпці й загоні — рівно потрібна кількість биків.',
-  'No two bulls may touch — not side by side, not diagonally.':
-    'Жодні два бики не можуть торкатися — ні збоку, ні по діагоналі.',
-  'Dots are notes for yourself. They never count as bulls.':
-    'Точки — це нотатки для себе. Вони ніколи не рахуються як бики.',
+  'How to play': 'Як грати',
+  'Every row, column and pen gets the same number of bulls. One on the small boards, three on the biggest.':
+    'У кожному рядку, стовпці й загоні однакова кількість биків: один на малих полях, три на найбільшому.',
+  'Two bulls can never touch, including diagonally at a corner.':
+    'Два бики ніколи не торкаються, зокрема й кутом по діагоналі.',
+  "Dots are your own notes. They don't count as bulls.":
+    'Точки — ваші власні нотатки. Биками вони не рахуються.',
   'Read the full rules': 'Читати повні правила',
-  'Made to be unhurried': 'Створено без поспіху',
-  'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.':
-    'Тут ніщо вас не підганяє. Якщо хочете позмагатися із собою — працює таймер, а режим «не спішіть» вимикає його повністю. Бик, який порушує правило, підсвічується відразу, тож ви можете перевірити ідею й побачити відповідь, а не сумніватися. Підсвітка показує лише те, що заборонено, і ніколи те, що правильно, — тож головоломка залишається вашою.',
-  'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.':
-    'Усього 800 рівнів на чотирьох складностях: light на полі 6x6, easy на 8x8, medium на 10x10 і hard на 10x10 з двома биками в кожному рядку, стовпці та загоні. Кожне поле згенеровано й перевірено так, щоб мати рівно один розв’язок, тому навіть безнадійний на вигляд рівень завжди можна вирішити логікою. Гравцям Star Battle ця головоломка відома і як Two Not Touch.',
-  '800 levels': '800 рівнів',
-  '4 difficulties': '4 складності',
-  'Exactly one solution each': 'Рівно один розв’язок у кожного',
-  'No account needed': 'Без реєстрації',
-  'A CowField board: a grid of coloured pens with bulls and dot notes placed on it.':
-    'Поле CowField: сітка з кольоровими загонами, на якій розставлені бики та точки-нотатки.',
+  'Solving techniques': 'Прийоми розв’язування',
+  'No timer unless you want one': 'Таймер лише тоді, коли ви його хочете',
+  'There is a clock if you want to race yourself, and a setting that hides it. Put a bull somewhere it breaks a rule and it lights up immediately, so you can try an idea and watch what happens. It will not tell you what is correct, only what is illegal. The solving is left to you.':
+    'Годинник є, якщо хочете позмагатися із собою, і є налаштування, яке його ховає. Поставте бика туди, де він порушує правило, і він одразу підсвітиться, тож ідею можна перевірити просто на полі. Гра не підкаже, що правильно, лише те, що заборонено. Розв’язувати вам.',
+  '1,000 levels, five board sizes': '1000 рівнів, п’ять розмірів поля',
+  'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, and hard is 10x10 with two. Extreme is 15x15 with three, which is a different puzzle rather than a bigger one.':
+    'По двісті рівнів на кожній із п’яти складностей. Light — 6x6 з одним биком у рядку, стовпці й загоні. Easy — 8x8, medium — 10x10, hard — 10x10 з двома. Extreme — 15x15 з трьома, і це радше інша головоломка, ніж просто більша.',
+  'Every board is generated and then solved again to check it. Light through hard have exactly one answer, so they can always be reasoned out. Extreme boards can have a few, which is the honest trade for having 15x15 boards at all. Any arrangement that follows the rules counts as a win.':
+    'Кожне поле генерується, а потім розв’язується ще раз для перевірки. Від light до hard розв’язок рівно один, тож їх завжди можна вивести логікою. У extreme їх може бути кілька, і це чесна плата за те, щоб поля 15x15 узагалі існували. Перемогою вважається будь-яке розставлення, що не порушує правил.',
+  '1,000 levels': '1000 рівнів',
+  'Five difficulties': 'П’ять складностей',
+  'Up to 15x15': 'До 15x15',
+  'No sign-up': 'Без реєстрації',
+  'A CowField board: coloured pens with bulls and dot notes placed on them.':
+    'Поле CowField: кольорові загони з розставленими биками та точками-нотатками.',
 
   'Page not found': 'Сторінку не знайдено',
   'That link does not lead anywhere.': 'Це посилання нікуди не веде.',
   'Back to the start': 'На початок',
 
-  'The full rules of CowField: how bulls, rows, columns and pens work, what the dots are for, and how the four difficulties differ.':
-    'Повні правила CowField: як працюють бики, рядки, стовпці й загони, для чого потрібні точки та чим відрізняються чотири складності.',
+  'The rules of Star Battle, also called Two Not Touch: the same number of bulls in every row, column and region, and no two touching. Plus what the dots do.':
+    'Правила Star Battle, або Two Not Touch: однакова кількість биків у кожному рядку, стовпці й області, і жодних дотиків. А також для чого потрібні точки.',
+  'Six techniques for solving Star Battle and Two Not Touch puzzles: fencing off bulls, pens trapped in a row, counting pens against rows, and what to do when stuck.':
+    'Шість прийомів для розв’язування Star Battle і Two Not Touch: огорожа навколо бика, загін, замкнений у рядку, підрахунок загонів проти рядків і що робити, коли застрягли.',
+  'What changes between a 6x6 one-bull Star Battle board and a 15x15 three-bull one, how many levels each size has, and which difficulty to start with.':
+    'Що змінюється між полем 6x6 з одним биком і полем 15x15 з трьома, скільки рівнів на кожному розмірі та з якої складності почати.',
   'Loading...': 'Завантаження...',
   Hidden: 'Приховано',
   'Back to home': 'Назад на головну',
+  'Back to the rules': 'Назад до правил',
   'Back to levels': 'Назад до рівнів',
   'Back to all difficulties': 'Назад до всіх складностей',
   Restart: 'Почати заново',
@@ -66,7 +80,9 @@
   Easy: 'Проста',
   Medium: 'Середня',
   Hard: 'Складна',
+  Extreme: 'Екстремальна',
   'Home menu': 'Головне меню',
+  'Site links': 'Посилання сайту',
   'Puzzle board': 'Ігрове поле',
   'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}':
     'Рядок {{row}}, стовпець {{column}}, загін {{pen}}. {{state}}',
@@ -103,46 +119,123 @@
   'Edit level {{levelNumber}}': 'Редагувати рівень {{levelNumber}}',
   'This level is locked. Complete the previous level first to open it.':
     'Цей рівень заблокований. Спочатку пройдіть попередній рівень, щоб його відкрити.',
-  'About the game': 'Про гру',
-  'CowField is a calm logic puzzle about placing bulls on a colored board. It is meant to feel thoughtful and relaxing: no rushing, no stressing, just slowly noticing where each bull can and cannot go.':
-    'CowField — це спокійна логічна гра про розміщення биків на кольоровому полі. Вона задумана як уважний і розслаблений процес: без поспіху, без стресу, лише поступове розуміння того, де бик може стояти, а де ні.',
+  // `/about` — сторінка правил. Переписано разом з англійською (P17).
+  'How to play Star Battle': 'Як грати у Star Battle',
+  'CowField is a Star Battle puzzle. If you have seen the same game called Two Not Touch, that is this. The stars are bulls here and the regions are pens, but nothing about the rules changes.':
+    'CowField — це головоломка Star Battle. Якщо ви бачили ту саму гру під назвою Two Not Touch, то це вона. Зірки тут бики, області загони, але правила від цього не змінюються.',
   'How cell marks work': 'Як працюють позначки в клітинках',
   'Each cell changes like this:': 'Кожна клітинка змінюється так:',
   empty: 'порожньо',
   'dot note': 'точка-нотатка',
   bull: 'бик',
-  'The purpose of the game is simple: place the correct number of bulls so the whole board works at once. Every row must contain the required number of bulls, every column must contain the required number of bulls, and every colored pen must also contain the required number of bulls.':
-    'Мета гри проста: розставити правильну кількість биків так, щоб усе поле працювало одночасно. У кожному рядку має бути потрібна кількість биків, у кожному стовпці теж, і в кожному кольоровому загоні також.',
-  'There is one more important rule: bulls may not touch each other in any direction. That means not from the side, not from above or below, and not even diagonally at the corners. If two bulls are neighboring cells, the placement is wrong.':
-    'Є ще одне важливе правило: бики не можуть торкатися один одного в жодному напрямку. Тобто не збоку, не зверху чи знизу і навіть не по діагоналі через кут. Якщо два бики стоять у сусідніх клітинках, таке розміщення неправильне.',
-  'Light, easy, and medium use 1 bull per row, column, and pen.':
-    'На light, easy та medium потрібно по 1 бику в кожному рядку, стовпці й загоні.',
-  'Hard uses 2 bulls per row, column, and pen.':
-    'На hard потрібно по 2 бики в кожному рядку, стовпці й загоні.',
-  'Dots are just notes and never count as bulls.':
-    'Точки — це лише нотатки, вони ніколи не рахуються як бики.',
-  'You win with correct bull placement only.':
-    'Перемога залежить тільки від правильного розташування биків.',
-  'A good way to play is to use dots as reminders for yourself while you test ideas. You are free to place bulls even when they are wrong: any bull that breaks a rule is highlighted straight away, so you can spot it and move on. You do not need to clean up every unused cell before finishing a level.':
-    'Зручний спосіб грати — ставити точки як підказки для себе, поки ви перевіряєте ідеї. Биків можна ставити навіть у неправильні місця: бик, який порушує правило, підсвічується відразу, тож ви це побачите й рухатиметеся далі. Перед завершенням рівня не потрібно зачищати всі невикористані клітинки.',
-  'In Settings, you can make play more comfortable: turn on take your time to hide visible timers, use auto-place dots for extra note help, switch to dark mode, and enable sound effects or music with volume controls. If you are playing as a guest, take your time stays on automatically.':
-    'У налаштуваннях можна зробити гру комфортнішою: увімкнути режим без поспіху, щоб сховати таймер, скористатися автопозначками точками, перейти на темну тему та ввімкнути звукові ефекти або музику з регулюванням гучності. Якщо ви граєте як гість, режим без поспіху вмикається автоматично.',
-  'The fun of CowField is in that quiet moment when a crowded board starts making sense. Start small, trust the rules, and let the pattern appear one bull at a time.':
-    'Найприємніший момент у CowField — це коли заплутане поле раптом починає складатися в зрозумну картину. Починайте з малого, довіряйте правилам і дозвольте візерунку з’являтися по одному бику за раз.',
+  'Every board has a number attached to it, depending on its size: one, two or three. Each row has to end up holding exactly that many bulls. So does each column, and so does each coloured pen. Get all three to agree at once and the level is done.':
+    'У кожного поля є своє число, залежно від розміру: один, два або три. У кожному рядку має опинитися рівно стільки биків. У кожному стовпці так само, і в кожному кольоровому загоні теж. Щойно всі три умови сходяться, рівень пройдено.',
+  'The second rule is the one that turns it into a puzzle. No two bulls may sit in neighbouring cells. Side by side, one above the other, or touching at a single corner, all of it is out. Every bull needs an empty ring around it.':
+    'Друге правило й перетворює це на головоломку. Два бики не можуть стояти в сусідніх клітинках. Ні поруч, ні один над одним, ні дотикаючись кутом. Навколо кожного бика потрібне порожнє кільце.',
+  'Light, easy and medium: one bull per row, column and pen.':
+    'Light, easy і medium: один бик у рядку, стовпці й загоні.',
+  'Hard: two. Extreme: three, on a 15x15 board.': 'Hard: два. Extreme: три, на полі 15x15.',
+  'Dots are notes. They never count as bulls.':
+    'Точки — це нотатки. Биками вони не рахуються ніколи.',
+  'You win on bull placement alone.': 'Перемога залежить лише від розставлення биків.',
+  'Dots are how most people actually solve these. Mark the cells you have ruled out and the board narrows itself. You can also just place a bull you are unsure about: if it breaks a rule it lights up, and you can take it straight back. Leftover dots do not matter at the end, so there is no tidying up to do.':
+    'Саме точками більшість і розв’язує ці головоломки. Позначте клітинки, які ви вже відкинули, і поле звузиться само. Можна й просто поставити бика, у якому ви не впевнені: якщо він порушує правило, то підсвітиться, і його можна одразу прибрати. Зайві точки наприкінці ні на що не впливають, тож прибирати за собою не треба.',
+  'Settings has a few things worth finding. Take your time hides the timers. Auto-place dots rings each bull for you, which saves a lot of clicking on the big boards. There is a dark theme, and sound and music have their own volumes. Guests get take your time switched on and locked.':
+    'У налаштуваннях є кілька корисних речей. Режим «не спішіть» ховає таймери. Автоточки самі обводять кожного бика, а це економить купу кліків на великих полях. Є темна тема, а звук і музика мають окрему гучність. Гостям «не спішіть» вмикається автоматично й не вимикається.',
+  'I built CowField because I wanted a puzzle I could think through at my own pace. Nothing to keep up with, nothing waiting for me if I put it down for a month.':
+    'Я зробив CowField, бо хотів головоломку, над якою можна думати у власному темпі. Нічого не треба підтримувати, і ніщо не чекає на вас, якщо відкласти її на місяць.',
+
+  'Common questions': 'Часті запитання',
+  'What is Star Battle?': 'Що таке Star Battle?',
+  'A logic puzzle on a grid split into coloured regions. You place a fixed number of stars in every row, every column and every region, and no two stars may touch, including diagonally. In CowField the stars are bulls and the regions are pens.':
+    'Логічна головоломка на полі, поділеному на кольорові області. Ви ставите однакову кількість зірок у кожному рядку, кожному стовпці й кожній області, і жодні дві зірки не торкаються, зокрема й по діагоналі. У CowField зірки це бики, а області загони.',
+  'Is Two Not Touch the same puzzle?': 'Two Not Touch — це та сама головоломка?',
+  'Yes. Two Not Touch is the name usually given to the two-star version on a 10x10 board, which is what hard is here. Same rules, different name.':
+    'Так. Two Not Touch зазвичай називають версію з двома зірками на полі 10x10, а це тут складність hard. Правила ті самі, назва інша.',
+  'Do I need an account?': 'Чи потрібен акаунт?',
+  'No. The guest button drops you straight onto a board and keeps your progress in your browser. An account only matters if you want that progress on a second device.':
+    'Ні. Кнопка гостя одразу відкриває поле, а прогрес зберігається у вашому браузері. Акаунт потрібен лише тоді, коли цей прогрес має бути ще й на другому пристрої.',
+  'Is it free?': 'Це безкоштовно?',
+  'Yes, all 1,000 levels. No ads, and nothing to buy.':
+    'Так, усі 1000 рівнів. Без реклами й без покупок.',
+  'Does every puzzle have one solution?': 'Чи в кожної головоломки один розв’язок?',
+  'Light, easy, medium and hard do, so every one of them can be reasoned out without guessing. Extreme boards can have more than one valid answer. Whichever you find, if it follows the rules it wins.':
+    'У light, easy, medium і hard так, тому кожну з них можна вивести без здогадок. Поля extreme можуть мати більше однієї правильної відповіді. Яку б ви не знайшли, якщо вона не порушує правил, це перемога.',
+  'Can I play on a phone?': 'Чи можна грати на телефоні?',
+  'Yes. The small boards fit a phone screen comfortably. For 10x10 and 15x15 turn the phone sideways, or use a tablet, since 225 cells need the room.':
+    'Так. Малі поля добре вміщаються на екран телефона. Для 10x10 і 15x15 поверніть телефон горизонтально або візьміть планшет: 225 клітинок потребують місця.',
+
+  // `/how-to-solve` — прийоми розв’язування (P17). Це техніка самого Star Battle, а не інструкція
+  // до застосунку, тому вона працює на будь-якому полі.
+  'How to solve Star Battle puzzles': 'Як розв’язувати головоломки Star Battle',
+  'None of this is specific to CowField. It is how Star Battle works, so it carries over to any board you meet, under any of the names the puzzle goes by. Roughly in the order the moves tend to come up.':
+    'Нічого з цього не стосується лише CowField. Так влаштований Star Battle, тому все переноситься на будь-яке поле під будь-якою з назв цієї головоломки. Приблизно в тому порядку, у якому ці ходи з’являються.',
+  'Fence off every bull you place': 'Обгородіть кожного поставленого бика',
+  'The moment a bull goes down, the eight cells around it are dead. Dot them. This is the cheapest information on the board and it compounds, because those dots are what the next three techniques read. Turn on auto-place dots in Settings and the game does it for you.':
+    'Щойно бик став на поле, вісім клітинок навколо нього мертві. Поставте там точки. Це найдешевша інформація на полі, і вона накопичується, бо саме ці точки читають наступні три прийоми. Увімкніть автоточки в налаштуваннях, і гра робитиме це за вас.',
+  'A pen trapped in one row finishes that row': 'Загін, замкнений в одному рядку, закриває цей рядок',
+  'If a whole pen sits inside a single row, that pen has to spend its bulls in that row, and the row has no quota left for anyone else. Every other cell in the row is dead. The same works for columns, and it works with the pen only mostly contained too: what matters is where its empty cells are, not its full shape.':
+    'Якщо цілий загін міститься в межах одного рядка, він мусить витратити своїх биків саме там, і на інших у рядка місця вже не лишається. Усі інші клітинки цього рядка мертві. Так само працює зі стовпцями, і так само працює, коли загін вміщається не повністю: важливо, де його порожні клітинки, а не яка в нього форма.',
+  'Count pens against rows': 'Рахуйте загони проти рядків',
+  'The strongest move in the game, and the one people miss. If three pens fit entirely inside three rows, those three rows are spoken for: every cell in them belonging to a fourth pen is dead. It reads backwards as well. If three rows only ever touch three pens, those pens are used up and cannot appear anywhere else on the board.':
+    'Найсильніший хід у грі й водночас той, який пропускають. Якщо три загони повністю вміщаються у три рядки, ці рядки вже зайняті: кожна клітинка в них, що належить четвертому загону, мертва. Працює і навпаки. Якщо три рядки перетинаються лише з трьома загонами, ці загони витрачені й більше ніде на полі не з’являться.',
+  'Watch where a pen has room left': 'Дивіться, де в загону лишилося місце',
+  'A pen spread across five rows is not free if its remaining cells only sit in two of them. Needing two bulls in two rows claims both. On the two and three bull boards this is most of the work, because a pen with three bulls and barely enough room is almost solved already.':
+    'Загін, розтягнутий на п’ять рядків, не вільний, якщо його вільні клітинки лишилися лише у двох із них. Два бики у двох рядках забирають обидва. На полях із двома й трьома биками це і є основна робота, бо загін із трьома биками й ледве достатнім місцем уже майже розв’язаний.',
+  'Start where the choices are fewest': 'Починайте там, де вибору найменше',
+  'Small pens, corners and edges. A three-cell pen on a one-bull board offers three options; a twenty-cell pen offers twenty. Corners have fewer neighbours to rule out, so a bull placed there costs the board less. Open in the cramped part and the loose part solves itself later.':
+    'Малі загони, кути й краї. Загін із трьох клітинок на полі з одним биком дає три варіанти, загін із двадцяти дає двадцять. У кутів менше сусідів, яких треба відкидати, тож бик там коштує полю менше. Відкривайте тісну частину, а вільна розв’яжеться потім сама.',
+  'When nothing moves, assume one and follow it':
+    'Коли нічого не рухається, припустіть одне й пройдіть за ним',
+  'Take a pen with two options left, pick one, and push the consequences until something breaks. If it breaks, the cell you picked is dead and you have learned something real. Place actual bulls while you do this rather than working it out in your head: an illegal one lights up the instant it lands, so the board tells you where the chain failed.':
+    'Візьміть загін, де лишилося два варіанти, оберіть один і ведіть наслідки, доки щось не зламається. Якщо зламалося, обрана клітинка мертва, і ви дізналися щось справжнє. Ставте при цьому справжніх биків, а не тримайте все в голові: заборонений підсвітиться тієї ж миті, тож поле саме покаже, де ланцюг обірвався.',
+  'Go and try one': 'Спробувати на полі',
+
+  // `/difficulties` — що саме змінюється між розмірами поля (P17).
+  'Board sizes': 'Розміри поля',
+  'Star Battle board sizes and difficulty': 'Розміри поля та складність у Star Battle',
+  'Five sizes, 200 levels each. They are independent of one another, so there is nothing to unlock before you can try a bigger board. Within one difficulty the levels do run in order.':
+    'П’ять розмірів, по 200 рівнів на кожному. Вони не залежать один від одного, тож нічого не треба відкривати, щоб узятися за більше поле. А от усередині однієї складності рівні йдуть по порядку.',
+  '200 levels': '200 рівнів',
+  '6x6 board, one bull per row, column and pen.':
+    'Поле 6x6, один бик у рядку, стовпці й загоні.',
+  '8x8 board, one bull per row, column and pen.':
+    'Поле 8x8, один бик у рядку, стовпці й загоні.',
+  '10x10 board, one bull per row, column and pen.':
+    'Поле 10x10, один бик у рядку, стовпці й загоні.',
+  '10x10 board, two bulls per row, column and pen.':
+    'Поле 10x10, два бики в рядку, стовпці й загоні.',
+  '15x15 board, three bulls per row, column and pen.':
+    'Поле 15x15, три бики в рядку, стовпці й загоні.',
+  'Where to start. Small enough to hold the whole board in your head, and the right place to work out what the dots are for.':
+    'Звідси варто починати. Поле достатньо мале, щоб тримати його в голові цілком, і саме тут стає зрозуміло, навіщо потрібні точки.',
+  'The same puzzle with more room to be wrong in. Rows stop being obvious and you start leaning on the pens.':
+    'Та сама головоломка, але з більшим простором для помилки. Рядки перестають бути очевидними, і ви починаєте спиратися на загони.',
+  'The size most Star Battle puzzles come in. If you have played this elsewhere, start here and it will feel familiar.':
+    'Розмір, у якому Star Battle трапляється найчастіше. Якщо ви грали в це деінде, починайте тут, буде звично.',
+  'What most people mean by Two Not Touch. Two bulls per row changes the logic rather than the scale: finding one bull no longer finishes a row.':
+    'Саме це більшість і називає Two Not Touch. Два бики в рядку змінюють не масштаб, а логіку: знайдений бик більше не закриває рядок.',
+  '225 cells, 15 pens, 45 bulls. Expect to sit with one of these. They are also the boards that can have more than one valid answer.':
+    '225 клітинок, 15 загонів, 45 биків. Розраховуйте посидіти над таким. Це також ті поля, у яких може бути більше однієї правильної відповіді.',
+  'More bulls is not the same as a bigger board': 'Більше биків — це не те саме, що більше поле',
+  "Going from 6x6 to 10x10 gives you more of the same work. Going from one bull to two changes what you are allowed to conclude. On a one-bull board, finding a row's bull retires the row. On a two-bull board it tells you almost nothing on its own, because the second one is still out there and the no-touching rule is the only thing constraining it. That is why hard is a real step up from medium and extreme is a real step up from hard.":
+    'Перехід від 6x6 до 10x10 дає більше тієї самої роботи. Перехід від одного бика до двох змінює те, які висновки ви взагалі можете зробити. На полі з одним биком знайдений бик закриває рядок. На полі з двома це саме по собі не каже майже нічого, бо другий досі десь є, і єдине, що його обмежує, це заборона дотику. Тому hard справжній крок уперед від medium, а extreme такий самий крок від hard.',
+  'One caveat on extreme. Light through hard are checked to have exactly one solution, so pure deduction always gets you there. At 15x15 with three bulls that check stops being achievable, and those boards are accepted with a small number of solutions instead. It means an extreme board can reach a point where you have to pick rather than deduce. Any legal arrangement wins, so you will never be told you found the wrong one.':
+    'Одне застереження щодо extreme. Від light до hard кожне поле перевірено на рівно один розв’язок, тож чиста логіка завжди доводить до кінця. На 15x15 із трьома биками така перевірка стає недосяжною, і ці поля приймаються з невеликою кількістю розв’язків. Це означає, що на extreme можна дійти до місця, де доведеться обирати, а не виводити. Виграє будь-яке розставлення за правилами, тож вам ніколи не скажуть, що ви знайшли не ту відповідь.',
   'Sound effects': 'Звукові ефекти',
   'Enable sound effects.': 'Увімкнути звукові ефекти.',
   Music: 'Музика',
   'Enable background music during play.': 'Увімкнути фонову музику під час гри.',
   'Dark mode': 'Темна тема',
-  'Use a darker visual theme for low-light play.':
-    'Використовувати темну тему для гри в умовах слабкого освітлення.',
+  'Switch to dark colours for playing in low light.':
+    'Темні кольори для гри при слабкому освітленні.',
   'Choose the language used across the game.': 'Оберіть мову, яка буде використовуватися в усій грі.',
   'Take your time': 'Без поспіху',
-  'Hide visible timers so play can stay fully relaxed.':
-    'Приховати таймери, щоб можна було грати у комфортному темпі.',
+  'Hide the timers so nothing on screen is counting.':
+    'Сховати таймери, щоб на екрані нічого не рахувало час.',
   'Auto-place dots': 'Авто-розстановка точок',
-  'Automatically place helper dots around confirmed bull placements.':
-    'Автоматично ставити допоміжні точки навколо підтверджених биків.',
+  'Ring each bull with dots the moment you place it.':
+    'Обводити кожного бика точками одразу після ходу.',
   'Player statistics': 'Статистика гравця',
   'Most progress': 'Найбільший прогрес',
   'No data': 'Немає даних',

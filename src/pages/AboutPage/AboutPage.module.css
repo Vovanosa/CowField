@@ -77,6 +77,13 @@
   background: var(--color-board-dot);
 }
 
+/* The legend cell follows the theme (see `--color-board-empty-cell`), so the dot drawn inside it
+   has to as well. The global token cannot: on a real board that dot sits on a pen colour, which is
+   the same in both themes. */
+:root[data-theme='dark'] .legendDot {
+  background: rgba(232, 208, 170, 0.5);
+}
+
 .bullMarker {
   width: 24px;
   height: 24px;
@@ -100,9 +107,151 @@
   line-height: 1.4;
 }
 
-.closing {
+/* The two links out to the pages added in P17. */
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .inlineLink:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+/* The FAQ. A `<dl>`, because that is what a question-and-answer list is, with the entries wrapped
+   in a `<div>` so each pair can be spaced as a unit without a grid. */
+.faqHeading {
+  font-size: clamp(1.15rem, 3vw, 1.4rem);
   color: var(--color-heading);
-  font-style: italic;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.faqEntry {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-glass-soft);
+  overflow: hidden;
+}
+
+/* `list-item` is the default display of a `<summary>`, and it is what draws the native triangle.
+   Two properties are needed rather than one: WebKit uses its own pseudo-element for the marker and
+   ignores `list-style`. The chevron in the markup replaces both. */
+.faqQuestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+  transition: background var(--transition-fast);
+}
+
+.faqQuestion::-webkit-details-marker {
+  display: none;
+}
+
+@media (hover: hover) {
+  .faqQuestion:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+.faqChevron {
+  flex-shrink: 0;
+  color: var(--color-accent-strong);
+  transition: transform var(--transition-fast);
+}
+
+.faqEntry[open] .faqChevron {
+  transform: rotate(180deg);
+}
+
+.faqAnswer {
+  max-width: 68ch;
+  margin: 0;
+  /* The top value is the gap under the question. It was 0 and the answer sat right on top of the
+     summary, which made the two read as one block of text rather than as a question and its
+     answer. */
+  padding: var(--space-3) var(--space-4) var(--space-5);
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
+/*
+  The reveal, and **why it is not a height animation**.
+
+  It was one, through `::details-content` and `calc-size(auto, size)`, and it had to go. Height is a
+  layout property: the browser re-lays-out the panel, every entry below it, the page and the footer
+  on every single frame, and none of that can be handed to the compositor. Measured on this page at
+  120Hz, where the budget is 8.33ms rather than 60Hz's 16.7:
+
+      median 8.3ms, p95 8.4ms, worst 16.7ms, **3 frames over 12ms** — two vsync periods each
+
+  Layout was not expensive (21 layouts, 2.6ms in total, about 0.23ms a frame). It did not need to be:
+  a main-thread animation only has to be late once to skip a frame, and on a 120Hz display a skipped
+  frame is visible. Removing `content-visibility` from the transition made it worse rather than
+  better (6 frames over 12ms), which ruled out the discrete flip as the cause and left the height
+  itself.
+
+  **So nothing that animates here touches layout.** `opacity` and `transform` are composited: they
+  run off the main thread and hold their frame rate whatever the page is doing. The panel takes its
+  height in one layout — a single frame, which reads as instant rather than as a jump — and the
+  answer fades and slides into the space that just appeared. That is one layout instead of twenty-one.
+
+  A keyframe rather than a transition, because the content is only rendered once the panel is open
+  and there is no previous state to transition from. The global `prefers-reduced-motion` rule in
+  `index.css` already neutralises it.
+*/
+.faqEntry[open] .faqAnswer {
+  animation: faq-reveal 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes faq-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The one first-person line. Set apart from the FAQ above it, but deliberately not styled as a
+   pull quote: it is an aside, not a slogan. */
+.signature {
+  max-width: 62ch;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-soft);
+  color: var(--color-muted);
+  line-height: 1.75;
 }
 
 @media (max-width: 768px) {

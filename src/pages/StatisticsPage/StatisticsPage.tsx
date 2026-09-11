@@ -20,6 +20,7 @@ const difficultyCardClassNames: Record<Difficulty, string> = {
   easy: styles.difficultyCardEasy,
   medium: styles.difficultyCardMedium,
   hard: styles.difficultyCardHard,
+  extreme: styles.difficultyCardExtreme,
 }
 
 function formatFastestLevel(
@@ -141,7 +142,6 @@ export function StatisticsPage() {
         <PageHeader
           backTo="/"
           backLabel={t('Back to home')}
-          eyebrow={t('Statistics')}
           title={t('Player statistics')}
         />
 

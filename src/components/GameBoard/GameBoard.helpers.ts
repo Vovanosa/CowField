@@ -83,3 +83,25 @@ export function getBoardIntersectionStyle(
     backgroundColor: getIntersectionColor(level, row, column),
   }
 }
+
+/**
+ * How much of a cell the cow marker should fill, as a percentage — larger on larger grids.
+ *
+ * One fixed fraction cannot serve 6x6 and 15x15. The board keeps roughly the same overall size at
+ * every difficulty, so a 15x15 cell has barely a sixth of the area of a 6x6 one, and the fraction
+ * that reads as comfortable on `light` reads as a speck on `extreme`. The icon makes it worse than
+ * the number suggests: its `viewBox` is 24x20, so a *square* box at 56% renders the cow only about
+ * 47% of the cell tall.
+ *
+ * Growing with the grid keeps the marker's *apparent* size roughly even across difficulties. Both
+ * ends are clamped — a 6x6 board keeps exactly the size it has always had, and nothing grows far
+ * enough to crowd the cell borders.
+ *
+ * `basePercent` is the caller's own 6x6 size: the play board and the admin editor draw the cow at
+ * different sizes on purpose, and this preserves that difference instead of flattening it.
+ */
+export function getCowMarkerPercent(gridSize: number, basePercent: number) {
+  const grown = basePercent + (gridSize - 6) * 2.2
+
+  return Math.round(Math.min(80, Math.max(basePercent, grown)))
+}

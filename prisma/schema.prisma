@@ -27,6 +27,7 @@ enum Difficulty {
   easy
   medium
   hard
+  extreme
 }
 
 /// Neon Auth owns credentials. `password_hash`, `google_id` and the whole

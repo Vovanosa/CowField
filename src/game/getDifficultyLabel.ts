@@ -8,6 +8,7 @@ const difficultyLabels: Record<Difficulty, string> = {
   easy: 'Easy',
   medium: 'Medium',
   hard: 'Hard',
+  extreme: 'Extreme',
 }
 
 /**

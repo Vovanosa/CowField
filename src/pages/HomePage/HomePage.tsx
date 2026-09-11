@@ -34,6 +34,11 @@ export function HomePage() {
       icon: BookOpenText,
       variant: 'secondary',
     },
+    /*
+      No entry for `/how-to-solve` or `/difficulties`. `SiteFooter` carries both on every page,
+      including this one, so a button here would be a second link to the same place a few hundred
+      pixels above the first. The menu stays the four things you come to the home screen to *do*.
+    */
     {
       to: '/statistics',
       label: t('Statistics'),

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const difficultySchema = z.enum(['light', 'easy', 'medium', 'hard'])
+export const difficultySchema = z.enum(['light', 'easy', 'medium', 'hard', 'extreme'])
 
 export type Difficulty = z.infer<typeof difficultySchema>
 

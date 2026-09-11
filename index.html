@@ -21,33 +21,37 @@
 
       **CowField** is the product name everywhere — UI, titles, structured data, domain.
       P14 briefly used a different one (scope decision D1); it was dropped on 2026-09-10 over a
-      naming concern, and the single name now matches the domain, which is the simpler arrangement
-      anyway: a `<title>` that disagrees with the page's own `<h1>` makes a weak search result.
+      naming concern, and the single name now matches the domain.
+
+      **The brand goes last in the title (P17, 2026-09-11).** It used to go first, which spent the
+      part of a search result Google weights most on a word nobody searches for. The query-bearing
+      half leads now; see `brandedTitle` in `src/app/useDocumentMeta.ts`, which has to agree with
+      this file for the landing page.
     -->
-    <title>CowField — a calm Star Battle puzzle</title>
+    <title>Play Star Battle online, free - CowField</title>
     <meta
       name="description"
-      content="Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure."
+      content="Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one."
     />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#fffaf1" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="CowField" />
-    <meta property="og:title" content="CowField — a calm Star Battle puzzle" />
+    <meta property="og:title" content="Star Battle, with cows" />
     <meta
       property="og:description"
-      content="A calm Star Battle (Two Not Touch) logic puzzle. 800 levels, four difficulties, exactly one solution each. Play as a guest with no account."
+      content="A Star Battle puzzle, the game also called Two Not Touch. 1,000 levels from 6x6 to 15x15. Free, no account, and no timer unless you want one."
     />
     <meta property="og:image" content="https://cowfield.vercel.app/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="A CowField puzzle board of coloured pens with bulls placed on it" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CowField — a calm Star Battle puzzle" />
+    <meta name="twitter:title" content="Star Battle, with cows" />
     <meta
       name="twitter:description"
-      content="A calm Star Battle (Two Not Touch) logic puzzle. 800 levels, four difficulties, exactly one solution each. Play as a guest with no account."
+      content="A Star Battle puzzle, the game also called Two Not Touch. 1,000 levels from 6x6 to 15x15. Free, no account, and no timer unless you want one."
     />
     <meta name="twitter:image" content="https://cowfield.vercel.app/og-image.png" />
 

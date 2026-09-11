@@ -29,6 +29,9 @@ const AboutPage = lazyPage(() =>
 const CreateLevelPage = lazyPage(() =>
   import('../pages/CreateLevelPage').then((module) => ({ default: module.CreateLevelPage })),
 )
+const DifficultiesPage = lazyPage(() =>
+  import('../pages/DifficultiesPage').then((module) => ({ default: module.DifficultiesPage })),
+)
 const DifficultyLevelsPage = lazyPage(() =>
   import('../pages/DifficultyLevelsPage').then((module) => ({
     default: module.DifficultyLevelsPage,
@@ -46,6 +49,9 @@ const GoogleAuthCallbackPage = lazyPage(() =>
   import('../pages/GoogleAuthCallbackPage/GoogleAuthCallbackPage').then((module) => ({
     default: module.GoogleAuthCallbackPage,
   })),
+)
+const HowToSolvePage = lazyPage(() =>
+  import('../pages/HowToSolvePage').then((module) => ({ default: module.HowToSolvePage })),
 )
 const LandingPage = lazyPage(() =>
   import('../pages/LandingPage').then((module) => ({ default: module.LandingPage })),
@@ -183,11 +189,16 @@ const router = createBrowserRouter([
             indexable: measured 2026-09-10, `/`, `/about`, `/levels` and a nonsense path all
             rendered the same login form, 31 words, one `<title>`.
 
-            It now guards only the routes that genuinely need a session. Two routes are public:
-            `/` (the landing page for a visitor, today's home page for a player) and `/about`,
-            which is the rules content and the best keyword page on the site. Everything else is
-            unchanged — a signed-out visitor still gets bounced to `/login` from `/levels`,
-            `/game`, `/settings` and `/statistics`.
+            It now guards only the routes that genuinely need a session. Four routes are public:
+            `/` (the landing page for a visitor, today's home page for a player), `/about`, which
+            is the rules content and the best keyword page on the site, and the two pages added in
+            P17, `/how-to-solve` and `/difficulties`. Everything else is unchanged — a signed-out
+            visitor still gets bounced to `/login` from `/levels`, `/game`, `/settings` and
+            `/statistics`.
+
+            Every public route needs three things outside this file or it is invisible: a rewrite
+            in `vercel.json` (or a reload 404s at the edge), a `<url>` in `public/sitemap.xml`, and
+            an entry in `PUBLIC_ROUTES` in `scripts/check-seo.mts`.
           */
           {
             index: true,
@@ -197,6 +208,16 @@ const router = createBrowserRouter([
             // Public. Verified to need no session: no `useAuth`, no fetch, no storage.
             path: 'about',
             element: withSuspense(<AboutPage />),
+          },
+          {
+            // Public, same bar as `/about`. Star Battle technique rather than app instructions.
+            path: 'how-to-solve',
+            element: withSuspense(<HowToSolvePage />),
+          },
+          {
+            // Public. What changes between board sizes, and the extreme caveat in plain words.
+            path: 'difficulties',
+            element: withSuspense(<DifficultiesPage />),
           },
           {
             /*

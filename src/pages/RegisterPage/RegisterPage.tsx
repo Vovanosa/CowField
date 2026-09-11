@@ -75,7 +75,6 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      eyebrow={t('Create account')}
       title={t('CowField')}
       description={t('Create a user account with your email and password.')}
       message={message}

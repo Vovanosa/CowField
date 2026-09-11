@@ -9,6 +9,7 @@
     "server:start": "tsx server/src/index.ts",
     "levels:audit": "tsx server/src/scripts/auditLevelSolutions.ts",
     "levels:generate": "tsx server/src/scripts/generateLevels.ts",
+    "levels:fill": "tsx server/src/scripts/fillLevels.ts",
     "sessions:prune": "tsx server/src/scripts/pruneSessions.ts",
     "postinstall": "prisma generate",
     "build": "tsc -b && vite build",

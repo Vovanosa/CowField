@@ -1,6 +1,7 @@
 import { BadgeCheck, RefreshCw, Save, SquarePen, Trash2 } from 'lucide-react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 
+import { getCowMarkerPercent } from '../../components/GameBoard/GameBoard.helpers'
 import { releaseImplicitPointerCapture } from '../../components/GameBoard/GameBoard.keyboard'
 import { CowIcon } from '../../components/icons'
 import { ToolChip } from '../../components/ToolChip'
@@ -8,6 +9,9 @@ import { Button, Panel } from '../../components/ui'
 import { getColorForId } from '../../game/levels'
 import type { LevelDraft } from '../../game/types'
 import styles from './CreateLevelPage.module.css'
+
+/** What a cow fills in the editor on a 6x6 board — bigger than in play, because it is the tool. */
+const EDITOR_COW_BASE_PERCENT = 68
 
 type ActiveTool = number | 'cow'
 
@@ -140,9 +144,13 @@ export function CreateLevelEditorPanel({
           <div className={styles.editorBoard} role="group" aria-label={t('Level color editor')}>
             <div
               className={styles.editorBoardGrid}
-              style={{
-                gridTemplateColumns: `repeat(${draft.gridSize}, minmax(0, 1fr))`,
-              }}
+              style={
+                {
+                  gridTemplateColumns: `repeat(${draft.gridSize}, minmax(0, 1fr))`,
+                  // Same reasoning as the play board: a fixed fraction of a 15x15 cell is a speck.
+                  '--editor-cow-size': `${getCowMarkerPercent(draft.gridSize, EDITOR_COW_BASE_PERCENT)}%`,
+                } as CSSProperties
+              }
             >
               {draft.pensByCell.map((colorId, cellIndex) => {
                 const row = Math.floor(cellIndex / draft.gridSize) + 1

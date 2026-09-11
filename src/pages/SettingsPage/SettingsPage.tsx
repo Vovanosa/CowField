@@ -147,7 +147,7 @@ export function SettingsPage() {
 
   function getSettingDescription(key: ToggleSettingKey) {
     if (key === 'darkModeEnabled') {
-      return t('Use a darker visual theme for low-light play.')
+      return t('Switch to dark colours for playing in low light.')
     }
 
     if (key === 'soundEffectsEnabled') {
@@ -159,10 +159,10 @@ export function SettingsPage() {
     }
 
     if (key === 'takeYourTimeEnabled') {
-      return t('Hide visible timers so play can stay fully relaxed.')
+      return t('Hide the timers so nothing on screen is counting.')
     }
 
-    return t('Automatically place helper dots around confirmed bull placements.')
+    return t('Ring each bull with dots the moment you place it.')
   }
 
   return (
@@ -195,6 +195,8 @@ export function SettingsPage() {
               title={t('Language')}
               description={t('Choose the language used across the game.')}
               controlBelow
+              /* Only rendered below 768px, and never last when it is, so it always wants its rule. */
+              showDivider
               control={
                 <div className={styles.languageControl} role="group" aria-label={t('Language')}>
                   {languageOptions.map((option) => (
@@ -218,7 +220,7 @@ export function SettingsPage() {
               }
             />
           </div>
-          {settingsConfig.map((setting) => {
+          {settingsConfig.map((setting, index) => {
             const isEnabled =
               isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
             const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
@@ -239,7 +241,13 @@ export function SettingsPage() {
                     ? (value) => handleVolumeChange(setting.volumeKey!, value)
                     : undefined
                 }
-                showDivider
+                /*
+                  Every row but the last draws the rule under itself. The last entry of
+                  `settingsConfig` is the one row here that is never conditional, so this holds at
+                  both widths without the page needing to know where the breakpoint is — see the
+                  note in `SettingsItem.module.css`.
+                */
+                showDivider={index < settingsConfig.length - 1}
               />
             )
 

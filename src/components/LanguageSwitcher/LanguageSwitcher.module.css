@@ -5,11 +5,79 @@
   gap: 10px;
 }
 
-/* Language and theme are duplicated into Settings below this width (`SettingsPage` gates on the
-   same 768px), so the pills come out of the corner and leave it to the profile menu. */
-@media (max-width: 768px) {
-  .languageSwitcher {
+/*
+  **The pills come out of the corner at 940px, not 768px.**
+
+  They used to hold that corner down to 768px and hand over to Settings below it. The trouble was
+  the band in between: measured 2026-09-11, the page title on `/difficulties` ran under this row by
+  1px at a 1024px viewport, 96px at 900px and 146px at 800px, and a signed-in name made it worse
+  because the profile pill grows with it.
+
+  So they leave earlier, and they leave for the **profile dropdown** rather than for Settings — see
+  the `menu` variant below. Settings is two navigations away and needs a session; the dropdown is one
+  click and is already where the shell keeps everything about you.
+
+  Only when there is a profile menu to move into. A signed-out visitor has no dropdown, so
+  `.app-shell-controls` marks whether one exists and this rule waits for it.
+*/
+@media (max-width: 940px) {
+  :global(.app-shell-controls[data-has-profile='true']) .languageSwitcher {
     display: none;
+  }
+}
+
+/* The other half of the same switch: the in-dropdown copy is dead weight while the pills are up. */
+.menuVariant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 941px) {
+  .menuVariant {
+    display: none;
+  }
+}
+
+.menuRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.menuLabel {
+  color: var(--color-muted);
+}
+
+.menuLanguages {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.menuLanguage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-glass-soft);
+  color: var(--color-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.menuLanguageActive {
+  border-color: var(--color-border-hover);
+  background: var(--color-accent-soft-strong);
+  color: var(--color-accent-strong);
+}
+
+@media (hover: hover) {
+  .menuLanguage:hover {
+    color: var(--color-heading);
   }
 }
 
@@ -96,6 +164,30 @@
 .languageOptionCode {
   font-size: 0.88rem;
   line-height: 1;
+}
+
+/*
+  The last rung of the ladder, and the one case the profile dropdown cannot cover.
+
+  A **signed-out** reader has no dropdown for these to move into, and no Settings either, so on a
+  phone this corner is the only way to change language or theme and the pills have to stay. What
+  they can do is stop carrying text: the flag says which language is active without "EN" beside it,
+  and the switch reads as a switch without extra padding. 145px becomes about 106px, which is the
+  difference between a usable title column on a 380px screen and a three-line heading.
+*/
+@media (max-width: 640px) {
+  .languageTriggerCode {
+    display: none;
+  }
+
+  .languageTrigger {
+    padding: 0 11px;
+  }
+
+  .themeTrigger {
+    min-width: 56px;
+    padding: 0 8px;
+  }
 }
 
 .languageMenu {

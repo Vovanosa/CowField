@@ -1,4 +1,4 @@
-import { BookOpenText, Play } from 'lucide-react'
+import { BookOpenText, Play, Rows3, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -8,15 +8,13 @@ import { useAuth } from '../../app/useAuth'
 import { StatusMessage } from '../../components/ui'
 import styles from './LandingPage.module.css'
 
-
-
 /**
  * Where both primary actions land — the guest start and a signed-in player's "back to your levels".
  *
  * "Play now" used to drop a new guest straight into `/game/light/1`. Landing on the difficulty
- * chooser instead costs one tap and shows them what they actually arrived at: four difficulties and
- * 800 levels, which is the thing the page just spent 259 words describing. Jumping into one 6x6 grid
- * hid all of it and gave them no idea where they were or how to get anywhere else.
+ * chooser instead costs one tap and shows them what they actually arrived at: five difficulties and
+ * a thousand levels, which is the thing the page just spent 250 words describing. Jumping into one
+ * 6x6 grid hid all of it and gave them no idea where they were or how to get anywhere else.
  */
 const LEVELS_PATH = '/levels'
 
@@ -42,9 +40,9 @@ export function LandingPage() {
   const isPlayer = auth.isAuthenticated
 
   useDocumentMeta({
-    title: t('CowField — a calm Star Battle puzzle'),
+    title: t('Play Star Battle online, free - CowField'),
     description: t(
-      'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+      'Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one.',
     ),
     // This page answers on `/welcome` too, so both URLs name `/` as the one to index.
     canonicalPath: '/',
@@ -84,17 +82,14 @@ export function LandingPage() {
   }
 
   const rules = [
-    t('Every row, column and pen holds its exact quota of bulls.'),
-    t('No two bulls may touch — not side by side, not diagonally.'),
-    t('Dots are notes for yourself. They never count as bulls.'),
+    t(
+      'Every row, column and pen gets the same number of bulls. One on the small boards, three on the biggest.',
+    ),
+    t('Two bulls can never touch, including diagonally at a corner.'),
+    t("Dots are your own notes. They don't count as bulls."),
   ]
 
-  const facts = [
-    t('800 levels'),
-    t('4 difficulties'),
-    t('Exactly one solution each'),
-    t('No account needed'),
-  ]
+  const facts = [t('1,000 levels'), t('Five difficulties'), t('Up to 15x15'), t('No sign-up')]
 
   return (
     <div className={`${styles.landing} page-shell page-shell-compact`}>
@@ -110,11 +105,11 @@ export function LandingPage() {
             '@context': 'https://schema.org',
             '@type': 'VideoGame',
             name: 'CowField',
-            alternateName: 'CowField — Star Battle puzzle',
+            alternateName: 'CowField Star Battle',
             description: t(
-              'Play CowField, a calm Star Battle (Two Not Touch) logic puzzle. 800 hand-checked levels across four difficulties, each with exactly one solution. No account needed, no timer pressure.',
+              'Play Star Battle online for free, no account needed. 1,000 puzzles from 6x6 to 15x15, the logic game also known as Two Not Touch. No timer unless you want one.',
             ),
-            genre: ['Puzzle', 'Logic puzzle', 'Star Battle'],
+            genre: ['Puzzle', 'Logic puzzle', 'Star Battle', 'Two Not Touch'],
             applicationCategory: 'Game',
             operatingSystem: 'Web browser',
             playMode: 'SinglePlayer',
@@ -133,11 +128,10 @@ export function LandingPage() {
       />
 
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>{t('Star Battle logic puzzle')}</p>
-        <h1 className={styles.title}>{t('CowField — a calm Star Battle puzzle')}</h1>
+        <h1 className={styles.title}>{t('Star Battle, with cows')}</h1>
         <p className={styles.lead}>
           {t(
-            'A grid divided into coloured pens. Place the bulls so every row, every column and every pen holds exactly its quota — and no two bulls ever touch, not side by side and not diagonally through a corner.',
+            'A grid of coloured pens. Every row, every column and every pen needs the same number of bulls, and no two bulls may touch, not even at a corner. That is the whole game. If you have played Star Battle or Two Not Touch before, you already know it.',
           )}
         </p>
 
@@ -181,8 +175,8 @@ export function LandingPage() {
         {isPlayer ? null : (
           <p className={styles.actionNote} aria-live="polite">
             {isSlow
-              ? t('Waking the server — the first visit after a quiet spell takes a moment.')
-              : t('No account, no email. Play as a guest right away.')}
+              ? t('The server is waking up. First visit of the day takes a few seconds.')
+              : t("You don't need an account. Click play and you're on a board.")}
           </p>
         )}
 
@@ -204,12 +198,12 @@ export function LandingPage() {
         height={630}
         loading="lazy"
         decoding="async"
-        alt={t('A CowField board: a grid of coloured pens with bulls and dot notes placed on it.')}
+        alt={t('A CowField board: coloured pens with bulls and dot notes placed on them.')}
       />
 
       <section className={styles.section} aria-labelledby="landing-rules">
         <h2 id="landing-rules" className={styles.sectionTitle}>
-          {t('The rules, in three lines')}
+          {t('How to play')}
         </h2>
         <ul className={styles.ruleList}>
           {rules.map((rule) => (
@@ -218,26 +212,50 @@ export function LandingPage() {
             </li>
           ))}
         </ul>
-        <Link className={styles.inlineLink} to="/about">
-          <span className={styles.actionIcon}>
-            <BookOpenText size={16} />
-          </span>
-          <span>{t('Read the full rules')}</span>
-        </Link>
+        {/*
+          Internal links to the two pages added in P17. They are the only route a crawler has into
+          them — nothing else on the public surface points there — and they are the reason those
+          pages can pick up the long-tail queries this one cannot serve on its own.
+        */}
+        <div className={styles.linkRow}>
+          <Link className={styles.inlineLink} to="/about">
+            <span className={styles.actionIcon}>
+              <BookOpenText size={16} />
+            </span>
+            <span>{t('Read the full rules')}</span>
+          </Link>
+          <Link className={styles.inlineLink} to="/how-to-solve">
+            <span className={styles.actionIcon}>
+              <Sparkles size={16} />
+            </span>
+            <span>{t('Solving techniques')}</span>
+          </Link>
+        </div>
       </section>
 
       <section className={styles.section} aria-labelledby="landing-calm">
         <h2 id="landing-calm" className={styles.sectionTitle}>
-          {t('Made to be unhurried')}
+          {t('No timer unless you want one')}
         </h2>
         <p className={styles.body}>
           {t(
-            'Nothing here rushes you. A clock runs if you want to race yourself, and "take your time" switches it off entirely. A bull that breaks a rule is highlighted the moment you place it, so you can try an idea and see the answer rather than second-guessing yourself — and it only ever tells you what is illegal, never what is correct, so the puzzle stays yours to solve.',
+            'There is a clock if you want to race yourself, and a setting that hides it. Put a bull somewhere it breaks a rule and it lights up immediately, so you can try an idea and watch what happens. It will not tell you what is correct, only what is illegal. The solving is left to you.',
+          )}
+        </p>
+      </section>
+
+      <section className={styles.section} aria-labelledby="landing-levels">
+        <h2 id="landing-levels" className={styles.sectionTitle}>
+          {t('1,000 levels, five board sizes')}
+        </h2>
+        <p className={styles.body}>
+          {t(
+            'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, and hard is 10x10 with two. Extreme is 15x15 with three, which is a different puzzle rather than a bigger one.',
           )}
         </p>
         <p className={styles.body}>
           {t(
-            'There are 800 levels across four difficulties: light on a 6x6 grid, easy on 8x8, medium on 10x10, and hard on 10x10 with two bulls in every row, column and pen. Every board is generated and then re-checked to have exactly one solution, so a level that looks impossible can always be reasoned out. Star Battle players may know this puzzle as Two Not Touch.',
+            'Every board is generated and then solved again to check it. Light through hard have exactly one answer, so they can always be reasoned out. Extreme boards can have a few, which is the honest trade for having 15x15 boards at all. Any arrangement that follows the rules counts as a win.',
           )}
         </p>
         <ul className={styles.factList}>
@@ -247,6 +265,12 @@ export function LandingPage() {
             </li>
           ))}
         </ul>
+        <Link className={styles.inlineLink} to="/difficulties">
+          <span className={styles.actionIcon}>
+            <Rows3 size={16} />
+          </span>
+          <span>{t('Star Battle board sizes and difficulty')}</span>
+        </Link>
       </section>
     </div>
   )

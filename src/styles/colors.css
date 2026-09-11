@@ -91,26 +91,64 @@
   --color-toggle-thumb: rgba(255, 255, 255, 0.94);
   --color-toggle-thumb-shadow: 0 2px 8px rgba(94, 70, 34, 0.16);
 
-  --color-pen-1: #dcecbf;
-  --color-pen-gap-1: #c7d7aa;
-  --color-pen-2: #f8b9af;
-  --color-pen-gap-2: #df9f95;
-  --color-pen-3: #ffe6a8;
-  --color-pen-gap-3: #e5cc8e;
-  --color-pen-4: #cbc7ef;
-  --color-pen-gap-4: #b1add6;
-  --color-pen-5: #a9c5e9;
-  --color-pen-gap-5: #91add1;
-  --color-pen-6: #99d4e8;
-  --color-pen-gap-6: #7fb8cb;
-  --color-pen-7: #bee2c0;
-  --color-pen-gap-7: #a6c9a8;
-  --color-pen-8: #a9acec;
-  --color-pen-gap-8: #9194d1;
-  --color-pen-9: #f2deef;
-  --color-pen-gap-9: #d8c4d5;
-  --color-pen-10: #f6c1ce;
-  --color-pen-gap-10: #dda8b5;
+  /*
+    The pen palette, brightened 2026-09-11.
+
+    The first set was chosen for calm and came out too pale. At 6x6 that read as soft; `extreme`
+    puts **fifteen** of them on one board where every pen touches four or five others, and pastels
+    separated by a few percent of chroma stop being tellable apart.
+
+    **Measured rather than eyeballed**, because "are these fifteen distinguishable" is not a question
+    the eye answers reliably. Scored as CIELAB dE between all 105 pairs, against two constraints:
+
+      - the closest pair has to stay far apart. Old palette: **dE 10.1**, with five pairs under 11.6.
+        This one: **dE 14.7**, and that is the only pair under 15.
+      - every pen is a background for the cow outline (#7e4f47) and the cell label, so none of them
+        may go dark. Worst contrast here is **3.35:1** against the cow and 4.36:1 against the ink;
+        the first brightening attempt put pen 8 at 2.99:1 and had to be lightened back.
+
+    Mean chroma went 21.7 -> 38.1, so this is genuinely most of the saturation increase with none of
+    the collisions. Lightness sits in L* 70-86: the floor is set by that contrast rule, which is what
+    makes fifteen hues in this band a tight fit and is why **13 are hues and two are neutrals** —
+    pen 14 warm, pen 15 cool. A fourth purple was tried there and cost 1.7 dE.
+
+    `-gap` is the same colour about 13% darker. It fills the seam between two cells of one pen, so it
+    has to read as the same pen while still showing the cell boundary.
+
+    Not overridden in the dark theme, deliberately: the board reads as a physical object sitting on
+    the page, so its pens keep their colour and the surface around them changes instead.
+  */
+  --color-pen-1: #c3e389;
+  --color-pen-gap-1: #a9c674;
+  --color-pen-2: #ff9d8e;
+  --color-pen-gap-2: #e0887a;
+  --color-pen-3: #ffc95f;
+  --color-pen-gap-3: #e0b052;
+  --color-pen-4: #c4a9f7;
+  --color-pen-gap-4: #ab93d7;
+  --color-pen-5: #8dc3f2;
+  --color-pen-gap-5: #7aaad4;
+  --color-pen-6: #6fd3e8;
+  --color-pen-gap-6: #61b8cb;
+  --color-pen-7: #8bdfa6;
+  --color-pen-gap-7: #79c391;
+  --color-pen-8: #a3b6fb;
+  --color-pen-gap-8: #8e9eda;
+  --color-pen-9: #f9a8d8;
+  --color-pen-gap-9: #d992bc;
+  --color-pen-10: #ff9fb8;
+  --color-pen-gap-10: #e08aa0;
+  /* 11-15 exist for `extreme`, which has fifteen pens. */
+  --color-pen-11: #ffb184;
+  --color-pen-gap-11: #e09a73;
+  --color-pen-12: #71d8c4;
+  --color-pen-gap-12: #62bdab;
+  --color-pen-13: #ecd977;
+  --color-pen-gap-13: #cfbe68;
+  --color-pen-14: #d9b49c;
+  --color-pen-gap-14: #bd9d88;
+  --color-pen-15: #a8bcd4;
+  --color-pen-gap-15: #92a4b8;
 
   --color-difficulty-light-border: rgba(203, 132, 150, 0.26);
   --color-difficulty-light-surface-start: rgba(255, 241, 245, 0.96);
@@ -127,6 +165,10 @@
   --color-difficulty-hard-border: rgba(155, 113, 49, 0.24);
   --color-difficulty-hard-surface-start: rgba(252, 245, 232, 0.96);
   --color-difficulty-hard-surface-end: rgba(245, 231, 203, 0.92);
+
+  --color-difficulty-extreme-border: rgba(120, 98, 138, 0.28);
+  --color-difficulty-extreme-surface-start: rgba(245, 239, 249, 0.96);
+  --color-difficulty-extreme-surface-end: rgba(233, 224, 243, 0.92);
 }
 
 :root[data-theme='dark'] {
@@ -219,4 +261,25 @@
   --color-difficulty-hard-border: rgba(155, 113, 49, 0.22);
   --color-difficulty-hard-surface-start: rgba(60, 45, 28, 0.8);
   --color-difficulty-hard-surface-end: rgba(41, 31, 20, 0.72);
+
+  /* `extreme` shipped with light-theme values only, so its cards stayed pale lavender in the dark
+     theme — the one bright rectangle on an otherwise dark page. Same treatment as the other four:
+     the hue is kept, the lightness is inverted. */
+  --color-difficulty-extreme-border: rgba(154, 124, 176, 0.24);
+  --color-difficulty-extreme-surface-start: rgba(56, 44, 71, 0.8);
+  --color-difficulty-extreme-surface-end: rgba(40, 32, 52, 0.72);
+
+  /*
+    The two board neutrals that are only ever seen on a page rather than on a finished board.
+
+    A saved level has every cell in a pen, so `empty-cell` and `gap` show up in exactly two places:
+    unpainted cells in the admin editor, and the three sample cells in the `/about` legend. At
+    #f7f0e4 those were cream blocks glowing on a near-black page.
+
+    **`--color-board-dot` is deliberately not here.** It is drawn on top of pen colours, which do not
+    change with the theme, so a light dot would vanish on a real board. The legend's own dot is
+    overridden in `AboutPage.module.css`, where the cell underneath it *is* dark.
+  */
+  --color-board-empty-cell: #2c2520;
+  --color-board-gap: #2a2a26;
 }

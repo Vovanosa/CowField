@@ -44,7 +44,6 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      eyebrow={t('Reset password')}
       title={t('CowField')}
       description={t('Enter your email and we will send you a password reset link.')}
       message={message}

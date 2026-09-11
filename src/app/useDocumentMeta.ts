@@ -38,20 +38,24 @@ export type DocumentMeta = {
   canonicalPath?: string
 }
 
-const DEFAULT_TITLE = 'CowField — a calm Star Battle puzzle'
+const DEFAULT_TITLE = 'Play Star Battle online, free - CowField'
 
 /**
- * `CowField — <page>`, the pattern for every page except the landing page, which owns the bare
- * branded title.
+ * `<page> - CowField`. The brand goes **last**.
+ *
+ * It used to go first, which spent the most valuable position in a search result on a word nobody
+ * searches for. Nobody types "CowField"; they type "star battle puzzle", "two not touch", "how to
+ * solve star battle". Google truncates a title around 60 characters and weights the front of it, so
+ * the query-bearing half has to be the half that survives. The brand still appears, which is what
+ * makes the result recognisable once someone has seen the site before.
  *
  * **One name, and it is the same as the domain.** P14 briefly branded the UI differently from the
  * repository and the host (scope decision D1); that was dropped on 2026-09-10 over a naming concern,
- * and the result is the arrangement that should have been chosen first — `<title>`, `<h1>`,
- * structured data and `cowfield.vercel.app` all agree, where before the title said one thing and the
- * page's own heading said another, which makes a weak search result and a confusing share.
+ * and the result is the arrangement that should have been chosen first: `<title>`, `<h1>`,
+ * structured data and `cowfield.vercel.app` all agree.
  */
 export function brandedTitle(pageTitle: string) {
-  return `CowField — ${pageTitle}`
+  return `${pageTitle} - CowField`
 }
 
 /** `<meta name="…">` or `<meta property="…">`, created on first use and reused after. */

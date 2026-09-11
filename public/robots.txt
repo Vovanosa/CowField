@@ -4,9 +4,9 @@
 # in `vercel.json`, and until this file existed the `/(.*)` catch-all answered /robots.txt with the
 # app's HTML — measured 2026-09-10: 200, text/html.
 #
-# Only two pages here are worth a crawler's time. Everything else needs a session, so a bot can only
-# ever see it redirect to a login form; those are disallowed rather than crawled and discarded, and
-# they carry `noindex` in the app as well.
+# Only the four public pages are worth a crawler's time. Everything else needs a session, so a bot
+# can only ever see it redirect to a login form; those are disallowed rather than crawled and
+# discarded, and they carry `noindex` in the app as well.
 
 User-agent: *
 
@@ -18,8 +18,8 @@ Disallow: /reset-password
 Disallow: /verify-email
 Disallow: /auth/
 
-# Behind the session guard. 800 level URLs are the reason this matters: crawl budget spent on them
-# is budget not spent on the two pages that can actually rank.
+# Behind the session guard. A thousand level URLs are the reason this matters: crawl budget on them
+# is budget not spent on the four pages that can actually rank.
 Disallow: /levels
 Disallow: /game/
 Disallow: /settings
@@ -27,5 +27,7 @@ Disallow: /statistics
 
 Allow: /
 Allow: /about
+Allow: /how-to-solve
+Allow: /difficulties
 
 Sitemap: https://cowfield.vercel.app/sitemap.xml

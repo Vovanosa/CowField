@@ -9,7 +9,7 @@
  * directly by tsx on the server.
  */
 
-export type Difficulty = 'light' | 'easy' | 'medium' | 'hard'
+export type Difficulty = 'light' | 'easy' | 'medium' | 'hard' | 'extreme'
 
 /**
  * A board's pen assignment: one pen id per cell, row-major. `0` means "not in a pen yet", which is
@@ -34,14 +34,29 @@ export function getGridSizeForDifficulty(difficulty: Difficulty) {
     case 'medium':
     case 'hard':
       return 10
+    case 'extreme':
+      return 15
     default:
       return 10
   }
 }
 
-/** How many bulls each row, column and pen must hold. `hard` is the only two-bull difficulty. */
+/**
+ * How many bulls each row, column and pen must hold.
+ *
+ * This doubles as the pen count: a board has `gridSize` rows each holding this many bulls, and every
+ * pen holds the same number, so the pen count always equals `gridSize`. `extreme` is 15x15 with 3
+ * per group — 15 pens, 45 bulls.
+ */
 export function getBullsPerGroupForDifficulty(difficulty: Difficulty) {
-  return difficulty === 'hard' ? 2 : 1
+  switch (difficulty) {
+    case 'extreme':
+      return 3
+    case 'hard':
+      return 2
+    default:
+      return 1
+  }
 }
 
 export function getCellRow(cellIndex: number, gridSize: number) {

@@ -6,8 +6,23 @@
   animation: fade-up-in 280ms var(--ease-emphasized) both;
 }
 
+/*
+  **A rule under a row, not over it**, which is what stops a stray line appearing above the first
+  setting.
+
+  The list is not a fixed set: Language and Dark mode only exist below 768px, where the frame's
+  control pills are hidden. With the rule on top, whichever row happened to come first drew a line
+  with nothing above it — visible on every screen, because the row that was first on a wide screen
+  had been given a divider meant to separate it from a row that is not rendered there.
+
+  `:first-child` cannot fix that, because a `display: none` sibling still counts as a child. A
+  bottom rule can: the **last** row in this list is never one of the conditional ones, so "every row
+  except the last" is a statement about the array, which `SettingsPage` can make without knowing
+  anything about breakpoints. Between two rows the result is identical — they sit flush, with no gap
+  for the difference to show in.
+*/
 .withDivider {
-  border-top: 1px solid rgba(148, 112, 38, 0.08);
+  border-bottom: 1px solid rgba(148, 112, 38, 0.08);
 }
 
 .settingMainRow {

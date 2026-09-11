@@ -11,9 +11,10 @@ import { LevelCard } from '../../components/LevelCard'
 import { Button, PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
+import { isDifficulty } from '../../game/levels/constants'
 import { getDifficultyLevelsPageData } from '../../game/storage/resources'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
-import type { BestTimesByLevel, Difficulty } from '../../game/types'
+import type { BestTimesByLevel } from '../../game/types'
 import styles from './DifficultyLevelsPage.module.css'
 import { useGridColumnCount } from './useGridColumnCount'
 
@@ -30,10 +31,6 @@ function getVisiblePageButtons(currentPage: number, totalPages: number, maxVisib
   const start = Math.max(Math.min(currentPage - halfWindow, totalPages - visibleButtons + 1), 1)
 
   return Array.from({ length: visibleButtons }, (_, index) => start + index)
-}
-
-function isDifficulty(value: string | undefined): value is Difficulty {
-  return value === 'light' || value === 'easy' || value === 'medium' || value === 'hard'
 }
 
 function DifficultyLevelsPageScreen() {
@@ -132,7 +129,6 @@ function DifficultyLevelsPageScreen() {
     return (
       <div className={[styles.page, 'page-shell'].join(' ')}>
         <PageHeader
-          eyebrow="Levels"
           title={t('Unknown difficulty.')}
           description={t('Choose one of the available difficulty groups to browse levels.')}
         />
@@ -150,7 +146,6 @@ function DifficultyLevelsPageScreen() {
       <PageHeader
         backTo="/levels"
         backLabel={t('Back to all difficulties')}
-        eyebrow={t('Levels')}
         title={t('{{difficulty}} Levels', { difficulty: getDifficultyLabel(t, difficulty) })}
       />
 

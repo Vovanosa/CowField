@@ -1,0 +1,1 @@
+export { HowToSolvePage } from './HowToSolvePage'

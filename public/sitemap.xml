@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Two URLs, and that is correct: they are the only pages that do not need a session. Listing level
-  URLs would list 800 pages that redirect a crawler to a login form, which is worse than listing
+  Four URLs, and that is correct: they are the only pages that do not need a session. Listing level
+  URLs would list a thousand pages that redirect a crawler to a login form, which is worse than
   nothing.
 
   The domain is hardcoded because a sitemap has to carry absolute URLs. **If the site moves to a
@@ -18,5 +18,15 @@
     <loc>https://cowfield.vercel.app/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/how-to-solve</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/difficulties</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

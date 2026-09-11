@@ -120,9 +120,10 @@
   animation: bull-pop 160ms var(--ease-emphasized);
 }
 
+/* Set per board by `getCowMarkerPercent`; the fallback is the value `light` has always used. */
 .playCowMarker {
-  width: 56%;
-  height: 56%;
+  width: var(--play-cow-size, 56%);
+  height: var(--play-cow-size, 56%);
 }
 
 .boardCellInvalid {

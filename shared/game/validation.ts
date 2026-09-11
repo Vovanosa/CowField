@@ -26,6 +26,17 @@ export type BoardValidationOptions = {
   countSolutions?: boolean
   /** Stop counting here. `2` answers "unique?"; a higher value gives the author a real number. */
   solutionLimit?: number
+  /**
+   * Stop after this much search effort rather than this many solutions. Unbounded when omitted.
+   *
+   * `solutionLimit` cannot bound the cost, because the expensive boards are the ones with *few*
+   * solutions: proving there is no further solution means exhausting the search. On a 15x15 board
+   * that is seconds to minutes, and this function is called from the **admin editor in the browser**
+   * and from the API on save — both of which would simply hang.
+   *
+   * See `truncated` on the result: a count reached under a node budget is a floor, not a total.
+   */
+  maxNodes?: number
 }
 
 /**
@@ -208,7 +219,10 @@ export function validateBoard(
     }
   }
 
-  const solved = solveBoard(board, bullsPerGroup, { limit: Math.max(2, options.solutionLimit ?? 2) })
+  const solved = solveBoard(board, bullsPerGroup, {
+    limit: Math.max(2, options.solutionLimit ?? 2),
+    maxNodes: options.maxNodes,
+  })
 
   // Unreachable while the layout checks above pass — a legal layout is a solution. Kept as a net,
   // because "this level cannot be finished" is the one thing that must never ship.

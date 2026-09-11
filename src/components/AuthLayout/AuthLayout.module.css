@@ -21,13 +21,6 @@
   text-align: center;
 }
 
-.eyebrow {
-  letter-spacing: 0.14em;
-   
-  color: var(--color-accent-strong);
-  font-weight: 700;
-}
-
 .title {
   font-size: clamp(2.2rem, 5vw, 3.6rem);
   line-height: 0.98;

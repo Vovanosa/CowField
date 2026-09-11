@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '../../app/useAuth'
+import { LanguageSwitcher } from '../LanguageSwitcher'
 import {
   Button,
   ControlButton,
@@ -129,6 +130,14 @@ export function ProfileMenu() {
               </div>
             </label>
           ) : null}
+
+          {/*
+            Theme and language, for the widths where the floating pills have stepped aside so they
+            do not crowd the page title. The component decides nothing: it renders at every width and
+            its own stylesheet hides whichever copy is not wanted, so there is no width hook here and
+            no state to keep in step.
+          */}
+          <LanguageSwitcher variant="menu" />
 
           {/*
             The only route into the landing page from inside the app.
