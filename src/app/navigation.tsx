@@ -108,3 +108,41 @@ export function useSwitchLanguage() {
     [location, navigate],
   )
 }
+
+type LanguageLinkProps = Omit<LinkProps, 'to' | 'hrefLang' | 'lang'> & {
+  /** The language to link to — named explicitly, unlike every other link in the app. */
+  language: SupportedLanguage
+}
+
+/**
+ * The same page in the named language, as a **real `<a href>`**.
+ *
+ * It cannot be the `Link` above. That one localises against the language of the page it is rendered
+ * on, so on `/about` a `<Link to="/about">` is a link to `/about` — asking it for the Ukrainian
+ * version gives back the English one. Like `useSwitchLanguage`, this names a target language, which
+ * is why it lives here beside it rather than in the components that call it.
+ *
+ * **It exists for the crawler as much as for the reader** (added 2026-09-19). Before it, nothing on
+ * the English site linked to `/uk` at all. `public/sitemap.xml` declares all twenty URLs and every
+ * page emits the `hreflang` set, but **`hreflang` is an alternates hint, not a path** — it tells a
+ * crawler which version to serve someone, not that a page exists to be found. The only other route
+ * to the Ukrainian tree was `LanguageSwitcher`, and that lived in a dropdown that is not in the DOM
+ * until it is opened. Googlebot follows links; it does not open menus. So `/uk` and `/uk/levels` sat
+ * uncrawled, and requesting indexing by hand hit Search Console's daily quota for a week straight.
+ *
+ * `hrefLang` and `lang` are set here and not overridable: `hrefLang` tells a crawler what is on the
+ * other end, and `lang` is what makes a screen reader pronounce "Українською" with Ukrainian
+ * phonetics instead of English ones.
+ */
+export function LanguageLink({ language, ...props }: LanguageLinkProps) {
+  const location = useLocation()
+
+  return (
+    <RouterLink
+      {...props}
+      to={mirrorLocationForLanguage(location, language)}
+      hrefLang={language}
+      lang={language}
+    />
+  )
+}

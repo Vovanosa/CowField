@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { Link } from '../../app/navigation'
+import { LanguageLink, Link, useLanguage } from '../../app/navigation'
+import type { SupportedLanguage } from '../../i18n'
 import styles from './SiteFooter.module.css'
 
 /**
@@ -27,8 +28,28 @@ const LINKS = [
   { to: '/difficulties', label: 'Board sizes' },
 ] as const
 
+/**
+ * Each language's name **in that language**, and deliberately not run through `t()`.
+ *
+ * A language link is the one label on a page that should not follow the page's language: a reader
+ * who cannot read this page is exactly the reader who needs to recognise the link out of it. Every
+ * bilingual site writes it this way, and it is also why `LanguageLink` sets `lang` on the anchor.
+ */
+const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  en: 'English',
+  uk: 'Українською',
+}
+
+/** Two languages, so "the other one" is a flip rather than a list. */
+const OTHER_LANGUAGE: Record<SupportedLanguage, SupportedLanguage> = {
+  en: 'uk',
+  uk: 'en',
+}
+
 export function SiteFooter() {
   const { t } = useTranslation()
+  const language = useLanguage()
+  const otherLanguage = OTHER_LANGUAGE[language]
 
   return (
     <footer className={styles.footer}>
@@ -38,6 +59,17 @@ export function SiteFooter() {
             {t(link.label)}
           </Link>
         ))}
+        {/*
+          The site's only crawlable path between the two language trees — see `LanguageLink`. It sits
+          in the footer because the footer is rendered once in `AppShell`, outside the keyed route
+          stage, so this link is in the DOM of every page in the shell without anyone opening a menu.
+        */}
+        <LanguageLink
+          className={`${styles.link} ${styles.languageLink}`}
+          language={otherLanguage}
+        >
+          {LANGUAGE_NAMES[otherLanguage]}
+        </LanguageLink>
       </nav>
     </footer>
   )

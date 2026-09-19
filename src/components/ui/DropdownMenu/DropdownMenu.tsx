@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
 
 import styles from './DropdownMenu.module.css'
+import { dropdownMenuItemClassName } from './dropdownMenuItemClassName'
 
 type DropdownMenuProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode
@@ -42,13 +43,7 @@ export function DropdownMenuItem({
   ...props
 }: DropdownMenuItemProps) {
   return (
-    <button
-      {...props}
-      type={type}
-      className={[styles.item, active ? styles.itemActive : '', className ?? '']
-        .filter(Boolean)
-        .join(' ')}
-    >
+    <button {...props} type={type} className={dropdownMenuItemClassName(active, className)}>
       {children}
     </button>
   )

@@ -2,7 +2,12 @@ export { Button } from './Button'
 export type { ButtonProps } from './Button'
 export { ControlButton } from './ControlButton'
 export type { ControlButtonProps } from './ControlButton'
-export { DropdownMenu, DropdownMenuItem, useDropdownMenu } from './DropdownMenu'
+export {
+  DropdownMenu,
+  DropdownMenuItem,
+  dropdownMenuItemClassName,
+  useDropdownMenu,
+} from './DropdownMenu'
 export { Field } from './Field'
 export { IconButton } from './IconButton'
 export type { IconButtonProps } from './IconButton'

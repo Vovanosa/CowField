@@ -27,6 +27,22 @@
   font-weight: 600;
 }
 
+/* The language link is a different kind of thing from the four page links, so it gets a separator
+   rather than sitting in the row as a fifth page. The border is on the inline start so it reads as
+   "and also, in the other language" — and it is dropped when the row wraps onto its own line, where
+   a leading rule against nothing looks like a mistake. */
+.languageLink {
+  padding-left: var(--space-5);
+  border-left: 1px solid var(--color-border-soft);
+}
+
+@media (max-width: 520px) {
+  .languageLink {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
 @media (hover: hover) {
   .link:hover {
     color: var(--color-accent-strong);

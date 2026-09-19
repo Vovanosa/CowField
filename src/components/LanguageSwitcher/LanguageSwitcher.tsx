@@ -2,13 +2,13 @@ import { MoonStar, SunMedium } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useLanguage, useSwitchLanguage } from '../../app/navigation'
+import { LanguageLink, useLanguage } from '../../app/navigation'
 import gbFlag from '../../assets/flags/gb.svg'
 import uaFlag from '../../assets/flags/ua.svg'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { SupportedLanguage } from '../../i18n'
-import { DropdownMenu, DropdownMenuItem, useDropdownMenu } from '../ui'
+import { DropdownMenu, dropdownMenuItemClassName, useDropdownMenu } from '../ui'
 import styles from './LanguageSwitcher.module.css'
 
 type LanguageSwitcherProps = {
@@ -39,7 +39,6 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
     route and re-render the Ukrainian page in English.
   */
   const language = useLanguage()
-  const switchLanguage = useSwitchLanguage()
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const languageMenuRef = useRef<HTMLDivElement | null>(null)
   const currentFlag = language === 'uk' ? uaFlag : gbFlag
@@ -54,6 +53,18 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
     onClose: closeLanguageMenu,
   })
 
+  /**
+   * Records the **preference for the next visit** — what `/` should redirect to when this reader
+   * comes back (decision D7). It is not what changes the page.
+   *
+   * The navigation is the `LanguageLink`'s own: it renders a real `<a href>` to this page in the
+   * other language, and `LanguageRoute` moves i18n to match the new URL. That split is the whole
+   * point — calling `i18n.changeLanguage` here instead would translate the UI while leaving the URL,
+   * and with it the canonical and the hreflang pair, describing the language the reader just left.
+   *
+   * It used to call `useSwitchLanguage` as well. A link navigates on its own, so doing both would
+   * navigate twice; the hook stays for `SettingsPage`, where the control genuinely is a control.
+   */
   function handleLanguageSelect(nextLanguage: SupportedLanguage) {
     closeLanguageMenu()
 
@@ -61,20 +72,10 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
       return
     }
 
-    /*
-      Two separate things, and they are not the same thing.
-
-      The save records the **preference for the next visit** — what `/` should redirect to when this
-      reader comes back (decision D7). The navigation changes the page being rendered right now, by
-      changing the URL; `LanguageRoute` moves i18n to match. Calling `i18n.changeLanguage` here as
-      well, which is what this used to do, would translate the UI while leaving the URL — and with it
-      the canonical and the hreflang pair — pointing at the other language.
-    */
     savePlayerSettings({
       ...settings,
       language: nextLanguage,
     })
-    switchLanguage(nextLanguage)
   }
 
   function handleThemeToggle() {
@@ -120,9 +121,9 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
           <span className={styles.menuLabel}>{t('Language')}</span>
           <div className={styles.menuLanguages} role="radiogroup" aria-label={t('Language')}>
             {(['en', 'uk'] as const).map((option) => (
-              <button
+              <LanguageLink
                 key={option}
-                type="button"
+                language={option}
                 className={
                   language === option
                     ? `${styles.menuLanguage} ${styles.menuLanguageActive}`
@@ -139,7 +140,7 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
                   aria-hidden="true"
                 />
                 <span className={styles.languageOptionCode}>{option === 'uk' ? 'UA' : 'EN'}</span>
-              </button>
+              </LanguageLink>
             ))}
           </div>
         </div>
@@ -187,26 +188,32 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
 
         {isLanguageMenuOpen ? (
           <DropdownMenu className={styles.languageMenu} role="menu" label={t('Language')} align="end">
-            <DropdownMenuItem
-              className={styles.languageOption}
-              active={language === 'en'}
+            {/*
+              Links rather than buttons, because choosing a language goes somewhere: the URL is real,
+              so these can be middle-clicked and copied. `role="menuitemradio"` stays — inside a
+              `role="menu"` an item has to carry a menu role, and keeping it means the keyboard and
+              screen-reader behaviour P10 established is unchanged.
+            */}
+            <LanguageLink
+              language="en"
+              className={dropdownMenuItemClassName(language === 'en', styles.languageOption)}
               onClick={() => handleLanguageSelect('en')}
               role="menuitemradio"
               aria-checked={language === 'en'}
             >
               <img className={styles.languageOptionFlag} src={gbFlag} alt="" aria-hidden="true" />
               <span className={styles.languageOptionCode}>EN</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className={styles.languageOption}
-              active={language === 'uk'}
+            </LanguageLink>
+            <LanguageLink
+              language="uk"
+              className={dropdownMenuItemClassName(language === 'uk', styles.languageOption)}
               onClick={() => handleLanguageSelect('uk')}
               role="menuitemradio"
               aria-checked={language === 'uk'}
             >
               <img className={styles.languageOptionFlag} src={uaFlag} alt="" aria-hidden="true" />
               <span className={styles.languageOptionCode}>UA</span>
-            </DropdownMenuItem>
+            </LanguageLink>
           </DropdownMenu>
         ) : null}
       </div>
