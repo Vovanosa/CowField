@@ -44,8 +44,7 @@
   'Five difficulties': 'П’ять складностей',
   'Up to 15x15': 'До 15x15',
   'No sign-up': 'Без реєстрації',
-  'A CowField board: coloured pens with bulls and dot notes placed on them.':
-    'Поле CowField: кольорові загони з розставленими биками та точками-нотатками.',
+  'Try it yourself.': 'Спробуйте самі.',
 
   'Page not found': 'Сторінку не знайдено',
   'That link does not lead anywhere.': 'Це посилання нікуди не веде.',

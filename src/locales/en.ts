@@ -54,8 +54,10 @@ const en = {
   'Five difficulties': 'Five difficulties',
   'Up to 15x15': 'Up to 15x15',
   'No sign-up': 'No sign-up',
-  'A CowField board: coloured pens with bulls and dot notes placed on them.':
-    'A CowField board: coloured pens with bulls and dot notes placed on them.',
+  // The caption under the landing page's board. Replaced the `og-image.png` alt text on 2026-09-20,
+  // when the picture of a board became a board. Kept short deliberately: the first version spelled
+  // out the whole gesture, which is instructions for something you find out by touching it.
+  'Try it yourself.': 'Try it yourself.',
 
   // The not-found view, which replaced a silent redirect to `/`.
   'Page not found': 'Page not found',

@@ -213,17 +213,6 @@
   }
 }
 
-/* The board preview — the Open Graph image, reused. Sits in its own soft frame so it reads as a
-   picture of the game rather than a banner pasted onto the page. */
-.preview {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-}
-
 /* The two internal links out of the rules block. Wraps on a phone rather than squeezing both onto
    one line, and keeps each one a 44px target. */
 .linkRow {

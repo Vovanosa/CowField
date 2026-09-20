@@ -1,9 +1,9 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
+import { reportUnexpectedError } from './app/reportUnexpectedError'
 import { readStoredValue, writeStoredValue } from './game/storage/browserStorage'
 import en from './locales/en'
-import uk from './locales/uk'
 
 export const supportedLanguages = ['en', 'uk'] as const
 export type SupportedLanguage = (typeof supportedLanguages)[number]
@@ -160,13 +160,21 @@ function applyDocumentLanguage(language: string) {
   document.documentElement.lang = normalizeLanguage(language)
 }
 
+/**
+ * **English is the only dictionary in the bundle** (2026-09-20).
+ *
+ * Both used to be, and both shipped to everyone: the entry graph carried 50 KB of `en.ts` and
+ * 65 KB of `uk.ts` on every first load, so an English reader downloaded the whole Ukrainian
+ * catalogue to never use a word of it. Measured in the built chunk: 28,536 Cyrillic characters.
+ *
+ * English stays static because it cannot be deferred — it is the `fallbackLng`, it carries the
+ * plural rules, and the keys *are* the English text, so the app is readable the moment it boots even
+ * if nothing else arrives. Ukrainian is fetched by `loadLanguage` below.
+ */
 void i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: en,
-    },
-    uk: {
-      translation: uk,
     },
   },
   lng: getInitialLanguage(),
@@ -180,5 +188,56 @@ void i18n.use(initReactI18next).init({
 
 applyDocumentLanguage(i18n.language)
 i18n.on('languageChanged', applyDocumentLanguage)
+
+
+/**
+ * The dictionaries that are **not** in the entry bundle, each behind its own `import()`.
+ *
+ * Written as a map keyed by language rather than a `switch`, so adding a third language is one line
+ * here and a file beside `en.ts` — and so the type stops anyone listing English, which is already
+ * loaded and must never be fetched twice.
+ */
+const LAZY_DICTIONARIES: Record<
+  Exclude<SupportedLanguage, 'en'>,
+  () => Promise<{ default: Record<string, unknown> }>
+> = {
+  uk: () => import('./locales/uk'),
+}
+
+/**
+ * Makes sure the given language's strings are in memory. Cheap and synchronous-ish for English and
+ * for a language already fetched; one chunk over the network otherwise.
+ */
+async function loadLanguage(language: SupportedLanguage) {
+  if (language === 'en' || i18n.hasResourceBundle(language, 'translation')) {
+    return
+  }
+
+  const dictionary = await LAZY_DICTIONARIES[language]()
+
+  i18n.addResourceBundle(language, 'translation', dictionary.default, true, true)
+}
+
+/**
+ * Switch the UI to a language, fetching its dictionary first if it is not here yet.
+ *
+ * **Every language change goes through this**, including the first one at boot: `init` sets `lng`
+ * from the URL, but with no bundle for it i18next resolves to English, and only `changeLanguage`
+ * after `addResourceBundle` makes it resolve again.
+ *
+ * **A failed fetch is a degraded page, not a broken one.** It is reported and then ignored, and the
+ * switch still happens: every key in this project *is* its English text, so a missing dictionary
+ * renders readable English rather than a grid of `translation.missing` — which is exactly why the
+ * English one is the half that stays in the bundle.
+ */
+export async function applyLanguage(language: SupportedLanguage) {
+  try {
+    await loadLanguage(language)
+  } catch (error) {
+    reportUnexpectedError(error, `loading the ${language} dictionary`)
+  }
+
+  await i18n.changeLanguage(language)
+}
 
 export default i18n

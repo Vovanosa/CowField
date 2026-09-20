@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from '../../app/navigation'
 import { useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
+import { SandboxBoard } from '../../components/SandboxBoard'
 import { StatusMessage } from '../../components/ui'
 import styles from './LandingPage.module.css'
 
@@ -205,22 +206,16 @@ export function LandingPage() {
       </section>
 
       {/*
-        The same file as the Open Graph image, reused rather than duplicated: it is a real screenshot
-        of a real board, produced by `npm run og:image`, so it cannot drift from the product.
+        A board instead of a picture of one, from 2026-09-20. This was `og-image.png`: a real 1200x630
+        screenshot, reused from the Open Graph tags so it could not drift from the product — and
+        105 KB, 37% of everything the page loaded, to show a visitor a photograph of the thing they
+        were being invited to try.
 
-        `loading="lazy"` with explicit dimensions: browsers load a lazy image immediately when it is
-        already in view, so this defers it only for the visitors who never scroll — and the width and
-        height stop it shifting the layout either way. The hero text stays the largest paint.
+        `SandboxBoard` renders light level 1 for real and lets them place marks on it. It costs a few
+        KB of JS that is shared with the game page, needs no network, and the file it replaced is
+        untouched in `public/` where the scrapers still read it.
       */}
-      <img
-        className={styles.preview}
-        src="/og-image.png"
-        width={1200}
-        height={630}
-        loading="lazy"
-        decoding="async"
-        alt={t('A CowField board: coloured pens with bulls and dot notes placed on them.')}
-      />
+      <SandboxBoard />
 
       <section className={styles.section} aria-labelledby="landing-rules">
         <h2 id="landing-rules" className={styles.sectionTitle}>

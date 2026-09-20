@@ -24,6 +24,7 @@ import { useAuth } from './useAuth'
 import { applyThemeMode } from '../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../game/usePlayerSettings'
 import i18n, {
+  applyLanguage,
   LANGUAGE_PATH_PREFIXES,
   getStoredLanguage,
   localizePath,
@@ -204,7 +205,13 @@ function LanguageRoute({ language }: { language: SupportedLanguage }) {
 
   useLayoutEffect(() => {
     if (normalizeLanguage(i18n.resolvedLanguage) !== activeLanguage) {
-      void i18n.changeLanguage(activeLanguage)
+      /*
+        `applyLanguage` and not `i18n.changeLanguage`: since 2026-09-20 only English is in the
+        bundle, so switching to Ukrainian has to fetch its dictionary first. The page therefore
+        stays in the language being left for the length of one chunk fetch rather than flashing
+        English at a `/uk` URL, and that only happens on the first switch of a session.
+      */
+      void applyLanguage(activeLanguage)
     }
   }, [activeLanguage])
 
