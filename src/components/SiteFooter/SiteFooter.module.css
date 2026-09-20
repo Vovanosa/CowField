@@ -27,6 +27,19 @@
   font-weight: 600;
 }
 
+/* Styled to sit in the row with the links, but it is a button: no border, no background, and the
+   font has to be restated because a button does not inherit it. */
+.shareButton {
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* The language link is a different kind of thing from the four page links, so it gets a separator
    rather than sitting in the row as a fifth page. The border is on the inline start so it reads as
    "and also, in the other language" — and it is dropped when the row wraps onto its own line, where

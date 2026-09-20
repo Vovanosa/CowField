@@ -1,7 +1,10 @@
+import { Share2 } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { LanguageLink, Link, useLanguage } from '../../app/navigation'
-import type { SupportedLanguage } from '../../i18n'
+import { localizePath, type SupportedLanguage } from '../../i18n'
+import { ShareDialog } from '../ShareDialog'
 import styles from './SiteFooter.module.css'
 
 /**
@@ -50,6 +53,20 @@ export function SiteFooter() {
   const { t } = useTranslation()
   const language = useLanguage()
   const otherLanguage = OTHER_LANGUAGE[language]
+  const [isShareOpen, setIsShareOpen] = useState(false)
+
+  /*
+    **The front door in the reader's own language**, so a Ukrainian player shares `/uk` and their
+    reader lands in Ukrainian — the same rule `ShareLevelButton` follows for a board.
+
+    Built from `window.location.origin` rather than a constant, because the three files that
+    hardcode the domain exist precisely so nothing else has to: a move to a custom domain must not
+    need a fourth.
+  */
+  const shareUrl =
+    typeof window === 'undefined'
+      ? ''
+      : `${window.location.origin}${localizePath('/', language)}`
 
   return (
     <footer className={styles.footer}>
@@ -70,7 +87,22 @@ export function SiteFooter() {
         >
           {LANGUAGE_NAMES[otherLanguage]}
         </LanguageLink>
+
+        {/*
+          A button, not a link — it opens a dialog rather than going anywhere, and making it look
+          like its neighbours must not extend to making a crawler follow it.
+        */}
+        <button
+          type="button"
+          className={`${styles.link} ${styles.shareButton}`}
+          onClick={() => setIsShareOpen(true)}
+        >
+          <Share2 size={15} aria-hidden="true" />
+          <span>{t('Share')}</span>
+        </button>
       </nav>
+
+      {isShareOpen ? <ShareDialog url={shareUrl} onClose={() => setIsShareOpen(false)} /> : null}
     </footer>
   )
 }

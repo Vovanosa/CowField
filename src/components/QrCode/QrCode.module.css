@@ -1,0 +1,12 @@
+/*
+  Layout only. Every fill and stroke is an inline attribute on the SVG itself — see the component:
+  a class does not survive serialisation, and this node gets serialised when the share dialog copies
+  the code as an image.
+*/
+.code {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 240px;
+  border-radius: var(--radius-md);
+}

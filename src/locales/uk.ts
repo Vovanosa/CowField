@@ -17,8 +17,8 @@
   'Play now': 'Грати зараз',
   'Starting...': 'Запускаємо...',
   'Sign in to save your progress': 'Увійти, щоб зберігати прогрес',
-  "You don't need an account. Click play and you're on a board.":
-    'Акаунт не потрібен. Тиснете «Грати» — і ви вже на полі.',
+  "You don't need an account. Pick any level and start.":
+    'Акаунт не потрібен. Обирайте будь-який рівень і починайте.',
   'The server is waking up. First visit of the day takes a few seconds.':
     'Сервер прокидається. Перший візит за день триває кілька секунд.',
   "Couldn't start a game. Check your connection and try again.":
@@ -83,6 +83,19 @@
   Extreme: 'Екстремальна',
   'Home menu': 'Головне меню',
   'Site links': 'Посилання сайту',
+  'Share CowField': 'Поділитися CowField',
+  'Send someone the game, or let them scan it.': 'Надішліть комусь гру або дайте відсканувати.',
+  'Link to CowField': 'Посилання на CowField',
+  'Copy link': 'Копіювати',
+  'Copied': 'Скопійовано',
+  "Couldn't copy the link. Select it and copy manually.": 'Не вдалося скопіювати. Виділіть посилання та скопіюйте вручну.',
+  'QR code linking to CowField': 'QR-код із посиланням на CowField',
+  'Point a phone camera at this to open the game.': 'Наведіть камеру телефона, щоб відкрити гру.',
+  'Copy image': 'Копіювати зображення',
+  'Image copied': 'Зображення скопійовано',
+  'Paste it anywhere that takes a picture.': 'Вставте його будь-де, куди можна вставити зображення.',
+  "Couldn't copy the image.": 'Не вдалося скопіювати зображення.',
+  'Close': 'Закрити',
   'Puzzle board': 'Ігрове поле',
   'Row {{row}}, column {{column}}, pen {{pen}}. {{state}}':
     'Рядок {{row}}, стовпець {{column}}, загін {{pen}}. {{state}}',
@@ -169,6 +182,7 @@
   '{{count}} levels_many': '{{count}} рівнів',
   '{{count}} levels_other': '{{count}} рівнів',
   'Open level {{levelNumber}}': 'Відкрити рівень {{levelNumber}}',
+  'Level {{levelNumber}} solved': 'Рівень {{levelNumber}} розвʼязано',
   'Edit level {{levelNumber}}': 'Редагувати рівень {{levelNumber}}',
   // `/about` — сторінка правил. Переписано разом з англійською (P17).
   'How to play Star Battle': 'Як грати у Star Battle',
@@ -446,7 +460,6 @@
   'Play this Star Battle level on CowField': 'Зіграйте цей рівень Star Battle на CowField',
   'Link copied.': 'Посилання скопійовано.',
   "Couldn't share this level.": 'Не вдалося поділитися цим рівнем.',
-  'Browse all levels': 'Переглянути всі рівні',
   'Sign up': 'Зареєструватися',
   'Your guest progress stays here': 'Гостьовий прогрес залишиться тут',
   'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._one':

@@ -11,23 +11,24 @@ import styles from './LandingPage.module.css'
 /**
  * Where the primary actions land.
  *
- * **"Play now" goes straight to a board again** (P18, decision C4), reversing a call made earlier in
- * P14. The reasoning then was sound and is worth keeping: dropping a visitor into one 6x6 grid hides
- * the five difficulties and thousand levels the page has just spent 250 words describing, and leaves
- * them with no idea where they are.
+ * **"Play now" lands on the level chooser** — the user's call, 2026-09-20, reversing P18's decision
+ * C4 and restoring the P14 behaviour it had replaced.
  *
- * Two things changed underneath it. Level locking is gone, so the board is no longer the end of a
- * corridor — every other level is reachable from it. And the count of clicks between arriving and
- * playing turned out to be the number that matters most for a site nobody has heard of: it was
- * three, and it is one.
+ * C4's argument was click count: three clicks from arriving to playing, cut to one by dropping the
+ * visitor straight onto `/game/light/1`. The argument against it, made in P14 and now preferred
+ * again, is that a single 6x6 grid hides the five difficulties and thousand levels this page has
+ * just spent 250 words describing, and gives no sense of where you are. One click is only better if
+ * it lands somewhere you wanted.
  *
- * The old argument is answered rather than ignored. **Browse all levels** sits beside the button for
- * anyone who would rather choose, and it now works with no session at all.
+ * **It still starts the guest session**, rather than just navigating. Two reasons: the cold-start
+ * notice below only works if the wait happens *here*, where there is something to say about it; and
+ * arriving at a level with a session already in hand means `GameAccessGate` never appears, so the
+ * path is still one click from this page to a board.
+ *
+ * With the button landing there, the separate **Browse all levels** link was the same destination
+ * twice and has gone.
  */
 const LEVELS_PATH = '/levels'
-
-/** The gentlest board in the game: 6x6, one bull per row. A first move, not a commitment. */
-const FIRST_LEVEL_PATH = '/game/light/1'
 
 /** How long a start may take silently before the page explains itself. */
 const SLOW_START_NOTICE_MS = 3000
@@ -41,14 +42,23 @@ export function LandingPage() {
   const [error, setError] = useState<string | null>(null)
 
   /*
-    Whether the reader has a session changes what this page is for, not what it says.
+    Whether the reader has an **account** changes what this page is for, not what it says.
 
-    A stranger arriving at `/` gets the pitch and a guest start. A **player** can only get here
-    through `/welcome`, deliberately — from the profile menu — because `/` is their home menu.
-    They must not be offered the guest start: `loginAsGuest` would replace the account they are
-    signed in to, so for them the button skips straight to the same destination.
+    A stranger arriving at `/` gets the pitch and a guest start. An account holder can only get here
+    through `/welcome`, deliberately — from the profile menu — because `/` is their home menu. They
+    must not be offered the guest start: `loginAsGuest` would replace the account they are signed in
+    to, so for them the button skips straight to the same destination.
+
+    **A guest is not an account holder, and sees the stranger's page** (the user's call,
+    2026-09-20). This used to test `isAuthenticated` alone, which is true for a guest — so the pitch,
+    and with it *Sign in to save your progress*, was visible exactly once: the moment before they
+    pressed Play. After that the page they could still reach from the profile menu showed them
+    "Back to your levels" and no route to an account.
+
+    Nothing about the guest start is unsafe for them now: `loginAsGuest` returns the session they
+    already have rather than minting a second one, so the button simply takes them to the levels.
   */
-  const isPlayer = auth.isAuthenticated
+  const isPlayer = auth.isAuthenticated && !auth.isGuest
 
   useDocumentMeta({
     title: t('Play Star Battle online, free - CowField'),
@@ -77,7 +87,7 @@ export function LandingPage() {
 
     try {
       await auth.loginAsGuest()
-      navigate(FIRST_LEVEL_PATH)
+      navigate(LEVELS_PATH)
     } catch (requestError) {
       // The API can be cold or unreachable. Saying so beats a button that looks broken.
       setError(
@@ -168,16 +178,9 @@ export function LandingPage() {
             </button>
           )}
           {isPlayer ? null : (
-            <>
-              {/* The answer to what the straight-to-a-board jump hides. Public since P18, so it
-                  needs no session and no guest token to follow. */}
-              <Link className={styles.secondaryAction} to={LEVELS_PATH}>
-                {t('Browse all levels')}
-              </Link>
-              <Link className={styles.secondaryAction} to="/login">
-                {t('Sign in to save your progress')}
-              </Link>
-            </>
+            <Link className={styles.secondaryAction} to="/login">
+              {t('Sign in to save your progress')}
+            </Link>
           )}
         </div>
 
@@ -194,7 +197,7 @@ export function LandingPage() {
           <p className={styles.actionNote} aria-live="polite">
             {isSlow
               ? t('The server is waking up. First visit of the day takes a few seconds.')
-              : t("You don't need an account. Click play and you're on a board.")}
+              : t("You don't need an account. Pick any level and start.")}
           </p>
         )}
 

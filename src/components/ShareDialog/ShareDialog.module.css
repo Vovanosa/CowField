@@ -1,0 +1,72 @@
+.dialog {
+  max-width: 420px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lead {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.linkField {
+  flex: 1 1 200px;
+  /* Without this a long URL forces the flex item wider than the dialog instead of scrolling
+     inside it, and the panel overflows the viewport on a phone. */
+  min-width: 0;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-glass-base);
+  color: var(--color-body);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.copyButton {
+  flex: 0 0 auto;
+}
+
+/* Reserves its line whether or not there is a message, so confirming a copy does not shift the QR
+   down the page under the reader's finger. */
+.status {
+  min-height: 1.2em;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.qrBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.qrCaption {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.closeButton {
+  margin-left: auto;
+}
+
+.copyImageButton {
+  margin-top: var(--space-2);
+}

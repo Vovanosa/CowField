@@ -226,6 +226,16 @@ function DifficultyLevelsPageScreen() {
                   <LevelCard
                     key={`${difficulty}-${item.levelNumber}`}
                     levelNumber={item.levelNumber}
+                    /*
+                      **`in`, not a truthy check on the value.** A finished level whose timer was off
+                      is stored with `bestTimeSeconds: null`, which is every level a guest has ever
+                      finished — so testing the value would mark exactly nobody, which is the bug
+                      this fixes. The key's presence is the completion; the value is only the time.
+                    */
+                    isSolved={item.levelNumber in bestTimes}
+                    solvedLabel={t('Level {{levelNumber}} solved', {
+                      levelNumber: item.levelNumber,
+                    })}
                     bestTime={
                       !isTakeYourTimeEnabled
                         ? formatElapsedTime(bestTimes[item.levelNumber] ?? null)

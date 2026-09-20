@@ -24,6 +24,33 @@
   border-radius: inherit;
 }
 
+/* Solved: a soft tint plus the badge below, never the tint alone — colour is not a label. Kept
+   quiet on purpose; across a 200-card grid anything stronger reads as a warning rather than as
+   "you have been here". */
+.solved {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-hover);
+}
+
+.solvedBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-strong);
+  background: var(--color-surface-glass-base);
+  border: 1px solid var(--color-border-icon);
+  /* Decoration, not a target: the whole card is the link, and a badge that swallowed the tap would
+     make the one level you have already solved the one you cannot reopen. */
+  pointer-events: none;
+}
+
 .summary {
   display: flex;
   flex-direction: column;

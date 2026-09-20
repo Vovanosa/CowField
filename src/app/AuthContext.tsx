@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -43,6 +44,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<AuthSession | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [previewRole, setPreviewRoleState] = useState<AdminPreviewRole>(getInitialPreviewRole)
+
+  /*
+    The current session, readable from a callback without being a dependency of it.
+
+    Every entry point below is `useCallback(..., [])` on purpose — they are handed to consumers
+    through a memoised context value, and taking `session` as a dependency would rebuild all of them
+    on every sign-in and re-render everything that holds one. `loginAsGuest` is the only one that
+    needs to *read* the session, so it reads it here.
+  */
+  const currentSessionRef = useRef<AuthSession | null>(null)
+  currentSessionRef.current = session
 
   useEffect(() => {
     let isActive = true
@@ -128,7 +140,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return nextSession
   }, [])
 
+  /**
+   * **Already a guest? Keep that guest.**
+   *
+   * Every call used to mint a fresh guest token, so a guest who reached `/login` and pressed *Play
+   * as guest* — the natural way back out of a sign-in page they opened by mistake — came back as a
+   * different guest. Their times survived (guest progress is one `localStorage` key, not keyed to
+   * the token), but the session, the bearer and every cache behind it were replaced for nothing.
+   *
+   * An expired guest token cannot reach this branch: `getCurrentSession` would have failed and left
+   * `session` null, so a new one is minted exactly when there is nothing to keep.
+   */
   const loginAsGuest = useCallback(async () => {
+    if (currentSessionRef.current?.role === 'guest') {
+      return currentSessionRef.current
+    }
+
     resetCachedPlayerData()
     const nextSession = await loginAsGuestRequest()
     setSession(nextSession)

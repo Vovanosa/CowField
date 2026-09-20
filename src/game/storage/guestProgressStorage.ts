@@ -1,5 +1,5 @@
 import { readStoredValue, removeStoredValue, writeStoredValue } from './browserStorage'
-import type { Difficulty, LevelProgress } from '../types'
+import type { BestTimesByLevel, Difficulty, LevelProgress } from '../types'
 
 const GUEST_PROGRESS_STORAGE_KEY = 'cowfield.guest-level-progress'
 
@@ -71,7 +71,7 @@ function writeGuestProgressRecord(record: GuestProgressRecord) {
  */
 export async function getGuestBestTimes(difficulty: Difficulty) {
   const record = readGuestProgressRecord()
-  const bestTimes: Record<number, number> = {}
+  const bestTimes: BestTimesByLevel = {}
 
   for (const progress of Object.values(record)) {
     if (progress.difficulty === difficulty && progress.bestTimeSeconds !== null) {

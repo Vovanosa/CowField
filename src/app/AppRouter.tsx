@@ -130,17 +130,32 @@ function RequireNonGuest() {
 }
 
 function PublicOnlyRoute() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isGuest, isLoading } = useAuth()
   const { search } = useLocation()
 
   if (isLoading) {
     return null
   }
 
-  // `returnTo` is honoured here too, not just after a successful sign-in: someone who reaches
-  // `/register?returnTo=/game/easy/3` while already signed in wanted the level, and bouncing them to
-  // `/` would drop the one thing they were trying to get back to.
-  return isAuthenticated ? <Navigate to={readReturnTo(search) ?? '/'} replace /> : <Outlet />
+  /*
+    **A guest is authenticated but has no account, so these pages are the only way to get one.**
+
+    This used to bounce on `isAuthenticated` alone, which is true for a guest — so the *Sign up*
+    button in the profile menu linked to `/register` and the guard sent them straight back to `/`.
+    From the outside the button did nothing, and because a guest deliberately has no *Log out*
+    (decision D8) there was no way out of guest mode at all: the one entry point to an account was
+    closed by the guard protecting it.
+
+    Registering carries their times over (`AuthProvider.register`); signing in to an existing
+    account leaves them behind and warns first (decision D5). Both are reachable now.
+
+    `returnTo` is honoured here too, not just after a successful sign-in: someone who reaches
+    `/register?returnTo=/game/easy/3` while already signed in wanted the level, and bouncing them to
+    `/` would drop the one thing they were trying to get back to.
+  */
+  const hasAccount = isAuthenticated && !isGuest
+
+  return hasAccount ? <Navigate to={readReturnTo(search) ?? '/'} replace /> : <Outlet />
 }
 
 function PublicShell() {

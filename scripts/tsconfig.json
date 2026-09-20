@@ -1,0 +1,14 @@
+{
+  "//": "The scripts were in no tsconfig, so editors type-checked them with no Node types and lit up every `node:` import and every `process`. They run through tsx, which does not care, so nothing was ever broken — the errors were editor-only. This file makes the editor agree with reality.",
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "lib": ["ES2023", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.mts"]
+}

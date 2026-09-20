@@ -27,8 +27,8 @@ const en = {
   'Play now': 'Play now',
   'Starting...': 'Starting...',
   'Sign in to save your progress': 'Sign in to save your progress',
-  "You don't need an account. Click play and you're on a board.":
-    "You don't need an account. Click play and you're on a board.",
+  "You don't need an account. Pick any level and start.":
+    "You don't need an account. Pick any level and start.",
   'The server is waking up. First visit of the day takes a few seconds.':
     'The server is waking up. First visit of the day takes a few seconds.',
   "Couldn't start a game. Check your connection and try again.":
@@ -96,6 +96,19 @@ const en = {
   Extreme: 'Extreme',
   'Home menu': 'Home menu',
   'Site links': 'Site links',
+  'Share CowField': 'Share CowField',
+  'Send someone the game, or let them scan it.': 'Send someone the game, or let them scan it.',
+  'Link to CowField': 'Link to CowField',
+  'Copy link': 'Copy link',
+  'Copied': 'Copied',
+  "Couldn't copy the link. Select it and copy manually.": "Couldn't copy the link. Select it and copy manually.",
+  'QR code linking to CowField': 'QR code linking to CowField',
+  'Point a phone camera at this to open the game.': 'Point a phone camera at this to open the game.',
+  'Copy image': 'Copy image',
+  'Image copied': 'Image copied',
+  'Paste it anywhere that takes a picture.': 'Paste it anywhere that takes a picture.',
+  "Couldn't copy the image.": "Couldn't copy the image.",
+  'Close': 'Close',
   'Puzzle board': 'Puzzle board',
   // Cell names. Every one of these describes something conveyed only visually today — the pen by
   // its colour, the mark by an `aria-hidden` icon, the rule break by an animation.
@@ -179,6 +192,7 @@ const en = {
   '{{count}} levels_one': '{{count}} level',
   '{{count}} levels_other': '{{count}} levels',
   'Open level {{levelNumber}}': 'Open level {{levelNumber}}',
+  'Level {{levelNumber}} solved': 'Level {{levelNumber}} solved',
   'Edit level {{levelNumber}}': 'Edit level {{levelNumber}}',
   // -------------------------------------------------------------------------------------------
   // `/about` — the rules page, and the best keyword surface on the site.
@@ -463,7 +477,6 @@ const en = {
   'Play this Star Battle level on CowField': 'Play this Star Battle level on CowField',
   'Link copied.': 'Link copied.',
   "Couldn't share this level.": "Couldn't share this level.",
-  'Browse all levels': 'Browse all levels',
   'Sign up': 'Sign up',
   'Your guest progress stays here': 'Your guest progress stays here',
   // `{{count}}` does not appear in the singular on purpose: "the 1 level" is not a sentence anyone
