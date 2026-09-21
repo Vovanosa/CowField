@@ -1,4 +1,4 @@
-import { BookOpenText, Play, Rows3, Sparkles } from 'lucide-react'
+import { BookOpenText, LayoutGrid, Play, Rows3, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -150,10 +150,10 @@ export function LandingPage() {
       />
 
       <section className={styles.hero}>
-        <h1 className={styles.title}>{t('Star Battle, with cows')}</h1>
+        <h1 className={styles.title}>{t('Play Star Battle online, free')}</h1>
         <p className={styles.lead}>
           {t(
-            'A grid of coloured pens. Every row, every column and every pen needs the same number of bulls, and no two bulls may touch, not even at a corner. That is the whole game. If you have played Star Battle or Two Not Touch before, you already know it.',
+            'Star Battle, played with cows. The grid is split into coloured pens, and every row, every column and every pen needs the same number of bulls. No two bulls may touch, not even at a corner. If you have played Two Not Touch, you already know it.',
           )}
         </p>
 
@@ -255,7 +255,7 @@ export function LandingPage() {
         </h2>
         <p className={styles.body}>
           {t(
-            'There is a clock if you want to race yourself, and a setting that hides it. Put a bull somewhere it breaks a rule and it lights up immediately, so you can try an idea and watch what happens. It will not tell you what is correct, only what is illegal. The solving is left to you.',
+            'There is a clock if you want to race yourself, and a setting that hides it. Put a bull where it breaks a rule and it lights up straight away. It will not tell you what is correct, only what is illegal.',
           )}
         </p>
       </section>
@@ -266,12 +266,12 @@ export function LandingPage() {
         </h2>
         <p className={styles.body}>
           {t(
-            'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, and hard is 10x10 with two. Extreme is 15x15 with three, which is a different puzzle rather than a bigger one.',
+            'Two hundred levels in each of five difficulties. Light is 6x6 with one bull per row, column and pen. Easy is 8x8, medium is 10x10, hard is 10x10 with two. Extreme is 15x15 with three.',
           )}
         </p>
         <p className={styles.body}>
           {t(
-            'Every board is generated and then solved again to check it. Light through hard have exactly one answer, so they can always be reasoned out. Extreme boards can have a few, which is the honest trade for having 15x15 boards at all. Any arrangement that follows the rules counts as a win.',
+            'Every board is generated and then solved again to check it. Light through hard have exactly one answer. Any arrangement that follows the rules counts as a win.',
           )}
         </p>
         <ul className={styles.factList}>
@@ -281,12 +281,29 @@ export function LandingPage() {
             </li>
           ))}
         </ul>
-        <Link className={styles.inlineLink} to="/difficulties">
-          <span className={styles.actionIcon}>
-            <Rows3 size={16} />
-          </span>
-          <span>{t('Star Battle board sizes and difficulty')}</span>
-        </Link>
+        {/*
+          **`/levels` needs a link here, and for a while it had none** (fixed 2026-09-21).
+
+          "Play now" is a `<Link>` only for someone already signed in; everyone else — including
+          every crawler, which is never signed in — gets the `<button>` that starts a guest session.
+          So when the separate "Browse all levels" link was removed on 2026-09-20 as a duplicate of
+          the button's new destination, it took with it the only crawlable path from the site's
+          strongest page to its level index. A button is not a link and does not pass anything.
+        */}
+        <div className={styles.linkRow}>
+          <Link className={styles.inlineLink} to="/levels">
+            <span className={styles.actionIcon}>
+              <LayoutGrid size={16} />
+            </span>
+            <span>{t('Browse all 1,000 levels')}</span>
+          </Link>
+          <Link className={styles.inlineLink} to="/difficulties">
+            <span className={styles.actionIcon}>
+              <Rows3 size={16} />
+            </span>
+            <span>{t('Star Battle board sizes and difficulty')}</span>
+          </Link>
+        </div>
       </section>
     </div>
   )

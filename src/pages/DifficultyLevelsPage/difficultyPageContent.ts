@@ -41,46 +41,46 @@ export const difficultyPageContent: Record<Difficulty, DifficultyPageContent> = 
   light: {
     title: '6x6 Star Battle puzzles, one star per row',
     description:
-      '200 free 6x6 Star Battle puzzles, one star in every row, column and region. The smallest boards on CowField, and the place to work out what the dots do.',
+      'Two hundred 6x6 Star Battle puzzles, free, with one star in every row, column and region. The smallest boards here, and where the dots start to make sense.',
     body: [
-      'Light is the smallest size here: every board is 6 by 6, with one bull in every row, every column and every pen. If you know this puzzle as Star Battle or Two Not Touch, the stars are bulls and the regions are pens, and nothing else about it changes.',
-      'Thirty-six cells is small enough to hold the whole grid in your head, which is what makes this the right place to find out what the dots are for.',
+      'Light is the smallest size here. Every board is 6 by 6, with one bull in every row, every column and every pen.',
+      'Thirty-six cells is small enough to hold the whole grid in your head. Start here if you have not used the dots before.',
     ],
   },
   easy: {
     title: '8x8 Star Battle puzzles, one star per row',
     description:
-      '200 free 8x8 Star Battle puzzles, one star in every row, column and region. A step up from 6x6, with enough room that the obvious rows run out.',
+      'An 8x8 grid, one star in every row, column and region, and 200 free puzzles. Twenty-eight more cells than a 6x6 board, and the obvious rows run out sooner.',
     body: [
       'Easy keeps one bull in every row, column and pen, and moves the board to 8 by 8. Same rules as the 6x6 boards, with twenty-eight more cells to be wrong in.',
-      'This is the size where counting rows stops being enough on its own and you start leaning on the shape of the pens instead.',
+      'Counting rows stops being enough on its own at this size, and the shape of the pens starts to matter.',
     ],
   },
   medium: {
     title: '10x10 Star Battle puzzles, one star per row',
     description:
-      '200 free 10x10 Star Battle puzzles, one star in every row, column and region. The size most Star Battle puzzles come in, and the usual place to start.',
+      'The size most Star Battle puzzles come in. 200 free 10x10 boards with one star in every row, column and region, and the usual place to start.',
     body: [
-      'Medium is 10 by 10 with one bull in every row, column and pen. This is the size most Star Battle puzzles come in, so if you have played the game somewhere else it will feel familiar straight away.',
-      'A hundred cells is enough that guessing stops paying and you have to eliminate properly, which is the part of this puzzle people come back for.',
+      'Medium is 10 by 10 with one bull in every row, column and pen. Most Star Battle puzzles come in this size, so it should feel familiar if you have played elsewhere.',
+      'A hundred cells is enough that guessing stops paying and you have to eliminate properly.',
     ],
   },
   hard: {
     title: '10x10 Star Battle puzzles, two stars per row',
     description:
-      '200 free 10x10 Star Battle puzzles with two stars in every row, column and region. This is what most people mean by Two Not Touch.',
+      'Two stars in every row, column and region of a 10x10 grid. This is what most people mean by Two Not Touch, and there are 200 of them here, free.',
     body: [
-      'Hard stays at 10 by 10 and puts two bulls in every row, column and pen. That is a different puzzle from the one-bull boards rather than a bigger one, and it is what most people mean by Two Not Touch.',
+      'Hard stays at 10 by 10 and puts two bulls in every row, column and pen. This is the version most people mean by Two Not Touch.',
       'Finding one bull in a row no longer retires the row, because the second is still out there. The rule that no two bulls may touch ends up doing most of the work.',
     ],
   },
   extreme: {
     title: '15x15 Star Battle puzzles, three stars per row',
     description:
-      '200 free 15x15 Star Battle puzzles with three stars in every row, column and region. 225 cells and 45 stars, the hardest boards on CowField.',
+      'Three stars in every row, column and region of a 15x15 grid. 225 cells, 45 stars and 200 puzzles, the hardest Star Battle boards on CowField.',
     body: [
       'Extreme is 15 by 15 with three bulls in every row, column and pen. That is 225 cells and 45 bulls, and one of these will take a while.',
-      'Worth knowing before you start: unlike the smaller sizes, these boards are not checked to have exactly one answer. A few have several, any legal arrangement wins, and you will never be told you found the wrong one.',
+      'Unlike the smaller sizes, these boards are not checked to have exactly one answer. A few have several. Any legal arrangement wins, and you will never be told you found the wrong one.',
     ],
   },
 }

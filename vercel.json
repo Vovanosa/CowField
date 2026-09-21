@@ -64,6 +64,10 @@
       "destination": "/"
     },
     {
+      "source": "/about-project",
+      "destination": "/"
+    },
+    {
       "source": "/welcome",
       "destination": "/"
     },

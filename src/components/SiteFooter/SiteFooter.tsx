@@ -8,7 +8,7 @@ import { ShareDialog } from '../ShareDialog'
 import styles from './SiteFooter.module.css'
 
 /**
- * The four public pages, on every page inside the shell.
+ * The five public pages, on every page inside the shell.
  *
  * **Why a footer and not more home-menu buttons.** Before this, `/how-to-solve` and `/difficulties`
  * could only be reached from a link part-way down `/about`, and the landing page only from inside
@@ -29,6 +29,9 @@ const LINKS = [
   { to: '/about', label: 'How to play' },
   { to: '/how-to-solve', label: 'Solving techniques' },
   { to: '/difficulties', label: 'Board sizes' },
+  // Last on purpose. It is the page fewest readers want and the one that most needs to be reachable
+  // from everywhere, which is exactly what a footer slot is for.
+  { to: '/about-project', label: 'About the project' },
 ] as const
 
 /**

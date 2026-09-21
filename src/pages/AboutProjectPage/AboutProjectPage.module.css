@@ -1,0 +1,50 @@
+/* Matches `/how-to-solve` and `/difficulties`: one panel, prose at a readable measure, the same
+   spacing rhythm. Four public pages that look like four different sites would be worse than any of
+   them looking slightly plain. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.lead {
+  max-width: 66ch;
+  margin: 0;
+  font-size: 1.04rem;
+  color: var(--color-heading);
+  line-height: 1.75;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.12rem;
+  color: var(--color-heading);
+}
+
+.body {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
+/* Sits inside a sentence rather than in a row of its own, so no min-height: forcing 44px on an
+   inline link inside a paragraph breaks the line box around it. */
+.inlineLink {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

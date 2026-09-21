@@ -23,7 +23,7 @@ export function HowToSolvePage() {
   useDocumentMeta({
     title: brandedTitle(t('How to solve Star Battle puzzles')),
     description: t(
-      'Six techniques for solving Star Battle and Two Not Touch puzzles: fencing off bulls, pens trapped in a row, counting pens against rows, and what to do when stuck.',
+      'Six techniques for solving Star Battle and Two Not Touch puzzles, from fencing off stars to counting regions against rows, plus what to do when you get stuck.',
     ),
   })
 
@@ -31,7 +31,7 @@ export function HowToSolvePage() {
     {
       title: t('Fence off every bull you place'),
       body: t(
-        'The moment a bull goes down, the eight cells around it are dead. Dot them. This is the cheapest information on the board and it compounds, because those dots are what the next three techniques read. Turn on auto-place dots in Settings and the game does it for you.',
+        'The moment a bull goes down, the eight cells around it are dead. Dot them. Those dots are what the next three techniques read. Turn on auto-place dots in Settings and the game does it for you.',
       ),
     },
     {

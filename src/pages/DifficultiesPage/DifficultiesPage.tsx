@@ -44,7 +44,7 @@ export function DifficultiesPage() {
       id: 'light',
       spec: t('6x6 board, one bull per row, column and pen.'),
       note: t(
-        'Where to start. Small enough to hold the whole board in your head, and the right place to work out what the dots are for.',
+        'Where to start. Small enough to hold the whole board in your head while you work out what the dots do.',
       ),
     },
     {
@@ -65,7 +65,7 @@ export function DifficultiesPage() {
       id: 'hard',
       spec: t('10x10 board, two bulls per row, column and pen.'),
       note: t(
-        'What most people mean by Two Not Touch. Two bulls per row changes the logic rather than the scale: finding one bull no longer finishes a row.',
+        'What most people mean by Two Not Touch. With two bulls per row, finding one bull no longer finishes the row.',
       ),
     },
     {
@@ -89,7 +89,7 @@ export function DifficultiesPage() {
       <Panel className={styles.panel}>
         <p className={styles.lead}>
           {t(
-            'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away, so pick by how big a board you feel like.',
+            'Five sizes, 200 levels each. Level 1 of light and level 173 of extreme are both one click away.',
           )}
         </p>
 
@@ -108,17 +108,18 @@ export function DifficultiesPage() {
       </Panel>
 
       <Panel className={styles.panel}>
-        <h2 className={styles.sectionTitle}>{t('More bulls is not the same as a bigger board')}</h2>
+        <h2 className={styles.sectionTitle}>{t('What changes when the star count goes up')}</h2>
         <p className={styles.body}>
           {t(
-            "Going from 6x6 to 10x10 gives you more of the same work. Going from one bull to two changes what you are allowed to conclude. On a one-bull board, finding a row's bull retires the row. On a two-bull board it tells you almost nothing on its own, because the second one is still out there and the no-touching rule is the only thing constraining it. That is why hard is a real step up from medium and extreme is a real step up from hard.",
+            "A 6x6 board and a 10x10 board ask for the same work, just more of it. One bull per row and two bulls per row ask different questions. With one, finding a row's bull retires the row. With two, it tells you almost nothing on its own, because the second is still out there and the no-touching rule is all that holds it. That is the step from medium to hard, and again from hard to extreme.",
           )}
         </p>
-        <p className={styles.body}>
-          {t(
-            'One caveat on extreme. Light through hard are checked to have exactly one solution, so pure deduction always gets you there. At 15x15 with three bulls that check stops being achievable, and those boards are accepted with a small number of solutions instead. It means an extreme board can reach a point where you have to pick rather than deduce. Any legal arrangement wins, so you will never be told you found the wrong one.',
-          )}
-        </p>
+        {/*
+          The extreme-uniqueness caveat used to be a paragraph here too. It was being made in three
+          places — the landing page, this page and `/levels/extreme` — in the same shape each time,
+          which is what a reader notices rather than the point itself. It lives on `/levels/extreme`
+          now, where someone is about to play one; the card above still mentions it in a clause.
+        */}
         <div className={styles.linkRow}>
           <Link className={styles.inlineLink} to="/">
             {t('Go and try one')}

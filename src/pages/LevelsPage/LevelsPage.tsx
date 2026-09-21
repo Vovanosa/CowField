@@ -68,9 +68,9 @@ export function LevelsPage() {
     everything else was: it needed a session, so a crawler only ever saw it redirect to a login form.
   */
   useDocumentMeta({
-    title: brandedTitle(t('Star Battle puzzles by board size')),
+    title: brandedTitle(t('1,000 free Star Battle puzzles')),
     description: t(
-      '1,000 free Star Battle puzzles across five board sizes, from 6x6 with one star to 15x15 with three. Pick a size and start, no account needed.',
+      'Every Star Battle puzzle on CowField, 200 in each of five sizes. Pick 6x6, 8x8, 10x10 with one or two stars, or 15x15 with three, and start without an account.',
     ),
   })
   const [progressByDifficulty, setProgressByDifficulty] = useState<
@@ -145,6 +145,20 @@ export function LevelsPage() {
         backLabel={t('Back to home')}
         title={t('Choose a difficulty to play.')}
       />
+
+      {/*
+        **One paragraph, because this page had no prose at all** (added 2026-09-21).
+
+        It was an `h1` and five chips, and it carried the title "Star Battle puzzles by board size"
+        while `/difficulties` — which has several hundred words on exactly that — was titled "Star
+        Battle board sizes and difficulty". Two pages bidding for one query with the content on the
+        other one. This page now claims the level-list query instead, and needs something under the
+        heading to claim it with.
+
+        Deliberately not a summary of `/difficulties`: that page compares the sizes, this one says
+        what is here. Repeating it would recreate the overlap in the other direction.
+      */}
+      <p className={styles.intro}>{t('Pick a size to see its 200 levels. They run from 6x6 with one bull per row up to 15x15 with three.')}</p>
 
       {showLoadError ? (
         <EmptyState

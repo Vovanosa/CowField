@@ -5,6 +5,15 @@
   animation: fade-up-in 260ms var(--ease-emphasized);
 }
 
+/* The one paragraph on the page. Matches `.body` on the other public pages: same measure, same
+   line height, so the four of them read as one site. */
+.intro {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
 .levelsGrid {
   display: grid;
   grid-template-columns: 1fr;

@@ -28,6 +28,7 @@
     "og:image": "tsx scripts/capture-og-image.mts",
     "icons": "tsx scripts/make-favicons.mts",
     "check:seo": "tsx scripts/check-seo.mts",
+    "check:locales": "tsx scripts/check-locales.mts",
     "check:qr": "tsx scripts/check-qr.mts"
   },
   "dependencies": {

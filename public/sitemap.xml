@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  **Twenty URLs: ten pages, each in two languages.**
+  **Twenty-two URLs: eleven pages, each in two languages.**
+
+  `/about-project` is the lowest priority here and the only `yearly` entry. It is who built the
+  thing rather than anything a person searches for, and saying so in the file is more honest than
+  giving every page 0.8 and a weekly crawl it does not need.
 
   Every entry carries the full `hreflang` set as `xhtml:link` alternates, and that is the point of
   doing it here rather than trusting the tags `useDocumentMeta` injects. Those tags are written by
@@ -183,5 +187,21 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/difficulties" />
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/about-project</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/about-project" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/about-project" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/about-project" />
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://cowfield.vercel.app/uk/about-project</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cowfield.vercel.app/about-project" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://cowfield.vercel.app/uk/about-project" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cowfield.vercel.app/about-project" />
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

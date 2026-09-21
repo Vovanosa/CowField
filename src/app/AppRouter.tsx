@@ -51,6 +51,9 @@ function lazyPage<T extends ComponentType<object>>(
 const AboutPage = lazyPage(() =>
   import('../pages/AboutPage').then((module) => ({ default: module.AboutPage })),
 )
+const AboutProjectPage = lazyPage(() =>
+  import('../pages/AboutProjectPage').then((module) => ({ default: module.AboutProjectPage })),
+)
 const CreateLevelPage = lazyPage(() =>
   import('../pages/CreateLevelPage').then((module) => ({ default: module.CreateLevelPage })),
 )
@@ -288,7 +291,7 @@ function createLanguageChildren(): RouteObject[] {
               indexable: measured 2026-09-10, `/`, `/about`, `/levels` and a nonsense path all
               rendered the same login form, 31 words, one `<title>`.
 
-              It now guards only the routes that genuinely need a session. Four routes are public:
+              It now guards only the routes that genuinely need a session. Five routes are public:
               `/` (the landing page for a visitor, today's home page for a player), `/about`, which
               is the rules content and the best keyword page on the site, and the two pages added in
               P17, `/how-to-solve` and `/difficulties`. Everything else is unchanged — a signed-out
@@ -318,6 +321,18 @@ function createLanguageChildren(): RouteObject[] {
               // Public. What changes between board sizes, and the extreme caveat in plain words.
               path: 'difficulties',
               element: withSuspense(<DifficultiesPage />),
+            },
+            {
+              /*
+                Public. Who built this and why — the project and its author, not the puzzle.
+
+                Distinct from `/about` on purpose, which is the rules page and is named for what a
+                searcher wants rather than for what the app calls it. Two pages with "about" in the
+                path is a little awkward; the alternative was renaming `/about`, which is indexed,
+                linked from the footer and named in the sitemap, and not worth breaking for tidiness.
+              */
+              path: 'about-project',
+              element: withSuspense(<AboutProjectPage />),
             },
             {
               /*

@@ -54,6 +54,7 @@ const PUBLIC_PATHS = [
   '/levels/hard',
   '/levels/extreme',
   '/difficulties',
+  '/about-project',
 ]
 
 /** Where a language-neutral path lives in the Ukrainian tree. `/` is `/uk`, not `/uk/`. */

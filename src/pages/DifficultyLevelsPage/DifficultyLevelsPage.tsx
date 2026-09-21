@@ -8,11 +8,12 @@ import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
 import { reportUnexpectedError } from '../../app/reportUnexpectedError'
 import { EmptyState } from '../../components/EmptyState'
-import { Link } from '../../app/navigation'
+import { Link, useLanguage } from '../../app/navigation'
 import { LevelCard } from '../../components/LevelCard'
 import { Button, PageHeader, Panel } from '../../components/ui'
 import { formatElapsedTime } from '../../game/formatElapsedTime'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
+import { localizePath } from '../../i18n'
 import { isDifficulty } from '../../game/levels/constants'
 import { getDifficultyLevelsPageData } from '../../game/storage/resources'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
@@ -60,6 +61,8 @@ function DifficultyLevelsPageScreen() {
   const settings = usePlayerSettings()
   const isTakeYourTimeEnabled = isGuest || settings?.takeYourTimeEnabled === true
   const { t } = useTranslation()
+  /* Which language tree this page was reached in — the breadcrumb URLs below must stay inside it. */
+  const language = useLanguage()
 
   /*
     **This page is the SEO asset the whole programme is for** (P18, D-1). It was `noindex` because it
@@ -173,6 +176,43 @@ function DifficultyLevelsPageScreen() {
 
   return (
     <div className={[styles.page, 'page-shell'].join(' ')}>
+      {/*
+        **`BreadcrumbList`, so a search result shows a trail instead of a guessed URL** (2026-09-21).
+
+        These five are the only pages on the site more than one level deep, and without this Google
+        infers the trail from the slug — so the result line reads `cowfield.vercel.app › levels ›
+        light`, using a word the page never calls itself. Declared, it reads `CowField › Levels ›
+        Light`, in whichever language the page is.
+
+        **Every URL is localised**, so the Ukrainian tree points at `/uk/...` and never sends a
+        reader from `/uk/levels/light` back into the English site. Absolute because a breadcrumb
+        item has to be, and built from the live origin for the same reason `useDocumentMeta` does
+        it that way: a move to a custom domain must not need a fourth file updating.
+
+        `VideoGame` on the landing page and `FAQPage` on `/about` are the other two blocks like this.
+      */}
+      {typeof window === 'undefined' ? null : (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { name: t('CowField'), path: '/' },
+                { name: t('Levels'), path: '/levels' },
+                { name: getDifficultyLabel(t, difficulty), path: `/levels/${difficulty}` },
+              ].map((crumb, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                name: crumb.name,
+                item: `${window.location.origin}${localizePath(crumb.path, language)}`,
+              })),
+            }),
+          }}
+        />
+      )}
+
       {/*
         **The heading is the difficulty's own name, and the grid starts immediately under it.**
 
