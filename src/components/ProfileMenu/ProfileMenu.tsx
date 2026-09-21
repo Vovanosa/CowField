@@ -1,4 +1,4 @@
-import { BookOpenText, ChevronDown, LogOut, UserPlus, UserRound } from 'lucide-react'
+import { BookOpenText, ChevronDown, LogIn, LogOut, UserRound } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
@@ -157,30 +157,15 @@ export function ProfileMenu() {
             <span>{t('What is CowField?')}</span>
           </TextLink>
 
-          {/*
-            **A guest gets *Sign up*, and no *Log out* at all** (scope decision D8).
-
-            Logging a guest out is the one action in this menu that can only destroy something. Their
-            progress is local to this browser and there is no account to sign back into, so the
-            button offered them a way to erase their times and nothing else — while the thing they
-            actually want, keeping those times, had no entry point anywhere in the app.
-
-            The accepted cost, chosen deliberately: a guest on a shared computer cannot clear
-            themselves in one click. The way to a different account is *Sign up* → the register page
-            → its sign-in link.
-
-            `returnTo` carries the page they were on, so signing up from a level returns to that
-            level rather than to the home screen.
-          */}
           {isGuest ? (
             <Button
               className={styles.profileLogoutButton}
               variant="primary"
-              to={withReturnTo('/register', pathname)}
+              to={withReturnTo('/login', pathname)}
               onClick={closeProfileMenu}
-              leadingIcon={<UserPlus size={16} />}
+              leadingIcon={<LogIn size={16} />}
             >
-              {t('Sign up')}
+              {t('Sign in')}
             </Button>
           ) : (
             <Button

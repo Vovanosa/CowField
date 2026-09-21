@@ -459,7 +459,7 @@
   'Play this Star Battle level on CowField': 'Зіграйте цей рівень Star Battle на CowField',
   'Link copied.': 'Посилання скопійовано.',
   "Couldn't share this level.": 'Не вдалося поділитися цим рівнем.',
-  'Sign up': 'Зареєструватися',
+  'Sign in': 'Увійти',
   'Your guest progress stays here': 'Гостьовий прогрес залишиться тут',
   'Signing in leaves behind the {{count}} levels you finished as a guest on this device. Create an account instead and they come with you._one':
     'Якщо увійти, єдиний рівень, який ви пройшли як гість, залишиться на цьому пристрої. Створіть натомість акаунт, і він перейде разом з вами.',

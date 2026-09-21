@@ -479,7 +479,7 @@ const en = {
   'Play this Star Battle level on CowField': 'Play this Star Battle level on CowField',
   'Link copied.': 'Link copied.',
   "Couldn't share this level.": "Couldn't share this level.",
-  'Sign up': 'Sign up',
+  'Sign in': 'Sign in',
   'Your guest progress stays here': 'Your guest progress stays here',
   // `{{count}}` does not appear in the singular on purpose: "the 1 level" is not a sentence anyone
   // writes. i18next picks the form, and each form is allowed its own wording.
