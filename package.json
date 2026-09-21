@@ -29,6 +29,8 @@
     "icons": "tsx scripts/make-favicons.mts",
     "check:seo": "tsx scripts/check-seo.mts",
     "check:locales": "tsx scripts/check-locales.mts",
+    "seo:files": "tsx scripts/build-seo-files.mts",
+    "check:seo-files": "tsx scripts/build-seo-files.mts --check",
     "check:qr": "tsx scripts/check-qr.mts"
   },
   "dependencies": {

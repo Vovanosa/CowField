@@ -3,14 +3,14 @@ import { lazy } from 'react'
 import { useAuth } from './useAuth'
 
 /**
- * What `/` is depends on who is asking.
+ * What a language's home page — `/en`, `/uk` — is depends on who is asking.
  *
  * A **visitor** gets the landing page: what the game is, and a one-tap guest start. A **player**
  * gets the home menu they have always had, unchanged.
  *
- * `/` rather than a separate `/welcome` (scope decision D2), because `/` is the URL that gets
- * shared, linked and indexed. A separate marketing path would split whatever authority the domain
- * earns and leave `/` itself redirecting to a login form.
+ * The language root rather than a separate `/welcome` (scope decision D2), because the root is the
+ * URL that gets shared, linked and indexed. A separate marketing path would split whatever
+ * authority the domain earns and leave the root itself redirecting to a login form.
  *
  * Both halves are lazy so a visitor downloads the landing page without the signed-in home page, and
  * neither pulls in the other.

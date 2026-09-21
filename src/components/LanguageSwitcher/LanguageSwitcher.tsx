@@ -2,9 +2,8 @@ import { MoonStar, SunMedium } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { languageOptionFor, languageOptions } from '../../app/languageOptions'
 import { LanguageLink, useLanguage } from '../../app/navigation'
-import gbFlag from '../../assets/flags/gb.svg'
-import uaFlag from '../../assets/flags/ua.svg'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { SupportedLanguage } from '../../i18n'
@@ -41,7 +40,7 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
   const language = useLanguage()
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const languageMenuRef = useRef<HTMLDivElement | null>(null)
-  const currentFlag = language === 'uk' ? uaFlag : gbFlag
+  const current = languageOptionFor(language)
 
   const closeLanguageMenu = useCallback(() => {
     setIsLanguageMenuOpen(false)
@@ -54,8 +53,8 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
   })
 
   /**
-   * Records the **preference for the next visit** — what `/` should redirect to when this reader
-   * comes back (decision D7). It is not what changes the page.
+   * Records the **preference for the next visit** — what the gateway at `/` should send this
+   * reader to when they come back with no language in the URL. It is not what changes the page.
    *
    * The navigation is the `LanguageLink`'s own: it renders a real `<a href>` to this page in the
    * other language, and `LanguageRoute` moves i18n to match the new URL. That split is the whole
@@ -106,9 +105,12 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
   )
 
   /*
-    Inside the profile dropdown the two settings are labelled rows, and the language picker is two
-    flag buttons rather than a second dropdown. A menu nested inside a menu is worse to use and
-    worse to describe to a screen reader, and there are exactly two languages.
+    Inside the profile dropdown the two settings are labelled rows, and the language picker is a row
+    of flag buttons rather than a second dropdown. A menu nested inside a menu is worse to use and
+    worse to describe to a screen reader.
+
+    The row wraps, so a fourth and fifth language cost a second line rather than a redesign. Past
+    that it wants to become a list, and this is the place that will say so first.
   */
   if (variant === 'menu') {
     return (
@@ -120,26 +122,27 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
         <div className={styles.menuRow}>
           <span className={styles.menuLabel}>{t('Language')}</span>
           <div className={styles.menuLanguages} role="radiogroup" aria-label={t('Language')}>
-            {(['en', 'uk'] as const).map((option) => (
+            {languageOptions.map((option) => (
               <LanguageLink
-                key={option}
-                language={option}
+                key={option.value}
+                language={option.value}
                 className={
-                  language === option
+                  language === option.value
                     ? `${styles.menuLanguage} ${styles.menuLanguageActive}`
                     : styles.menuLanguage
                 }
                 role="radio"
-                aria-checked={language === option}
-                onClick={() => handleLanguageSelect(option)}
+                aria-checked={language === option.value}
+                aria-label={option.nativeName}
+                onClick={() => handleLanguageSelect(option.value)}
               >
                 <img
                   className={styles.languageOptionFlag}
-                  src={option === 'uk' ? uaFlag : gbFlag}
+                  src={option.flag}
                   alt=""
                   aria-hidden="true"
                 />
-                <span className={styles.languageOptionCode}>{option === 'uk' ? 'UA' : 'EN'}</span>
+                <span className={styles.languageOptionCode}>{option.label}</span>
               </LanguageLink>
             ))}
           </div>
@@ -175,15 +178,15 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
           aria-haspopup="menu"
           aria-expanded={isLanguageMenuOpen}
           aria-label={t('Language')}
-          onClick={() => setIsLanguageMenuOpen((current) => !current)}
+          onClick={() => setIsLanguageMenuOpen((isOpen) => !isOpen)}
         >
           <img
             className={styles.languageTriggerFlag}
-            src={currentFlag}
+            src={current.flag}
             alt=""
             aria-hidden="true"
           />
-          <span className={styles.languageTriggerCode}>{language === 'uk' ? 'UA' : 'EN'}</span>
+          <span className={styles.languageTriggerCode}>{current.label}</span>
         </button>
 
         {isLanguageMenuOpen ? (
@@ -193,27 +196,33 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
               so these can be middle-clicked and copied. `role="menuitemradio"` stays — inside a
               `role="menu"` an item has to carry a menu role, and keeping it means the keyboard and
               screen-reader behaviour P10 established is unchanged.
+
+              `aria-label` is the language's own name for itself, so a screen reader announces
+              "Українська" — pronounced in Ukrainian, because `LanguageLink` sets `lang` — rather
+              than spelling out "UA". The visible pill stays two characters wide.
             */}
-            <LanguageLink
-              language="en"
-              className={dropdownMenuItemClassName(language === 'en', styles.languageOption)}
-              onClick={() => handleLanguageSelect('en')}
-              role="menuitemradio"
-              aria-checked={language === 'en'}
-            >
-              <img className={styles.languageOptionFlag} src={gbFlag} alt="" aria-hidden="true" />
-              <span className={styles.languageOptionCode}>EN</span>
-            </LanguageLink>
-            <LanguageLink
-              language="uk"
-              className={dropdownMenuItemClassName(language === 'uk', styles.languageOption)}
-              onClick={() => handleLanguageSelect('uk')}
-              role="menuitemradio"
-              aria-checked={language === 'uk'}
-            >
-              <img className={styles.languageOptionFlag} src={uaFlag} alt="" aria-hidden="true" />
-              <span className={styles.languageOptionCode}>UA</span>
-            </LanguageLink>
+            {languageOptions.map((option) => (
+              <LanguageLink
+                key={option.value}
+                language={option.value}
+                className={dropdownMenuItemClassName(
+                  language === option.value,
+                  styles.languageOption,
+                )}
+                onClick={() => handleLanguageSelect(option.value)}
+                role="menuitemradio"
+                aria-checked={language === option.value}
+                aria-label={option.nativeName}
+              >
+                <img
+                  className={styles.languageOptionFlag}
+                  src={option.flag}
+                  alt=""
+                  aria-hidden="true"
+                />
+                <span className={styles.languageOptionCode}>{option.label}</span>
+              </LanguageLink>
+            ))}
           </DropdownMenu>
         ) : null}
       </div>

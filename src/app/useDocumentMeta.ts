@@ -37,10 +37,10 @@ export type DocumentMeta = {
   /**
    * The path this page should be indexed under, when that is not the path it is being served from.
    *
-   * Only one page needs it: the landing page answers on `/` *and* on `/welcome`, because a
-   * signed-in player cannot reach it at `/` — that URL is their home menu. Two URLs serving one
-   * page is a duplicate, and the canonical tag is the standard answer: both say `/`, which is the
-   * URL that is shared, linked and listed in the sitemap (scope decision D2 stands).
+   * Only one page needs it: the landing page answers on a language's root *and* on `/welcome`,
+   * because a signed-in player cannot reach it at the root — that URL is their home menu. Two URLs
+   * serving one page is a duplicate, and the canonical tag is the standard answer: both say the
+   * root, which is the URL that is shared, linked and listed in the sitemap (decision D2 stands).
    *
    * **Write it language-neutral** — `/`, not `/uk`. The hook adds the prefix of whichever language
    * tree the page was reached in, so `/uk/welcome` canonicalises to `/uk` and not to `/`. Getting
@@ -109,8 +109,9 @@ function upsertCanonical(href: string) {
  * what makes reciprocity structural rather than something to remember: `/about` and `/uk/about` run
  * the same code over the same neutral path, so they cannot disagree.
  *
- * `x-default` points at English, which is the root and the version to serve a reader whose language
- * we have nothing better for.
+ * `x-default` points at English — the default language, and the version to serve a reader whose
+ * own we have nothing better for. Not at `/`: since English moved to `/en` the bare root is a
+ * redirect, and `x-default` should name a page rather than a hop.
  *
  * Replaced wholesale rather than updated in place: the set is three tags, and a stale one left
  * behind from the previous route is worse than the cost of recreating them.

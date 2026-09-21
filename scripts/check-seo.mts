@@ -31,38 +31,25 @@ import { existsSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { DEFAULT_LANGUAGE, localizePath, supportedLanguages } from '../src/languages.ts'
+import { PUBLIC_PATHS } from './publicPages.ts'
+
 const urlArgument = process.argv.find((argument) => argument.startsWith('--url='))
 const TARGET = (urlArgument?.slice('--url='.length) ?? process.env.A11Y_APP_URL ?? 'http://localhost:4173')
   .replace(/\/+$/, '')
 const DEBUG_PORT = Number(process.env.A11Y_DEBUG_PORT ?? 9224)
 
 /**
- * The pages that must be indexable, written **language-neutral**. Each one exists twice since P18 —
- * once at the root in English, once under `/uk` — and both halves are checked.
+ * Every public page in every language, expanded from the same list `public/sitemap.xml` is
+ * generated from. A page that is in the sitemap but unchecked here, or checked here but missing
+ * from the sitemap, is no longer possible — they are two readings of `scripts/publicPages.ts`.
  *
- * `/` must stay first: the landing-page word-count and structured-data assertions read the first
- * entry.
+ * `/` must stay first in `PUBLIC_PATHS`, and the default language first in `LANGUAGES`: the
+ * landing-page word-count and structured-data assertions read the first entry of this list.
  */
-const PUBLIC_PATHS = [
-  '/',
-  '/levels',
-  '/about',
-  '/how-to-solve',
-  '/levels/light',
-  '/levels/easy',
-  '/levels/medium',
-  '/levels/hard',
-  '/levels/extreme',
-  '/difficulties',
-  '/about-project',
-]
-
-/** Where a language-neutral path lives in the Ukrainian tree. `/` is `/uk`, not `/uk/`. */
-function ukPath(path: string) {
-  return path === '/' ? '/uk' : `/uk${path}`
-}
-
-const PUBLIC_ROUTES = [...PUBLIC_PATHS, ...PUBLIC_PATHS.map(ukPath)]
+const PUBLIC_ROUTES = PUBLIC_PATHS.flatMap((path) =>
+  supportedLanguages.map((language) => localizePath(path, language)),
+)
 
 /**
  * Needs a session, is a credential form, or is deliberately not searchable: must report `noindex`.
@@ -71,9 +58,32 @@ const PUBLIC_ROUTES = [...PUBLIC_PATHS, ...PUBLIC_PATHS.map(ukPath)]
  * but a board behind a gate is a thin page and a thousand of them is the doorway-page pattern
  * (decision D3). Shareable, not searchable, and this is what keeps the two apart.
  */
-const PRIVATE_ROUTES = ['/settings', '/login', '/game/light/1', '/uk/settings', '/uk/game/light/1']
+const PRIVATE_ROUTES = ['/settings', '/login', '/game/light/1'].flatMap((path) =>
+  supportedLanguages.map((language) => localizePath(path, language)),
+)
 /** The landing page's second URL, for players who cannot reach it at `/`. Must canonicalise to `/`. */
-const ALIAS_ROUTE = '/welcome'
+const ALIAS_ROUTE = localizePath('/welcome', DEFAULT_LANGUAGE)
+/** Where the default language's home page lives now that `/` belongs to no language. */
+const DEFAULT_HOME = localizePath('/', DEFAULT_LANGUAGE)
+
+/**
+ * The URLs the site was indexed under until 2026-09-21, when English moved from the root to
+ * `/en`. Every one of them must answer with a permanent redirect to its counterpart — that is the
+ * whole of what keeps three weeks of indexing from being thrown away, and it lives in
+ * `vercel.json`, where nothing else would notice it going missing.
+ */
+const LEGACY_ROUTES = [
+  '/about',
+  '/how-to-solve',
+  '/difficulties',
+  '/about-project',
+  '/welcome',
+  '/levels',
+  '/levels/hard',
+  '/game/light/1',
+  '/login',
+  '/settings',
+]
 /** Must not resolve to the app at all. */
 const UNKNOWN_ROUTE = '/this-page-does-not-exist-seo-check'
 
@@ -153,8 +163,12 @@ check(
   `${robots.status} ${robots.type}`,
 )
 check(
-  'robots.txt points at the sitemap and disallows the private surface',
-  robots.body.includes('Sitemap:') && robots.body.includes('Disallow: /login'),
+  'robots.txt points at the sitemap and disallows the private surface in every language',
+  robots.body.includes('Sitemap:') &&
+    supportedLanguages.every((language) =>
+      robots.body.includes(`Disallow: ${localizePath('/login', language)}`),
+    ),
+  supportedLanguages.map((language) => localizePath('/login', language)).join(' '),
 )
 deploymentOnly(
   'robots.txt sitemap URL matches the host being checked',
@@ -177,7 +191,7 @@ check(
 const sitemapLocations = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
 
 check(
-  'sitemap lists every public route, in both languages',
+  'sitemap lists every public route, in every language',
   PUBLIC_ROUTES.every((route) =>
     sitemapLocations.includes(`${declaredOrigin}${route === '/' ? '/' : route}`),
   ),
@@ -448,51 +462,64 @@ check(
 /*
   ---------------------------------------------------------------- P18, D-3
 
-  **Two assertions, because both failure modes are completely silent.**
+  **Three assertions per URL, because all three failure modes are completely silent.**
 
   A one-way `hreflang` is ignored: if `/about` claims `/uk/about` and that page does not claim
   `/about` back, Google drops the relationship with no warning in Search Console and no error
-  anywhere. And a Ukrainian page that canonicalises to its English counterpart is not a small bug —
-  it is an instruction to drop every Ukrainian URL on the site, which is the entire asset this
-  programme built.
+  anywhere. A translated page that canonicalises to its English counterpart is not a small bug — it
+  is an instruction to drop every URL in that language, which is the entire asset P18 built. And
+  `x-default` has to name the same URL from every version, or the fallback is ambiguous.
 
-  Neither can be caught by reading the code, because the tags are produced by an effect at runtime
-  and the sitemap is generated separately. They have to be read off the rendered page.
+  Written over the whole set rather than as a pair check: with two languages the difference is
+  cosmetic, with three it is the difference between six declarations and nine, and the three that
+  would go missing are the ones nobody would think to look for.
+
+  None of it can be caught by reading the code — the tags are produced by an effect at runtime and
+  the sitemap is generated separately. They have to be read off the rendered page.
 */
-console.log('\n--- the two languages declare each other ---')
+console.log('\n--- every language declares every other ---')
 
 for (const path of PUBLIC_PATHS) {
-  const english = factsByRoute.get(path)
-  const ukrainian = factsByRoute.get(ukPath(path))
+  const views = supportedLanguages.map((language) => {
+    const route = localizePath(path, language)
 
-  if (!english || !ukrainian) {
-    check(`${path} was inspected in both languages`, false)
+    return { language, route, facts: factsByRoute.get(route) }
+  })
+  const inspected = views.flatMap((view) => (view.facts ? [{ ...view, facts: view.facts }] : []))
+
+  if (inspected.length !== views.length) {
+    check(`${path} was inspected in every language`, false)
     continue
   }
 
+  const defaultUrl = `${TARGET}${localizePath(path, DEFAULT_LANGUAGE)}`
+
+  for (const { route, facts } of inspected) {
+    check(
+      `${route} declares all ${supportedLanguages.length} alternates (hreflang is reciprocal)`,
+      supportedLanguages.every(
+        (other) => facts.alternates[other] === `${TARGET}${localizePath(path, other)}`,
+      ),
+      Object.entries(facts.alternates)
+        .map(([code, href]) => `${code}→${href}`)
+        .join(' '),
+    )
+    check(
+      `${route} canonicalises to itself`,
+      facts.canonical === `${TARGET}${route}`,
+      `canonical=${facts.canonical}`,
+    )
+    check(
+      `x-default on ${route} points at ${localizePath(path, DEFAULT_LANGUAGE)}`,
+      facts.alternates['x-default'] === defaultUrl,
+      `${facts.alternates['x-default']}`,
+    )
+  }
+
   check(
-    `${path} and ${ukPath(path)} declare each other (hreflang is reciprocal)`,
-    english.alternates.uk === `${TARGET}${ukPath(path)}` &&
-      english.alternates.en === `${TARGET}${path}` &&
-      ukrainian.alternates.en === `${TARGET}${path}` &&
-      ukrainian.alternates.uk === `${TARGET}${ukPath(path)}`,
-    `en→${english.alternates.uk} | uk→${ukrainian.alternates.en}`,
-  )
-  check(
-    `${ukPath(path)} canonicalises to itself, not to ${path}`,
-    ukrainian.canonical === `${TARGET}${ukPath(path)}`,
-    `canonical=${ukrainian.canonical}`,
-  )
-  check(
-    `${path} and ${ukPath(path)} say different things`,
-    english.title !== ukrainian.title,
-    `"${english.title}" vs "${ukrainian.title}"`,
-  )
-  check(
-    `x-default points at the English ${path}`,
-    english.alternates['x-default'] === `${TARGET}${path}` &&
-      ukrainian.alternates['x-default'] === `${TARGET}${path}`,
-    `${english.alternates['x-default']} / ${ukrainian.alternates['x-default']}`,
+    `the ${inspected.length} versions of ${path} say different things`,
+    new Set(inspected.map((view) => view.facts.title)).size === inspected.length,
+    inspected.map((view) => `"${view.facts.title}"`).join(' vs '),
   )
 }
 
@@ -509,13 +536,76 @@ console.log('\n--- the landing page on its second URL ---')
 const welcome = await inspect(ALIAS_ROUTE)
 check(`${ALIAS_ROUTE} renders the landing page`, welcome.words > MINIMUM_LANDING_WORDS, `${welcome.words} words`)
 check(
-  `${ALIAS_ROUTE} gives / the canonical rather than claiming it`,
-  welcome.canonical === `${TARGET}/`,
+  `${ALIAS_ROUTE} gives ${DEFAULT_HOME} the canonical rather than claiming it`,
+  welcome.canonical === `${TARGET}${DEFAULT_HOME}`,
   `canonical=${welcome.canonical}`,
 )
 check(
   `${ALIAS_ROUTE} is not listed in the sitemap`,
   !sitemap.body.includes(`${declaredOrigin}${ALIAS_ROUTE}`),
+)
+
+/*
+  ---------------------------------------------------------------- the /en move, 2026-09-21
+
+  English moved from `/` to `/en` so that every language is reached the same way. Two things have
+  to be true for that to have cost nothing, and neither is visible from inside the app.
+
+  **The old URLs must still answer.** Ten URLs were indexed at the root, and a 308 is what hands
+  their standing to the new ones. They are edge redirects in `vercel.json`, so they only exist on
+  the deployment — `vite preview` answers 200 for everything and can say nothing about them.
+
+  **`/` must still take a visitor somewhere.** It is nobody's language now: it renders the gateway,
+  which reads a stored choice or the browser's own list and replaces the URL with a language tree.
+  That part *is* checkable locally, because it happens in the page.
+*/
+console.log('\n--- the root, and the URLs English used to live at ---')
+
+for (const route of LEGACY_ROUTES) {
+  const response = await fetch(`${TARGET}${route}`, { redirect: 'manual' })
+  const location = response.headers.get('location')
+
+  deploymentOnly(
+    `${route} redirects permanently to ${localizePath(route, DEFAULT_LANGUAGE)}`,
+    (response.status === 301 || response.status === 308) &&
+      location === localizePath(route, DEFAULT_LANGUAGE),
+    `${response.status} → ${location}`,
+  )
+}
+
+/*
+  What `/` may decide is deliberately loose here, and the stored-choice checks below are the tight
+  ones. A visitor with no stored choice gets whatever their *browser* asks for, so this machine's
+  own Chrome — Ukrainian, on a Ukrainian Windows — correctly lands on `/uk` and a CI runner would
+  land on `/en`. Asserting either would be asserting the machine. What must always hold is that
+  `/` does not keep the visitor.
+*/
+const LANGUAGE_HOMES = supportedLanguages.map((language) => localizePath('/', language))
+
+const root = await inspect('/')
+check(
+  '/ hands the visitor to a language rather than rendering one',
+  LANGUAGE_HOMES.includes(root.path),
+  `landed on ${root.path}, of ${LANGUAGE_HOMES.join(' ')}`,
+)
+
+for (const language of supportedLanguages) {
+  // Same origin as the page just inspected, so this is the app's own storage.
+  await evaluate(`window.localStorage.setItem('cowfield.language', '${language}')`)
+  const stored = await inspect('/')
+
+  check(
+    `/ honours a stored choice of ${language}`,
+    stored.path === localizePath('/', language),
+    `landed on ${stored.path}`,
+  )
+}
+
+await evaluate(`window.localStorage.removeItem('cowfield.language')`)
+check(
+  `/ is not listed in the sitemap, because it redirects`,
+  !sitemapLocations.includes(`${declaredOrigin}/`),
+  sitemapLocations.slice(0, 2).join(' '),
 )
 
 console.log('\n--- the pages that must stay out of the index ---')

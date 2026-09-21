@@ -1,60 +1,67 @@
 # CowField — https://cowfield.vercel.app
 #
+# **GENERATED — do not edit by hand.**  npm run seo:files
+#
+# Source of truth: `scripts/publicPages.ts` for the rules, `src/languages.ts` for the languages.
+# `npm run check:seo-files` fails if this file has drifted from them.
+#
 # A static file in `public/` on purpose. Vercel checks the filesystem before it applies the rewrites
 # in `vercel.json`, and until this file existed the `/(.*)` catch-all answered /robots.txt with the
 # app's HTML — measured 2026-09-10: 200, text/html.
 #
-# Since P18 the site is bilingual: the same tree is mounted at `/` (English) and `/uk` (Ukrainian),
-# so **every rule below needs its `/uk` twin**. A rule that only covers one language leaves the other
-# half of the site either uncrawlable or uncontrolled, and neither failure announces itself.
+# Every rule is written once and repeated per language, because a rule that covers one language
+# leaves the rest of the site either uncrawlable or uncontrolled, and neither failure announces
+# itself.
 
 User-agent: *
 
 # Credential forms. Nothing to index, and no reason to fetch them.
-Disallow: /login
-Disallow: /register
-Disallow: /forgot-password
-Disallow: /reset-password
-Disallow: /verify-email
-Disallow: /auth/
+Disallow: /en/login
 Disallow: /uk/login
+Disallow: /en/register
 Disallow: /uk/register
+Disallow: /en/forgot-password
 Disallow: /uk/forgot-password
-Disallow: /uk/reset-password
-Disallow: /uk/verify-email
-Disallow: /uk/auth/
 
-# **Boards are shareable, not searchable** (P18, decision D3). They are public now — a link to one
+# The same, for the three URLs that carry no language prefix: Neon Auth has the OAuth callback
+# registered and puts the other two into emails, so they answer at the root and only there.
+Disallow: /auth/
+Disallow: /verify-email
+Disallow: /reset-password
+
+# **Boards are shareable, not searchable** (P18, decision D3). They are public — a link to one
 # works for anyone — but a board behind a gate is a thin page, and a thousand of them is the
-# doorway-page pattern. The listing pages below are what carries the content worth ranking, and
-# crawl budget spent on 1,000 near-identical grids is budget not spent on them.
-Disallow: /game/
+# doorway-page pattern. The listing pages carry the content worth ranking, and crawl budget
+# spent on 1,000 near-identical grids is budget not spent on them.
+Disallow: /en/game/
 Disallow: /uk/game/
 
 # Still behind a session.
-Disallow: /settings
-Disallow: /statistics
+Disallow: /en/settings
 Disallow: /uk/settings
+Disallow: /en/statistics
 Disallow: /uk/statistics
 
 # Authoring. Admin-only on the server, and `/levels/*` is allowed below, so these are named
 # explicitly rather than left to be discovered and discarded.
-Disallow: /levels/*/create
-Disallow: /levels/*/*/edit
+Disallow: /en/levels/*/create
 Disallow: /uk/levels/*/create
+Disallow: /en/levels/*/*/edit
 Disallow: /uk/levels/*/*/edit
 
-Allow: /
-Allow: /about
-Allow: /how-to-solve
-Allow: /difficulties
-Allow: /levels
-Allow: /levels/
+Allow: /en
 Allow: /uk
+Allow: /en/about
 Allow: /uk/about
+Allow: /en/how-to-solve
 Allow: /uk/how-to-solve
+Allow: /en/difficulties
 Allow: /uk/difficulties
+Allow: /en/about-project
+Allow: /uk/about-project
+Allow: /en/levels
 Allow: /uk/levels
+Allow: /en/levels/
 Allow: /uk/levels/
 
 Sitemap: https://cowfield.vercel.app/sitemap.xml

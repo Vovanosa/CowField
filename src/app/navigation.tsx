@@ -22,15 +22,15 @@ import {
  * The app's `Link`, `Navigate` and `useNavigate` — the same three things react-router exports, with
  * the current language's URL prefix applied to every absolute path.
  *
- * **Why they have to be wrapped.** The route tree is mounted twice, at `/` and at `/uk`
- * (`AppRouter`), so a component sitting on `/uk/about` and a component sitting on `/about` are the
- * same component. A bare `<Link to="/levels">` in it sends the Ukrainian reader to the *English*
- * tree, silently, with no error anywhere — the page just changes language under them. Every
- * internal link in the app is a chance to do that, so the fix belongs at the link, not at the 40
- * call sites.
+ * **Why they have to be wrapped.** The route tree is mounted once per language, at `/en` and at
+ * `/uk` (`AppRouter`), so a component sitting on `/uk/about` and one sitting on `/en/about` are the
+ * same component. A bare `<Link to="/levels">` in it would point outside every language tree, where
+ * only the gateway lives — the reader would be bounced back in, silently, in whichever language
+ * they last chose rather than the one they are reading. Every internal link in the app is a chance
+ * to do that, so the fix belongs at the link, not at the 40 call sites.
  *
  * Paths written in components stay language-neutral (`/levels`, `/game/easy/3`), which is what makes
- * them readable. `localizePath` is idempotent, so passing an already-prefixed path is harmless.
+ * them readable — and is why moving English from `/` to `/en` changed no component at all. `localizePath` is idempotent, so passing an already-prefixed path is harmless.
  *
  * **`eslint.config.js` forbids importing these three from `react-router-dom` anywhere else**, which
  * is the only thing stopping the next `<Link>` from reintroducing the bug.

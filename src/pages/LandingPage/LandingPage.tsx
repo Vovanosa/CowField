@@ -2,9 +2,10 @@ import { BookOpenText, LayoutGrid, Play, Rows3, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Link, useNavigate } from '../../app/navigation'
+import { Link, useLanguage, useNavigate } from '../../app/navigation'
 import { useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
+import { localizePath, supportedLanguages } from '../../i18n'
 import { SandboxBoard } from '../../components/SandboxBoard'
 import { StatusMessage } from '../../components/ui'
 import styles from './LandingPage.module.css'
@@ -38,6 +39,7 @@ export function LandingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const auth = useAuth()
+  const language = useLanguage()
   const [isStarting, setIsStarting] = useState(false)
   const [isSlow, setIsSlow] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -135,8 +137,16 @@ export function LandingPage() {
             applicationCategory: 'Game',
             operatingSystem: 'Web browser',
             playMode: 'SinglePlayer',
-            inLanguage: ['en', 'uk'],
-            url: typeof window === 'undefined' ? undefined : window.location.origin,
+            inLanguage: [...supportedLanguages],
+            /*
+              The home page **of this language**, not the bare origin. Since English moved to
+              `/en` the origin is a redirect, and naming a redirect as the thing's URL asks a
+              crawler to resolve a hop to find out what it is already looking at.
+            */
+            url:
+              typeof window === 'undefined'
+                ? undefined
+                : `${window.location.origin}${localizePath('/', language)}`,
             image:
               typeof window === 'undefined' ? undefined : `${window.location.origin}/og-image.png`,
             offers: {

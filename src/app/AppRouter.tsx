@@ -25,9 +25,9 @@ import { applyThemeMode } from '../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../game/usePlayerSettings'
 import i18n, {
   applyLanguage,
-  LANGUAGE_PATH_PREFIXES,
-  getStoredLanguage,
-  localizePath,
+  getPreferredLanguage,
+  LANGUAGES,
+  localizeHref,
   normalizeLanguage,
   supportedLanguages,
   type SupportedLanguage,
@@ -183,49 +183,79 @@ function PublicShell() {
 }
 
 /**
- * The root of one language's copy of the site, and the only thing that decides which language a page
- * renders in.
+ * Keeps the rendered language matching the URL that was navigated to.
  *
- * **The URL is the source of truth.** Before P18 the language was a `localStorage` value read once
- * at module load, so one URL served both languages and Google could only ever see English — the
- * Ukrainian copy the app already had was reachable by no link at all. Mounting the same tree under
- * `/` and `/uk` makes `/about` and `/uk/about` two real pages that can each be indexed, and this
- * component keeps the rendered language matching the path it was reached by.
- *
- * The sync is a **layout** effect, so a back/forward navigation across the two trees repaints in the
- * new language instead of showing one frame of the old one. On a cold load there is nothing to sync:
+ * A **layout** effect, so a back/forward navigation across two language trees repaints in the new
+ * language instead of showing one frame of the old one. On a cold load there is nothing to sync:
  * `i18n.ts` reads the same URL when it initialises.
- *
- * **`/` is the one exception (scope P18, decision D7).** A returning visitor whose stored preference
- * is Ukrainian is redirected from `/` to `/uk` — and only from `/`, so a shared English link stays
- * English. A crawler has no stored preference and therefore never sees the redirect.
  */
-function LanguageRoute({ language }: { language: SupportedLanguage }) {
-  const { pathname } = useLocation()
-  const storedLanguage = getStoredLanguage()
-  const shouldRedirectToStored = language === 'en' && pathname === '/' && storedLanguage !== 'en'
-  const activeLanguage = shouldRedirectToStored ? storedLanguage : language
-
+function useSyncedLanguage(language: SupportedLanguage) {
   useLayoutEffect(() => {
-    if (normalizeLanguage(i18n.resolvedLanguage) !== activeLanguage) {
+    if (normalizeLanguage(i18n.resolvedLanguage) !== language) {
       /*
         `applyLanguage` and not `i18n.changeLanguage`: since 2026-09-20 only English is in the
         bundle, so switching to Ukrainian has to fetch its dictionary first. The page therefore
         stays in the language being left for the length of one chunk fetch rather than flashing
         English at a `/uk` URL, and that only happens on the first switch of a session.
       */
-      void applyLanguage(activeLanguage)
+      void applyLanguage(language)
     }
-  }, [activeLanguage])
+  }, [language])
+}
 
-  if (shouldRedirectToStored) {
-    // Already an absolute, language-prefixed path, so this is react-router's `Navigate` and not the
-    // wrapper: the wrapper would localise it again against the language of the page being left,
-    // which is exactly the one being redirected away from.
-    return <RouterNavigate to={localizePath('/', storedLanguage)} replace />
-  }
+/**
+ * The root of one language's copy of the site, and the only thing that decides which language a page
+ * renders in.
+ *
+ * **The URL is the source of truth.** Before P18 the language was a `localStorage` value read once
+ * at module load, so one URL served both languages and Google could only ever see English — the
+ * Ukrainian copy the app already had was reachable by no link at all. Mounting the same tree under
+ * `/en` and `/uk` makes `/en/about` and `/uk/about` two real pages that can each be indexed, and
+ * this component keeps the rendered language matching the path it was reached by.
+ */
+function LanguageRoute({ language }: { language: SupportedLanguage }) {
+  useSyncedLanguage(language)
 
   return <Outlet />
+}
+
+/**
+ * The root of the handful of URLs that carry no language, because Neon Auth already has them
+ * written down. They render in the visitor's own language rather than always in English.
+ */
+function UnprefixedRoute() {
+  useSyncedLanguage(getPreferredLanguage())
+
+  return <Outlet />
+}
+
+/**
+ * **`/` is not a page. It is a decision**, and this is the whole of it: work out which language
+ * this visitor wants and send them to the same path inside that language's tree.
+ *
+ * Until 2026-09-21 English *was* the root, and this job did not exist — `/` rendered English and a
+ * returning Ukrainian visitor got a redirect from it (decision D7). Now that every language has a
+ * prefix, the redirect is the only thing `/` does, and it does it for everyone. The rule it
+ * generalises is the same one: a stored choice wins, a browser preference is the next best thing,
+ * and English is what is left.
+ *
+ * It is mounted at `*` as well as at `/`, which is what makes a bare `/about` still work. Those
+ * are the URLs the site was indexed under before the move; `vercel.json` answers them with a
+ * permanent redirect at the edge in production, and this is the same answer for a local build,
+ * where there is no edge. A path that is genuinely unknown lands in a language tree and meets its
+ * `*` there, which is the real not-found page.
+ *
+ * Query and hash survive, because a shared `/game/easy/3?from=…` must arrive intact.
+ */
+function LanguageGateway() {
+  const { pathname, search, hash } = useLocation()
+
+  // react-router's `Navigate` and not the wrapper from `./navigation`: the target is already an
+  // absolute, language-prefixed path, and the wrapper would localise it a second time against the
+  // language of the URL being left — which is the one that has no language.
+  return (
+    <RouterNavigate to={localizeHref(`${pathname}${search}${hash}`, getPreferredLanguage())} replace />
+  )
 }
 
 /**
@@ -242,21 +272,13 @@ function createLanguageChildren(): RouteObject[] {
       element: <PublicShell />,
       errorElement: <RouteErrorElement />,
       children: [
-        {
-          path: 'auth/google/callback',
-          element: withSuspense(<GoogleAuthCallbackPage />),
-        },
-        {
-          path: 'reset-password',
-          element: withSuspense(<ResetPasswordPage />),
-        },
-        {
-          // Outside `PublicOnlyRoute` on purpose, like the OAuth callback: the page decides what an
-          // already-signed-in visitor means, rather than being redirected before it can read the
-          // code.
-          path: 'verify-email',
-          element: withSuspense(<VerifyEmailPage />),
-        },
+        /*
+          The OAuth callback, `/verify-email` and `/reset-password` are **not** here. They are the
+          three URLs this app does not own: `authSessionStorage.ts` hands them to Neon Auth as
+          absolute paths, the callback is registered in its console and the other two are sitting in
+          people's inboxes right now. They are mounted unprefixed at the root instead — see
+          `createUnprefixedRoutes` below.
+        */
         {
           element: <PublicOnlyRoute />,
           children: [
@@ -292,16 +314,18 @@ function createLanguageChildren(): RouteObject[] {
               rendered the same login form, 31 words, one `<title>`.
 
               It now guards only the routes that genuinely need a session. Five routes are public:
-              `/` (the landing page for a visitor, today's home page for a player), `/about`, which
-              is the rules content and the best keyword page on the site, and the two pages added in
-              P17, `/how-to-solve` and `/difficulties`. Everything else is unchanged — a signed-out
-              visitor still gets bounced to `/login` from `/levels`, `/game`, `/settings` and
-              `/statistics`.
+              the index (the landing page for a visitor, today's home page for a player), `about`,
+              which is the rules content and the best keyword page on the site, the two pages added
+              in P17, `how-to-solve` and `difficulties`, and `about-project`. Everything else is
+              unchanged — a signed-out visitor still gets bounced to `login` from `levels`, `game`,
+              `settings` and `statistics`.
 
-              Every public route needs three things outside this file or it is invisible: a rewrite
-              in `vercel.json` (or a reload 404s at the edge), a `<url>` in `public/sitemap.xml`, and
-              an entry in `PUBLIC_ROUTES` in `scripts/check-seo.mts`. Since P18 each of those is a
-              **pair** — the English path and its `/uk` counterpart.
+              A public route needs **one** thing outside this file or it is invisible: an entry in
+              `scripts/publicPages.ts`, which is what `public/sitemap.xml`, `public/robots.txt` and
+              `npm run check:seo` are all built from. It used to need a rewrite in `vercel.json` as
+              well, one per path per language; since every language sits behind a prefix those
+              collapsed into `/en/:path*` and `/uk/:path*`, and the whole class of "new page 404s on
+              reload" went with them.
             */
             {
               index: true,
@@ -422,19 +446,67 @@ function createLanguageChildren(): RouteObject[] {
 }
 
 /**
- * One top-level route per language: `/` for English, `/uk` for Ukrainian.
+ * The three URLs that cannot carry a language prefix, because something outside this app has them
+ * written down: the Google OAuth callback is registered in the Neon Auth console, and the
+ * verification and password-reset links are in emails that were sent before any of this changed.
  *
- * Built from `supportedLanguages` rather than written out twice, so a third language is a prefix in
- * `LANGUAGE_PATH_PREFIXES` and a locale file — not another copy of the tree to keep in step.
+ * Prefixing them would break a sign-up that started yesterday — a failure nobody reports, because
+ * from the outside it is just a link that does not work. They are listed in `UNPREFIXED_PATHS` in
+ * `src/languages.ts`, which is also what keeps them out of the per-language `robots.txt` rules.
  */
-const router = createBrowserRouter(
-  supportedLanguages.map((language) => ({
-    path: LANGUAGE_PATH_PREFIXES[language] || '/',
+function createUnprefixedRoutes(): RouteObject[] {
+  return [
+    {
+      path: 'auth/google/callback',
+      element: withSuspense(<GoogleAuthCallbackPage />),
+    },
+    {
+      path: 'reset-password',
+      element: withSuspense(<ResetPasswordPage />),
+    },
+    {
+      // Outside `PublicOnlyRoute` on purpose, like the OAuth callback: the page decides what an
+      // already-signed-in visitor means, rather than being redirected before it can read the code.
+      path: 'verify-email',
+      element: withSuspense(<VerifyEmailPage />),
+    },
+  ]
+}
+
+/**
+ * One top-level route per language — `/en`, `/uk` — plus the root, which belongs to no language.
+ *
+ * The per-language trees are built from `supportedLanguages` rather than written out once each, so
+ * a third language is a row in `LANGUAGES` and a locale file, not another copy of the tree to keep
+ * in step. **English is no longer special**: it has a prefix like everything else, and `/` is a
+ * gateway rather than the English home page (2026-09-21, superseding decision D1).
+ *
+ * Route ranking is what keeps the root's `*` from swallowing the language trees: `/en/about`
+ * scores above `/*`, and `/en/nonsense` matches `/en/*` — the real not-found page — rather than
+ * bouncing back through the gateway.
+ */
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <UnprefixedRoute />,
+    errorElement: <RouteErrorElement />,
+    children: [
+      { index: true, element: <LanguageGateway /> },
+      {
+        element: <PublicShell />,
+        errorElement: <RouteErrorElement />,
+        children: createUnprefixedRoutes(),
+      },
+      { path: '*', element: <LanguageGateway /> },
+    ],
+  },
+  ...supportedLanguages.map((language) => ({
+    path: LANGUAGES[language].prefix,
     element: <LanguageRoute language={language} />,
     errorElement: <RouteErrorElement />,
     children: createLanguageChildren(),
   })),
-)
+])
 
 export function AppRouter() {
   return <RouterProvider router={router} />

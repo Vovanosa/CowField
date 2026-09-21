@@ -2,11 +2,10 @@ import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-re
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { languageOptions } from '../../app/languageOptions'
 import { useLanguage, useSwitchLanguage } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
-import gbFlag from '../../assets/flags/gb.svg'
-import uaFlag from '../../assets/flags/ua.svg'
 import { SettingsItem } from '../../components/SettingsItem'
 import { PageHeader, Panel } from '../../components/ui'
 import { playSoundEffect } from '../../game/audio/audioManager'
@@ -51,23 +50,6 @@ const settingsConfig: Array<{
   {
     key: 'autoPlaceDotsEnabled',
     icon: Sparkles,
-  },
-]
-
-const languageOptions: Array<{
-  value: PlayerLanguage
-  code: 'EN' | 'UA'
-  flag: string
-}> = [
-  {
-    value: 'en',
-    code: 'EN',
-    flag: gbFlag,
-  },
-  {
-    value: 'uk',
-    code: 'UA',
-    flag: uaFlag,
   },
 ]
 
@@ -214,10 +196,11 @@ export function SettingsPage() {
                         .filter(Boolean)
                         .join(' ')}
                       aria-pressed={language === option.value}
+                      aria-label={option.nativeName}
                       onClick={() => handleLanguageChange(option.value)}
                     >
                       <img className={styles.languageOptionFlag} src={option.flag} alt="" aria-hidden="true" />
-                      <span>{option.code}</span>
+                      <span>{option.label}</span>
                     </button>
                   ))}
                 </div>

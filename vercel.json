@@ -30,17 +30,76 @@
       ]
     }
   ],
-  "rewrites": [
+  "redirects": [
+    {
+      "source": "/about",
+      "destination": "/en/about",
+      "permanent": true
+    },
+    {
+      "source": "/how-to-solve",
+      "destination": "/en/how-to-solve",
+      "permanent": true
+    },
+    {
+      "source": "/difficulties",
+      "destination": "/en/difficulties",
+      "permanent": true
+    },
+    {
+      "source": "/about-project",
+      "destination": "/en/about-project",
+      "permanent": true
+    },
+    {
+      "source": "/welcome",
+      "destination": "/en/welcome",
+      "permanent": true
+    },
+    {
+      "source": "/levels",
+      "destination": "/en/levels",
+      "permanent": true
+    },
+    {
+      "source": "/levels/:path*",
+      "destination": "/en/levels/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/game/:path*",
+      "destination": "/en/game/:path*",
+      "permanent": true
+    },
     {
       "source": "/login",
-      "destination": "/"
+      "destination": "/en/login",
+      "permanent": true
     },
     {
       "source": "/register",
-      "destination": "/"
+      "destination": "/en/register",
+      "permanent": true
     },
     {
       "source": "/forgot-password",
+      "destination": "/en/forgot-password",
+      "permanent": true
+    },
+    {
+      "source": "/settings",
+      "destination": "/en/settings",
+      "permanent": true
+    },
+    {
+      "source": "/statistics",
+      "destination": "/en/statistics",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/verify-email",
       "destination": "/"
     },
     {
@@ -48,51 +107,15 @@
       "destination": "/"
     },
     {
-      "source": "/verify-email",
-      "destination": "/"
-    },
-    {
-      "source": "/about",
-      "destination": "/"
-    },
-    {
-      "source": "/how-to-solve",
-      "destination": "/"
-    },
-    {
-      "source": "/difficulties",
-      "destination": "/"
-    },
-    {
-      "source": "/about-project",
-      "destination": "/"
-    },
-    {
-      "source": "/welcome",
-      "destination": "/"
-    },
-    {
-      "source": "/settings",
-      "destination": "/"
-    },
-    {
-      "source": "/statistics",
-      "destination": "/"
-    },
-    {
       "source": "/auth/:path*",
       "destination": "/"
     },
     {
-      "source": "/levels",
+      "source": "/en",
       "destination": "/"
     },
     {
-      "source": "/levels/:path*",
-      "destination": "/"
-    },
-    {
-      "source": "/game/:path*",
+      "source": "/en/:path*",
       "destination": "/"
     },
     {
