@@ -89,6 +89,10 @@ const UNKNOWN_ROUTE = '/this-page-does-not-exist-seo-check'
 
 const MINIMUM_LANDING_WORDS = 150
 
+/** Roughly where Google truncates, in characters. Both are what the end of the string costs. */
+const MAX_TITLE_LENGTH = 60
+const MAX_DESCRIPTION_LENGTH = 160
+
 const CHROME_CANDIDATES = [
   process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -402,6 +406,28 @@ for (const route of PUBLIC_ROUTES) {
     `${route} has a description`,
     Boolean(facts.description && facts.description.length > 50),
     facts.description ? `${facts.description.length} chars` : 'missing',
+  )
+  /*
+    **Upper bounds, added 2026-09-21, before the first translation lands.**
+
+    Google cuts a title around 60 characters and a description around 160, and what is cut is the
+    end. Until now only the lower bound was checked and the upper one was measured by hand — which
+    worked while every string was written here in English.
+
+    It stops working at the first translation. German runs 15-30% longer than English for the same
+    sentence, so a description that fits at 155 characters in English is over at 190 in German, and
+    the failure is invisible from inside the app: the tag is correct, complete and valid, and the
+    search result is a sentence with its last clause missing.
+  */
+  check(
+    `${route} has a title that fits a search result`,
+    facts.title.length <= MAX_TITLE_LENGTH,
+    `${facts.title.length} chars (max ${MAX_TITLE_LENGTH}) — "${facts.title}"`,
+  )
+  check(
+    `${route} has a description that fits a search result`,
+    (facts.description?.length ?? 0) <= MAX_DESCRIPTION_LENGTH,
+    `${facts.description?.length ?? 0} chars (max ${MAX_DESCRIPTION_LENGTH})`,
   )
   check(
     `${route} is indexable`,

@@ -48,6 +48,7 @@
   --color-accent-strong: #9e7431;
   --color-accent-soft: rgba(201, 167, 97, 0.14);
   --color-accent-soft-strong: rgba(201, 167, 97, 0.16);
+  --color-accent-ring: rgba(201, 167, 97, 0.38);
   --color-accent-glow-start: rgba(205, 170, 96, 0.22);
   --color-accent-glow-end: rgba(205, 170, 96, 0.08);
   --color-button-text: #fffaf2;
@@ -219,6 +220,7 @@
   --color-accent-strong: #d8b574;
   --color-accent-soft: rgba(208, 171, 101, 0.14);
   --color-accent-soft-strong: rgba(208, 171, 101, 0.18);
+  --color-accent-ring: rgba(208, 171, 101, 0.42);
   --color-accent-glow-start: rgba(216, 181, 116, 0.18);
   --color-accent-glow-end: rgba(216, 181, 116, 0.06);
   --color-button-text: #1a140e;

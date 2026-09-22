@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 
+import { useNavigate } from '../../app/navigation'
 import { withReturnTo } from '../../app/returnTo'
 import { useAuth } from '../../app/useAuth'
 import { LanguageSwitcher } from '../LanguageSwitcher'
@@ -21,10 +22,29 @@ export function ProfileMenu() {
   const { t } = useTranslation()
   const { session, canPreviewUser, previewRole, setPreviewRole, logout, isGuest } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isPreviewRoleOpen, setIsPreviewRoleOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const previewRoleMenuRef = useRef<HTMLDivElement | null>(null)
+
+  /**
+   * **Logging out goes to the login page, from wherever you were.**
+   *
+   * `logout()` clears the session and nothing else, which left the reader looking at the page
+   * they had just lost access to. On a guarded route `RequireSession` cleaned that up a moment
+   * later; on a public one — `/de/about`, say — nothing did, so the header quietly changed and
+   * the page stayed. Two people reading the same screen disagreed about whether they were signed
+   * in.
+   *
+   * `replace` so the back button does not walk into the signed-in view they just left, and the
+   * wrapped `navigate` so it lands in the language they were reading.
+   */
+  async function handleLogout() {
+    closeProfileMenu()
+    await logout()
+    navigate('/login', { replace: true })
+  }
 
   const closeProfileMenu = useCallback(() => {
     setIsProfileMenuOpen(false)
@@ -170,7 +190,7 @@ export function ProfileMenu() {
           ) : (
             <Button
               className={styles.profileLogoutButton}
-              onClick={() => void logout()}
+              onClick={() => void handleLogout()}
               leadingIcon={<LogOut size={16} />}
             >
               {t('Log out')}

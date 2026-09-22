@@ -2,7 +2,7 @@ import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-re
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { languageOptions } from '../../app/languageOptions'
+import { orderedLanguageOptions } from '../../app/languageOptions'
 import { useLanguage, useSwitchLanguage } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
@@ -185,7 +185,7 @@ export function SettingsPage() {
               showDivider
               control={
                 <div className={styles.languageControl} role="group" aria-label={t('Language')}>
-                  {languageOptions.map((option) => (
+                  {orderedLanguageOptions.map((option) => (
                     <button
                       key={option.value}
                       type="button"

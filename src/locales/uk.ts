@@ -293,7 +293,9 @@
   // шукатимуть.
   'About the project': 'Про проєкт',
   'CowField is a side project by Volodymyr Mykhailiuk, a Star Battle puzzle built solo to try out new tools and to have one finished thing worth showing.':
-    'CowField — пет-проєкт Володимира Михайлюка (Volodymyr Mykhailiuk), головоломка Star Battle, зроблена самотужки, щоб спробувати нові інструменти й мати одну завершену річ.',
+    // Латинське написання імені прибрано: 170 символів не вміщалися в пошуковий сніпет, а саме ім'я
+    // все одно є в структурованих даних сторінки та в англійській версії.
+    'CowField — пет-проєкт Володимира Михайлюка, головоломка Star Battle, зроблена самотужки, щоб спробувати нові інструменти й мати одну завершену річ.',
   'CowField is a personal project. I am Volodymyr Mykhailiuk, and I built it on my own, front to back.':
     'CowField — особистий проєкт. Мене звати Володимир Михайлюк, і я зробив його сам, від початку до кінця.',
   'Why a puzzle game': 'Чому саме головоломка',

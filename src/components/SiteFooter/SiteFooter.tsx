@@ -1,10 +1,12 @@
-import { Share2 } from 'lucide-react'
-import { useState } from 'react'
+import { ChevronDown, Globe, Share2 } from 'lucide-react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { orderedLanguageOptions } from '../../app/languageOptions'
 import { LanguageLink, Link, useLanguage } from '../../app/navigation'
-import { localizePath, type SupportedLanguage } from '../../i18n'
+import { LANGUAGES, localizePath } from '../../i18n'
 import { ShareDialog } from '../ShareDialog'
+import { useDropdownMenu } from '../ui'
 import styles from './SiteFooter.module.css'
 
 /**
@@ -34,29 +36,19 @@ const LINKS = [
   { to: '/about-project', label: 'About the project' },
 ] as const
 
-/**
- * Each language's name **in that language**, and deliberately not run through `t()`.
- *
- * A language link is the one label on a page that should not follow the page's language: a reader
- * who cannot read this page is exactly the reader who needs to recognise the link out of it. Every
- * bilingual site writes it this way, and it is also why `LanguageLink` sets `lang` on the anchor.
- */
-const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
-  en: 'English',
-  uk: 'Українською',
-}
-
-/** Two languages, so "the other one" is a flip rather than a list. */
-const OTHER_LANGUAGE: Record<SupportedLanguage, SupportedLanguage> = {
-  en: 'uk',
-  uk: 'en',
-}
-
 export function SiteFooter() {
   const { t } = useTranslation()
   const language = useLanguage()
-  const otherLanguage = OTHER_LANGUAGE[language]
+  const languagePickerRef = useRef<HTMLDetailsElement>(null)
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false)
+  const closeLanguagePicker = useCallback(() => setIsLanguageOpen(false), [])
   const [isShareOpen, setIsShareOpen] = useState(false)
+
+  useDropdownMenu<HTMLDetailsElement>({
+    containerRef: languagePickerRef,
+    isOpen: isLanguageOpen,
+    onClose: closeLanguagePicker,
+  })
 
   /*
     **The front door in the reader's own language**, so a Ukrainian player shares `/uk` and their
@@ -80,16 +72,71 @@ export function SiteFooter() {
           </Link>
         ))}
         {/*
-          The site's only crawlable path between the two language trees — see `LanguageLink`. It sits
-          in the footer because the footer is rendered once in `AppShell`, outside the keyed route
-          stage, so this link is in the DOM of every page in the shell without anyone opening a menu.
+          **`<details>`, and that is the whole reason this can be a dropdown at all.**
+
+          This control is the site's only crawlable path between the language trees. It used to be
+          one plain link per other language, sitting in the row — safe, and increasingly silly as
+          languages were added. Collapsing them into a menu is exactly the mistake that cost a week
+          of `/uk` going uncrawled in 2026-09-19: Googlebot follows links, it does not open menus,
+          and `hreflang` is an alternates hint rather than a path.
+
+          A closed `<details>` still has its contents in the DOM — the browser hides them, they are
+          never absent — so every `<a href>` below is read on the first pass whether or not anyone
+          clicks. The same trick the FAQ on `/about` uses for its answers, for the same reason. The
+          React version of this, `{isOpen && <ul>…</ul>}`, would render nothing until a click and
+          would quietly undo the fix.
+
+          `open` is mirrored into state only so `useDropdownMenu` can close it on Escape or an
+          outside click; the element stays the source of truth via `onToggle`.
         */}
-        <LanguageLink
-          className={`${styles.link} ${styles.languageLink}`}
-          language={otherLanguage}
+        <details
+          ref={languagePickerRef}
+          className={styles.languagePicker}
+          open={isLanguageOpen}
+          onToggle={(event) => setIsLanguageOpen(event.currentTarget.open)}
         >
-          {LANGUAGE_NAMES[otherLanguage]}
-        </LanguageLink>
+          {/*
+            **The word, not a language name.** It named the language the reader most likely wanted
+            next — "English" on a German page — which read as a link to English rather than as a
+            way to choose, and the arrow beside it did not fix that.
+
+            Naming the *current* language would be honest but close to useless: the whole page is
+            already in it. What a reader cannot tell by looking is what this control is **for**, so
+            that is what it says.
+
+            The accessible name adds the current language after it, because a screen-reader user
+            cannot glance at the page to find out which one they are in. The visible text stays the
+            start of the accessible name, which is what WCAG asks for.
+          */}
+          <summary
+            className={`${styles.link} ${styles.languageSummary}`}
+            aria-label={`${t('Language')}: ${LANGUAGES[language].nativeName}`}
+          >
+            <Globe size={15} aria-hidden="true" />
+            <span>{t('Language')}</span>
+            <ChevronDown className={styles.languageChevron} size={15} aria-hidden="true" />
+          </summary>
+          <ul className={styles.languageList}>
+            {orderedLanguageOptions.map((option) => (
+              <li key={option.value}>
+                <LanguageLink
+                  className={styles.languageOption}
+                  language={option.value}
+                  aria-current={option.value === language ? 'true' : undefined}
+                  onClick={closeLanguagePicker}
+                >
+                  <img
+                    className={styles.languageFlag}
+                    src={option.flag}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span>{option.nativeName}</span>
+                </LanguageLink>
+              </li>
+            ))}
+          </ul>
+        </details>
 
         {/*
           A button, not a link — it opens a dialog rather than going anywhere, and making it look

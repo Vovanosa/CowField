@@ -40,19 +40,188 @@
   cursor: pointer;
 }
 
-/* The language link is a different kind of thing from the four page links, so it gets a separator
-   rather than sitting in the row as a fifth page. The border is on the inline start so it reads as
-   "and also, in the other language" — and it is dropped when the row wraps onto its own line, where
-   a leading rule against nothing looks like a mistake. */
-.languageLink {
+/* The language control is a different kind of thing from the five page links, so it gets a
+   separator rather than sitting in the row as a sixth page. The border is on the inline start so it
+   reads as "and also, in another language" — and it is dropped when the row wraps onto its own
+   line, where a leading rule against nothing looks like a mistake. */
+.languagePicker {
+  position: relative;
   padding-left: var(--space-5);
   border-left: 1px solid var(--color-border-soft);
 }
 
 @media (max-width: 520px) {
-  .languageLink {
+  .languagePicker {
     padding-left: 0;
     border-left: none;
+  }
+}
+
+/* `list-item` is a `<summary>`'s default display and it is what draws the native triangle. Two
+   properties are needed rather than one: WebKit uses its own pseudo-element and ignores
+   `list-style`. The chevron in the markup replaces both — the same pair the FAQ uses. */
+.languageSummary {
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.languageSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* It points **up** when closed, because the list opens upward: this control lives at the bottom of
+   the page, where there is nothing below it to open into. */
+.languageChevron {
+  flex-shrink: 0;
+  color: var(--color-accent-strong);
+  transform: rotate(180deg);
+  transition: transform var(--transition-fast);
+}
+
+.languagePicker[open] .languageChevron {
+  transform: rotate(0deg);
+}
+
+/*
+  **A closed `<details>` does not hide this one, and that had to be measured to believe.**
+
+  The FAQ on `/about` gets its hiding for free: its answer is a static-flow child, so the browser's
+  own collapsed-`<details>` rule covers it. This list is `position: absolute` — it has to be, or
+  opening it would push the whole footer down — and an out-of-flow child escapes that rule. Closed,
+  it still reported a 168x142 box at `visibility: visible`, sitting on the page under everything
+  else.
+
+  So it is hidden explicitly. `display: none` rather than `visibility` or `opacity`, to keep it out
+  of the accessibility tree and out of the tab order while collapsed. The links stay in the DOM
+  either way, which is the part that matters for crawling — the same guarantee the FAQ relies on.
+*/
+.languagePicker:not([open]) .languageList {
+  display: none;
+}
+
+.languageList {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 168px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, var(--color-surface-glass-strong), var(--color-surface-panel-end)),
+    var(--color-surface);
+  box-shadow: var(--shadow-raised);
+  animation: language-list-in 160ms var(--ease-emphasized);
+
+  /*
+    **Five rows fit; the sixth scrolls** — the same cap the switcher's menu carries, and the same
+    arithmetic from this list's own numbers: a 40px row, a 2px gap between rows, 8px of padding top
+    and bottom, and the 1px border on each side, which counts because `box-sizing` is `border-box`
+    and this is a `max-height`.
+
+    This list opens *upward*, so without a cap a seventh or eighth language would grow it off the
+    top of the viewport rather than the bottom — the failure is worse here than in the switcher.
+
+    **Scrolling does not cost the crawlability this control exists for.** The links stay in the DOM;
+    `overflow` changes what is painted, never what is present, exactly as the `display: none` above
+    already does while collapsed.
+  */
+  max-height: calc(5 * 40px + 4 * 2px + 2 * 8px + 2 * 1px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  /* Reasoning for all of this — and for why the two spellings cannot both be declared — is on
+     `.languageMenu` in `LanguageSwitcher.module.css`. 9px of track margin rather than 10 because
+     this list's corner is `--radius-md` (16px) against the switcher's 18px. */
+}
+
+@supports (scrollbar-width: thin) and (not (selector(::-webkit-scrollbar))) {
+  .languageList {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-stronger) transparent;
+  }
+}
+
+.languageList::-webkit-scrollbar {
+  width: 10px;
+}
+
+.languageList::-webkit-scrollbar-track {
+  margin: 9px 0;
+  background: transparent;
+}
+
+.languageList::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--color-border-stronger);
+  background-clip: padding-box;
+}
+
+/* Not `--color-border-hover`: despite the name it is *fainter* than `--color-border-stronger`
+   (0.22 against 0.24 light, 0.24 against 0.28 dark), so it made the thumb fade on hover. That
+   token is for borders resting at `--color-border-strong`, which is 0.16. */
+.languageList::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-ring);
+  background-clip: padding-box;
+}
+
+.languageList::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Rises into place, because it opens upward. */
+@keyframes language-list-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.languageOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  color: var(--color-heading);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/*
+  Marked the same way as the switcher's selected row: the stronger fill, the accent text, and a 1px
+  ring as an inset `box-shadow` so the row keeps its height. This list had the accent text colour
+  first and the switcher borrowed it; the ring goes the other way, so the two places that list the
+  same six languages answer "which one am I on" identically.
+*/
+.languageOption[aria-current] {
+  background: var(--color-accent-soft-strong);
+  color: var(--color-accent-strong);
+  box-shadow: inset 0 0 0 1px var(--color-accent-ring);
+}
+
+.languageFlag {
+  width: 18px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+@media (hover: hover) {
+  .languageOption:hover {
+    background: var(--color-accent-soft);
   }
 }
 

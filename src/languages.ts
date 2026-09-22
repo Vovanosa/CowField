@@ -44,6 +44,10 @@ export type LanguageDefinition = {
  */
 export const LANGUAGES = {
   en: { prefix: '/en', nativeName: 'English', shortLabel: 'EN' },
+  de: { prefix: '/de', nativeName: 'Deutsch', shortLabel: 'DE' },
+  es: { prefix: '/es', nativeName: 'Español', shortLabel: 'ES' },
+  fr: { prefix: '/fr', nativeName: 'Français', shortLabel: 'FR' },
+  it: { prefix: '/it', nativeName: 'Italiano', shortLabel: 'IT' },
   uk: { prefix: '/uk', nativeName: 'Українська', shortLabel: 'UA' },
 } as const satisfies Record<string, LanguageDefinition>
 

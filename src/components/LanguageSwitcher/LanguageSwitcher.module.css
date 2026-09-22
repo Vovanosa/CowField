@@ -50,11 +50,22 @@
   color: var(--color-muted);
 }
 
+/*
+  Wraps, then scrolls at two rows.
+
+  This sits inside the profile dropdown, which on a phone is already most of the screen, so it is
+  the one language control that cannot be allowed to grow: a sixth language would push *Sign in*
+  off the bottom. Two rows of pills is five or six of them at this width, so nothing scrolls today
+  and nothing has to be switched on later.
+*/
 .menuLanguages {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px;
+  max-height: calc(2 * 36px + 6px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .menuLanguage {
@@ -192,9 +203,96 @@
   }
 }
 
+/*
+  **Five languages fit; the sixth scrolls.**
+
+  The arithmetic is the dropdown's own: a 44px row, a 6px gap between rows, 8px of padding top and
+  bottom — **and the 1px border on each side**, because `box-sizing` is `border-box` and this is a
+  `max-height`. Leaving the border out is not a rounding error: it clips the box by 2px, which is
+  enough to make the *fifth* language scroll. Measured, not reasoned about.
+
+  Five rows come to exactly this height, so the cap is invisible until there are more than five
+  languages — and when there are, the bottom padding gives way to a sliver of the next row, which
+  is the affordance that says there is more.
+
+  No JavaScript and no threshold to switch on: the browser simply never needs the scrollbar until
+  the content asks for it.
+*/
 .languageMenu {
   min-width: 92px;
   border-radius: 18px;
+  max-height: calc(5 * 44px + 4 * 6px + 2 * 8px + 2 * 1px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  /*
+    **The scrollbar is a hint, not a control, so it gets styled down to one.**
+
+    Both of the platform default's problems showed up the moment a sixth language made this menu
+    scroll for the first time. Windows paints a 17px track with stepper arrows at each end, which
+    is wider than the flag beside it and ends up the loudest object in a menu whose whole job is
+    six flags. And that track is an opaque square drawn to the padding edge, so it paints straight
+    over the 18px corner radius and the menu stops looking round down its right side.
+
+    **The track must stay transparent** — that is what fixes the corners, and it is not a
+    cosmetic choice. Nothing opaque may sit where the radius is.
+
+    **Both spellings are here, and the `@supports` around one of them is load-bearing.** Setting
+    `scrollbar-width` or `scrollbar-color` at all makes Chrome 121+ ignore every `::-webkit-`
+    rule below — measured, not assumed: with both declared, the gutter came out 12px rather than
+    the 10px asked for here, and Chrome's own `thin` still draws stepper arrows, which land
+    exactly in the rounded corners this is trying to protect. So the standard properties are
+    scoped to engines that have no webkit pseudo-elements to lose, which is Firefox, and everyone
+    else takes the block below.
+
+    That block can afford the better trick: a transparent border with
+    `background-clip: padding-box`, the only way to give a webkit thumb margin, so it floats clear
+    of the edge instead of riding against it. The border still takes pointer events, so the thumb
+    looks 4px wide and grabs like 10px.
+  */
+}
+
+@supports (scrollbar-width: thin) and (not (selector(::-webkit-scrollbar))) {
+  .languageMenu {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-stronger) transparent;
+  }
+}
+
+.languageMenu::-webkit-scrollbar {
+  width: 10px;
+}
+
+/*
+  Margin on the track is what shortens the thumb's travel at both ends, and 10px is geometry
+  rather than taste. The corner is an 18px radius, and the thumb's outer edge sits 3px in from the
+  right — so where that edge falls, the menu's own top boundary has already curved 8px down
+  (18 - sqrt(18² - 15²)). Ten clears it with a little to spare at both ends.
+*/
+.languageMenu::-webkit-scrollbar-track {
+  margin: 10px 0;
+  background: transparent;
+}
+
+.languageMenu::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--color-border-stronger);
+  background-clip: padding-box;
+}
+
+/* Not `--color-border-hover`: despite the name it is *fainter* than `--color-border-stronger`
+   (0.22 against 0.24 light, 0.24 against 0.28 dark), so it made the thumb fade on hover. That
+   token is for borders resting at `--color-border-strong`, which is 0.16. */
+.languageMenu::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-ring);
+  background-clip: padding-box;
+}
+
+/* The stepper arrows, which are half of why the corners looked wrong. Chrome draws them even at
+   `scrollbar-width: thin`, so this rule — not that one — is what removes them. */
+.languageMenu::-webkit-scrollbar-button {
+  display: none;
 }
 
 .languageOption {

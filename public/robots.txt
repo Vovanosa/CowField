@@ -17,10 +17,22 @@ User-agent: *
 
 # Credential forms. Nothing to index, and no reason to fetch them.
 Disallow: /en/login
+Disallow: /de/login
+Disallow: /es/login
+Disallow: /fr/login
+Disallow: /it/login
 Disallow: /uk/login
 Disallow: /en/register
+Disallow: /de/register
+Disallow: /es/register
+Disallow: /fr/register
+Disallow: /it/register
 Disallow: /uk/register
 Disallow: /en/forgot-password
+Disallow: /de/forgot-password
+Disallow: /es/forgot-password
+Disallow: /fr/forgot-password
+Disallow: /it/forgot-password
 Disallow: /uk/forgot-password
 
 # The same, for the three URLs that carry no language prefix: Neon Auth has the OAuth callback
@@ -34,34 +46,82 @@ Disallow: /reset-password
 # doorway-page pattern. The listing pages carry the content worth ranking, and crawl budget
 # spent on 1,000 near-identical grids is budget not spent on them.
 Disallow: /en/game/
+Disallow: /de/game/
+Disallow: /es/game/
+Disallow: /fr/game/
+Disallow: /it/game/
 Disallow: /uk/game/
 
 # Still behind a session.
 Disallow: /en/settings
+Disallow: /de/settings
+Disallow: /es/settings
+Disallow: /fr/settings
+Disallow: /it/settings
 Disallow: /uk/settings
 Disallow: /en/statistics
+Disallow: /de/statistics
+Disallow: /es/statistics
+Disallow: /fr/statistics
+Disallow: /it/statistics
 Disallow: /uk/statistics
 
 # Authoring. Admin-only on the server, and `/levels/*` is allowed below, so these are named
 # explicitly rather than left to be discovered and discarded.
 Disallow: /en/levels/*/create
+Disallow: /de/levels/*/create
+Disallow: /es/levels/*/create
+Disallow: /fr/levels/*/create
+Disallow: /it/levels/*/create
 Disallow: /uk/levels/*/create
 Disallow: /en/levels/*/*/edit
+Disallow: /de/levels/*/*/edit
+Disallow: /es/levels/*/*/edit
+Disallow: /fr/levels/*/*/edit
+Disallow: /it/levels/*/*/edit
 Disallow: /uk/levels/*/*/edit
 
 Allow: /en
+Allow: /de
+Allow: /es
+Allow: /fr
+Allow: /it
 Allow: /uk
 Allow: /en/about
+Allow: /de/about
+Allow: /es/about
+Allow: /fr/about
+Allow: /it/about
 Allow: /uk/about
 Allow: /en/how-to-solve
+Allow: /de/how-to-solve
+Allow: /es/how-to-solve
+Allow: /fr/how-to-solve
+Allow: /it/how-to-solve
 Allow: /uk/how-to-solve
 Allow: /en/difficulties
+Allow: /de/difficulties
+Allow: /es/difficulties
+Allow: /fr/difficulties
+Allow: /it/difficulties
 Allow: /uk/difficulties
 Allow: /en/about-project
+Allow: /de/about-project
+Allow: /es/about-project
+Allow: /fr/about-project
+Allow: /it/about-project
 Allow: /uk/about-project
 Allow: /en/levels
+Allow: /de/levels
+Allow: /es/levels
+Allow: /fr/levels
+Allow: /it/levels
 Allow: /uk/levels
 Allow: /en/levels/
+Allow: /de/levels/
+Allow: /es/levels/
+Allow: /fr/levels/
+Allow: /it/levels/
 Allow: /uk/levels/
 
 Sitemap: https://cowfield.vercel.app/sitemap.xml

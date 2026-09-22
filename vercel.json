@@ -119,6 +119,38 @@
       "destination": "/"
     },
     {
+      "source": "/de",
+      "destination": "/"
+    },
+    {
+      "source": "/de/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/es",
+      "destination": "/"
+    },
+    {
+      "source": "/es/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/fr",
+      "destination": "/"
+    },
+    {
+      "source": "/fr/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/it",
+      "destination": "/"
+    },
+    {
+      "source": "/it/:path*",
+      "destination": "/"
+    },
+    {
       "source": "/uk",
       "destination": "/"
     },

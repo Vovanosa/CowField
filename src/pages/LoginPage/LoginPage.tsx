@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
-import { useNavigate } from '../../app/navigation'
+import { useLanguage, useNavigate } from '../../app/navigation'
 import { readReturnTo } from '../../app/returnTo'
 import { Dialog } from '../../components/Dialog'
 import { countGuestProgressEntries } from '../../game/storage/guestProgressStorage'
@@ -20,6 +20,8 @@ export function LoginPage() {
   const { t } = useTranslation()
   useDocumentMeta({ title: brandedTitle(t('Login')), robots: 'noindex' })
   const navigate = useNavigate()
+  // Handed to `loginWithGoogle` so the trip to Google and back does not change language.
+  const language = useLanguage()
   const [searchParams] = useSearchParams()
   // Where the reader came from, when they got here through the level gate.
   const returnTo = readReturnTo(searchParams.toString())
@@ -105,7 +107,7 @@ export function LoginPage() {
     setMessage(null)
 
     try {
-      await loginWithGoogle()
+      await loginWithGoogle(language)
     } catch (error) {
       setMessage(toErrorMessage(error))
       setIsSubmitting(false)

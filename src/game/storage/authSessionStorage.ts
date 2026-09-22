@@ -23,6 +23,7 @@ import {
   signUpWithNeonPassword,
   signOutNeon,
 } from './neonAuthClient'
+import { rememberLanguageForAuthReturn, type SupportedLanguage } from '../../i18n'
 
 const AUTH_API_BASE = buildApiUrl('/api/auth')
 
@@ -312,7 +313,15 @@ export async function completeEmailVerification(code?: string) {
   return completeCallbackSignIn(code, 'Email verification failed.')
 }
 
-export async function loginWithGoogle() {
+/**
+ * Takes the language it is called from, because the callback URL cannot carry one: it is
+ * registered with Neon Auth as a fixed absolute path, so `/auth/google/callback` names no
+ * language and the browser comes back to it from a different site entirely.
+ *
+ * A required argument rather than a lookup, so a third Google button cannot forget it.
+ */
+export async function loginWithGoogle(language: SupportedLanguage) {
+  rememberLanguageForAuthReturn(language)
   await resetAuthState()
   await signInWithNeonGoogle(`${getOrigin()}/auth/google/callback`)
 }

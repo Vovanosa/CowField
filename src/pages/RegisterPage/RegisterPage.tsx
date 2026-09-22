@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 
-import { useNavigate } from '../../app/navigation'
+import { useLanguage, useNavigate } from '../../app/navigation'
 import { readReturnTo } from '../../app/returnTo'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { translateAuthError } from '../../app/translateAuthMessage'
@@ -18,6 +18,8 @@ export function RegisterPage() {
   const { t } = useTranslation()
   useDocumentMeta({ title: brandedTitle(t('Create account')), robots: 'noindex' })
   const navigate = useNavigate()
+  // Handed to `loginWithGoogle` so the trip to Google and back does not change language.
+  const language = useLanguage()
   // Where the reader came from, when they got here through the level gate. `null` for anyone who
   // arrived at `/register` directly, which is still the common case.
   const returnTo = readReturnTo(useLocation().search)
@@ -71,7 +73,7 @@ export function RegisterPage() {
     setMessage(null)
 
     try {
-      await loginWithGoogle()
+      await loginWithGoogle(language)
     } catch (error) {
       setMessage(toErrorMessage(error))
       setIsSubmitting(false)

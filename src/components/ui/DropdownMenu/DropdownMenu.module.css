@@ -45,6 +45,23 @@
   outline: none;
 }
 
+/*
+  **Selected has to look different from hover, and until now it barely did.**
+
+  `.item:hover` and `.itemActive` both filled with the accent, at 0.14 and 0.16 alpha. That 2%
+  is no difference at all on a real screen: with the cursor on one row and the current language on
+  another, a screenshot of the language menu could not tell them apart, which is the whole job of
+  a `menuitemradio`.
+
+  Two signals now, and deliberately neither of them a hard edge. The accent text colour is the one
+  `SiteFooter`'s `[aria-current]` already uses for exactly this question, so this is the app's own
+  vocabulary rather than a new one. The 1px ring is an inset `box-shadow` and not a `border`,
+  because a border would add 2px to a 44px row and reflow the whole menu on selection.
+
+  Both consumers want the same thing: the language options, and `ProfileMenu`'s role preview.
+*/
 .itemActive {
   background: var(--color-accent-soft-strong);
+  color: var(--color-accent-strong);
+  box-shadow: inset 0 0 0 1px var(--color-accent-ring);
 }

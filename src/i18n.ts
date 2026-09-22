@@ -22,6 +22,46 @@ export * from './languages'
 export const LANGUAGE_STORAGE_KEY = 'cowfield.language'
 
 /**
+ * The language a reader was on when they left for an OAuth provider, and how long that is worth
+ * believing for.
+ *
+ * **The OAuth callback cannot carry it any other way.** `/auth/google/callback` is registered with
+ * Neon Auth as a fixed absolute URL, so it can take no language prefix and no query parameter of
+ * ours. Without this, coming back from Google lands on whatever the *stored preference* says — and
+ * a reader who reached `/de` from a shared link has no stored preference saying German.
+ *
+ * **Deliberately not written to `cowfield.language`.** That is the reader's own choice, and
+ * clicking a sign-in button is not a request to change it. This is a short-lived note about where
+ * they were, which is a different thing and should not outlive the trip.
+ *
+ * It expires rather than being cleared, so nothing has to remember to clear it and no render has a
+ * side effect. Ten minutes is far longer than the round trip and far shorter than a session.
+ */
+const AUTH_LANGUAGE_STORAGE_KEY = 'cowfield.auth-language'
+const AUTH_LANGUAGE_TTL_MS = 10 * 60 * 1000
+
+/** Called just before handing the browser to the provider. */
+export function rememberLanguageForAuthReturn(language: SupportedLanguage) {
+  writeStoredValue(AUTH_LANGUAGE_STORAGE_KEY, `${language}:${Date.now()}`)
+}
+
+function readLanguageForAuthReturn(): SupportedLanguage | null {
+  const stored = readStoredValue(AUTH_LANGUAGE_STORAGE_KEY)
+
+  if (typeof stored !== 'string') {
+    return null
+  }
+
+  const [code, writtenAt] = stored.split(':')
+
+  if (!isSupportedLanguage(code) || Date.now() - Number(writtenAt) > AUTH_LANGUAGE_TTL_MS) {
+    return null
+  }
+
+  return code
+}
+
+/**
  * Reads through `browserStorage` rather than touching `window.localStorage` here.
  *
  * This runs at **module top level** (`lng` below), which is the first thing to execute when
@@ -52,12 +92,38 @@ export function setStoredLanguage(language: SupportedLanguage) {
  * preference, so it takes the default and lands on the same `/en` every time.
  */
 export function getPreferredLanguage(): SupportedLanguage {
+  // Where they were when they left for the provider, if they are on their way back. It outranks
+  // the stored preference on purpose: the page they started from is better evidence of what they
+  // are reading right now than a setting they may have chosen months ago.
+  const returning = readLanguageForAuthReturn()
+
+  if (returning) {
+    return returning
+  }
+
   const stored = readStoredValue(LANGUAGE_STORAGE_KEY)
 
   if (typeof stored === 'string' && isSupportedLanguage(stored)) {
     return stored
   }
 
+  return getBrowserLanguage() ?? DEFAULT_LANGUAGE
+}
+
+/**
+ * The first language this browser asks for that we actually have, or `null` if we have none of
+ * them. **Not the same question as `getPreferredLanguage`**, which folds in a stored choice and
+ * always answers with something.
+ *
+ * `navigator.languages` is an ordered list — `['de-AT', 'de', 'en-US']` on an Austrian machine —
+ * so walking it in order and taking the first hit gets Austria to German and Slovenia to nothing
+ * (and therefore to English) with no country table to maintain. A country table would have to
+ * answer for Belgium, Switzerland and Canada, and would be guessing where this list is stating.
+ *
+ * It reads a *browser* setting, not a location: someone in Poland running an English Windows gets
+ * English. That is the right answer — they have told us what they read.
+ */
+export function getBrowserLanguage(): SupportedLanguage | null {
   const offered =
     typeof navigator === 'undefined' ? [] : (navigator.languages ?? [navigator.language])
 
@@ -69,7 +135,7 @@ export function getPreferredLanguage(): SupportedLanguage {
     }
   }
 
-  return DEFAULT_LANGUAGE
+  return null
 }
 
 /**
@@ -146,6 +212,10 @@ const LAZY_DICTIONARIES: Record<
   Exclude<SupportedLanguage, typeof DEFAULT_LANGUAGE>,
   () => Promise<{ default: Record<string, unknown> }>
 > = {
+  de: () => import('./locales/de'),
+  es: () => import('./locales/es'),
+  fr: () => import('./locales/fr'),
+  it: () => import('./locales/it'),
   uk: () => import('./locales/uk'),
 }
 

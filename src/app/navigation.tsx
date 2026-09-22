@@ -11,7 +11,7 @@ import {
 } from 'react-router-dom'
 
 import {
-  languageFromPathname,
+  getLanguageForLocation,
   localizeHref,
   localizePath,
   mirrorLocationForLanguage,
@@ -39,9 +39,21 @@ import {
  * `<a>` — passes through untouched.
  */
 
-/** The language of the page being rendered, read from the URL rather than from stored settings. */
+/**
+ * The language of the page being rendered.
+ *
+ * **Read from the URL**, which is the source of truth for every page that has one. The exception is
+ * the three unprefixed URLs Neon Auth owns (`/auth/google/callback`, `/verify-email`,
+ * `/reset-password`): they name no language, so this falls through to the reader's own —
+ * `getLanguageForLocation`, the same answer `UnprefixedRoute` uses to pick what to render in.
+ *
+ * **That fall-through is a bug fix, not a nicety** (2026-09-21). It used to default to English on
+ * those three, which meant every `navigate()` made from them was localised to English: a German
+ * reader who signed in with Google came back to `/en`, and so did anyone following a verification
+ * or password-reset link. The page rendered in the right language and then sent them somewhere else.
+ */
 export function useLanguage(): SupportedLanguage {
-  return languageFromPathname(useLocation().pathname)
+  return getLanguageForLocation(useLocation().pathname)
 }
 
 function localizeTo(to: To, language: SupportedLanguage): To {

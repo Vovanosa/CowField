@@ -78,6 +78,58 @@ html {
   min-height: 100%;
 }
 
+/*
+  **The page scrollbar: thinned, but still a control.**
+
+  Deliberately *not* as thin as the two menu scrollbars. Those are hints over six rows and can
+  afford a 4px thumb. This one is how a reader actually moves down `/about` and `/how-to-solve`,
+  which are long pages, and a 4px drag target is a poor control for anyone and a bad one for
+  anybody with a motor impairment. 6px visible on a 12px hit area is the trade: clearly narrower
+  than the ~17px Windows default, still easy to grab, and the transparent track lets the page's own
+  background gradient run behind it.
+
+  The `@supports` is the same guard the two menus carry and is here for the same measured reason:
+  declaring `scrollbar-width` at all makes Chrome 121+ ignore every `::-webkit-` rule on the
+  element, so the standard spelling is scoped to engines with no webkit pseudo-elements to lose.
+
+  **Safe for the `calc(100vw - Npx)` widths** in `ProfileMenu` and `Toast`: `100vw` counts the
+  scrollbar, so a narrower one shrinks the gap between `100vw` and the visible width rather than
+  opening it.
+*/
+@supports (scrollbar-width: thin) and (not (selector(::-webkit-scrollbar))) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-stronger) transparent;
+  }
+}
+
+html::-webkit-scrollbar {
+  width: 12px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--color-border-stronger);
+  background-clip: padding-box;
+}
+
+/* Not `--color-border-hover`: despite the name it is *fainter* than `--color-border-stronger`
+   (0.22 against 0.24 light, 0.24 against 0.28 dark), so it made the thumb fade on hover. That
+   token is for borders resting at `--color-border-strong`, which is 0.16. */
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-ring);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-button {
+  display: none;
+}
+
 body {
   margin: 0;
   min-height: 100svh;

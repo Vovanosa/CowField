@@ -2,7 +2,7 @@ import { MoonStar, SunMedium } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { languageOptionFor, languageOptions } from '../../app/languageOptions'
+import { languageOptionFor, orderedLanguageOptions } from '../../app/languageOptions'
 import { LanguageLink, useLanguage } from '../../app/navigation'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
@@ -109,8 +109,9 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
     of flag buttons rather than a second dropdown. A menu nested inside a menu is worse to use and
     worse to describe to a screen reader.
 
-    The row wraps, so a fourth and fifth language cost a second line rather than a redesign. Past
-    that it wants to become a list, and this is the place that will say so first.
+    The row wraps and then scrolls at two rows — see `.menuLanguages`. On a phone this sits inside
+    a dropdown that is already most of the screen, so it is the one place where a long list has to
+    be capped rather than allowed to push everything else down.
   */
   if (variant === 'menu') {
     return (
@@ -122,7 +123,7 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
         <div className={styles.menuRow}>
           <span className={styles.menuLabel}>{t('Language')}</span>
           <div className={styles.menuLanguages} role="radiogroup" aria-label={t('Language')}>
-            {languageOptions.map((option) => (
+            {orderedLanguageOptions.map((option) => (
               <LanguageLink
                 key={option.value}
                 language={option.value}
@@ -201,7 +202,7 @@ export function LanguageSwitcher({ variant = 'pills' }: LanguageSwitcherProps = 
               "Українська" — pronounced in Ukrainian, because `LanguageLink` sets `lang` — rather
               than spelling out "UA". The visible pill stays two characters wide.
             */}
-            {languageOptions.map((option) => (
+            {orderedLanguageOptions.map((option) => (
               <LanguageLink
                 key={option.value}
                 language={option.value}
