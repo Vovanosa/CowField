@@ -207,10 +207,50 @@ code {
   color: var(--color-heading);
 }
 
-.board-cell:focus-visible,
+/*
+  `.board-cell` used to be listed here too, and nothing in `src/` has ever set that class — the
+  board's cursor is `.boardCell:focus-visible` in `GameBoard.module.css`, which is both stronger and
+  actually applied. A dead selector is worse than no selector: this one made it look as though the
+  board's focus ring lived here, and a plan was written against that reading.
+*/
 textarea:focus-visible {
   outline: 2px solid rgba(158, 116, 49, 0.34);
   outline-offset: 3px;
+}
+
+/*
+  Out of the way until it is needed, and unmissable once it is.
+
+  Not `display: none` and not `visibility: hidden`: either would take it out of the tab order, which
+  is the one thing it exists for. Clipped to nothing instead, and given real size and position the
+  moment it takes focus.
+*/
+.skip-to-board {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  font: inherit;
+  white-space: nowrap;
+}
+
+.skip-to-board:focus-visible {
+  z-index: 20;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  clip-path: none;
+  box-shadow: var(--shadow-raised);
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 2px;
 }
 
 .page-stack {

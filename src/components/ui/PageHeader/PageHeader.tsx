@@ -48,7 +48,13 @@ export function PageHeader({
   return (
     <div className={[styles.header, className ?? ''].filter(Boolean).join(' ')}>
       {backTo && backLabel ? (
-        <IconButton to={backTo} label={backLabel} icon={<ArrowLeft size={16} />} />
+        <IconButton
+          to={backTo}
+          label={backLabel}
+          icon={<ArrowLeft size={16} />}
+          /* What `Esc` presses. The page owns where back goes; the key just uses this. */
+          data-page-back=""
+        />
       ) : null}
       <div className={styles.intro}>
         <section className={styles.pageIntro}>

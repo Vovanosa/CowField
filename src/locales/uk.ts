@@ -593,6 +593,34 @@
     'Не вдалося завантажити статистику. Перевірте з’єднання та спробуйте ще раз.',
   "Couldn't load this level. Check your connection and try again.":
     'Не вдалося завантажити рівень. Перевірте з’єднання та спробуйте ще раз.',
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Перейти до поля',
+  'Move between cells': 'Рух між клітинками',
+  'Move between cells, same as the arrows': 'Рух між клітинками, як стрілками',
+  'Jump to the edge of the board': 'Стрибок до краю поля',
+  'Dot, then bull, then empty': 'Точка, тоді бик, тоді порожньо',
+  'Place or remove a bull': 'Поставити або прибрати бика',
+  'Hold Space and move to draw dots': 'Утримуйте пробіл і рухайтесь, щоб малювати точки',
+  'Clear the cell': 'Очистити клітинку',
+  'Restart the level': 'Почати рівень заново',
+  'Leave the board': 'Вийти з поля',
+  'Open or close this list': 'Відкрити або закрити цей список',
+  'Keyboard shortcuts': 'Гарячі клавіші',
+  'Press ? while playing to open or close this list.':
+    'Натисніть ? під час гри, щоб відкрити або закрити цей список.',
+  'Can I play with the keyboard?': 'Чи можна грати з клавіатури?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Так, цілий рівень без миші. Стрілки або WASD рухають між клітинками, пробіл перемикає клітинку через точку, бика та порожньо, а Shift із пробілом одразу ставить або прибирає бика. Якщо утримувати пробіл під час руху, точки малюються вздовж усього ряду, так само як перетягуванням. Натисніть ? під час гри, щоб побачити весь список.',
+  'Leave this board?': 'Вийти з цього поля?',
+  'Your marks on this board will not be kept.': 'Ваші позначки на цьому полі не збережуться.',
+  Leave: 'Вийти',
+  'See the keys for playing without a mouse.': 'Перегляньте клавіші для гри без миші.',
+  View: 'Переглянути',
 } as const
 
 export default uk

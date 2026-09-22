@@ -103,6 +103,7 @@ export function Button(props: ButtonProps) {
       <Link
         {...linkProps}
         to={to}
+        data-variant={variant}
         className={getButtonClassName({
           variant,
           size,
@@ -139,6 +140,12 @@ export function Button(props: ButtonProps) {
       {...buttonProps}
       type={type}
       disabled={disabled}
+      /*
+        The variant, readable from the DOM. `Dialog` uses it to put initial focus on the action the
+        player came to do — and the class name cannot be used for that, because CSS Modules hash it
+        into something with no stable meaning at build time.
+      */
+      data-variant={variant}
       className={getButtonClassName({
         variant,
         size,

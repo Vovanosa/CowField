@@ -183,9 +183,20 @@ async function evaluate<T>(body: string): Promise<T> {
   return result?.result?.value as T
 }
 
+/*
+  Every path is prefixed with a language.
+
+  Since `a85156c` an unprefixed path goes through the gateway at `/`, which redirects on stored
+  choice and then on `navigator.languages` — and a headless Chrome negotiates whatever it likes.
+  It picked Ukrainian here, so `/login` landed on `/uk/login` and this file timed out waiting for
+  an English string that was never going to appear. The assertions below read English copy, so
+  they have to ask for English.
+*/
+const LANGUAGE_PREFIX = '/en'
+
 async function goto(path: string) {
   const loaded = waitForEvent('Page.loadEventFired')
-  await send('Page.navigate', { url: `${APP}${path}` })
+  await send('Page.navigate', { url: `${APP}${LANGUAGE_PREFIX}${path}` })
   await loaded
 }
 
@@ -210,6 +221,8 @@ const KEYS: Record<string, [string, number]> = {
   ArrowLeft: ['ArrowLeft', 37],
   Escape: ['Escape', 27],
   Enter: ['Enter', 13],
+  // `key` is the space character; `code` is the physical key. The app matches on `key`.
+  ' ': ['Space', 32],
 }
 
 async function press(name: keyof typeof KEYS) {
@@ -293,7 +306,8 @@ await evaluate(`
   button.click()
   return true
 `)
-await waitFor(`location.pathname === '/'`, 'the home page after guest sign-in')
+// Also prefixed since `a85156c`: guest sign-in lands on the language root, not on `/`.
+await waitFor(`location.pathname === '${LANGUAGE_PREFIX}' || location.pathname === '${LANGUAGE_PREFIX}/'`, 'the home page after guest sign-in')
 check('guest sign-in works (precondition for everything below)', true)
 
 // ------------------------------------------- keyboard play and the focus ring
@@ -372,14 +386,31 @@ check(
   `cell ${ring.index}: :focus-visible=${ring.visible} outline=${ring.width} offset=${ring.offset} z-index=${ring.zIndex}`,
 )
 
-const dotsBeforeEnter = await evaluate<number>(`return ${DOT_COUNT}`)
+/*
+  **Space marks, Enter does not** — changed 2026-09-22 with the keyboard feature, and this check
+  changed with it. Enter used to do the same as Space; freeing it is what lets Enter mean *approve*
+  everywhere, including *Next Level* on the dialog this file opens a few lines below.
+
+  Space also commits on key-**up** now, because it is the held button of a drag-paint gesture, so a
+  keydown on its own must leave the board alone.
+*/
+const dotsBeforeKeys = await evaluate<number>(`return ${DOT_COUNT}`)
 await press('Enter')
 await sleep(250)
 const dotsAfterEnter = await evaluate<number>(`return ${DOT_COUNT}`)
 check(
-  'Enter places a mark through the same path a tap uses',
-  dotsAfterEnter === dotsBeforeEnter + 1,
-  `dots ${dotsBeforeEnter} → ${dotsAfterEnter}`,
+  'Enter leaves a cell alone — it is reserved for approving, not marking',
+  dotsAfterEnter === dotsBeforeKeys,
+  `dots ${dotsBeforeKeys} → ${dotsAfterEnter}`,
+)
+
+await press(' ')
+await sleep(250)
+const dotsAfterSpace = await evaluate<number>(`return ${DOT_COUNT}`)
+check(
+  'Space places a mark through the same path a tap uses',
+  dotsAfterSpace === dotsBeforeKeys + 1,
+  `dots ${dotsBeforeKeys} → ${dotsAfterSpace}`,
 )
 
 // ------------------------------------------------------------ touch drag-paint

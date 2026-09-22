@@ -627,6 +627,35 @@ const de = {
     'Deine Statistik konnte nicht geladen werden. Prüf deine Verbindung und versuch es noch einmal.',
   "Couldn't load this level. Check your connection and try again.":
     'Dieses Level konnte nicht geladen werden. Prüf deine Verbindung und versuch es noch einmal.',
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Zum Rätselbrett springen',
+  'Move between cells': 'Zwischen Feldern bewegen',
+  'Move between cells, same as the arrows': 'Zwischen Feldern bewegen, wie mit den Pfeiltasten',
+  'Jump to the edge of the board': 'An den Rand des Bretts springen',
+  'Dot, then bull, then empty': 'Punkt, dann Stier, dann leer',
+  'Place or remove a bull': 'Stier setzen oder entfernen',
+  'Hold Space and move to draw dots': 'Leertaste halten und bewegen, um Punkte zu ziehen',
+  'Clear the cell': 'Feld leeren',
+  'Restart the level': 'Level neu starten',
+  'Leave the board': 'Brett verlassen',
+  'Open or close this list': 'Diese Liste öffnen oder schließen',
+  'Keyboard shortcuts': 'Tastenkürzel',
+  'Press ? while playing to open or close this list.':
+    'Drücke ? während des Spiels, um diese Liste zu öffnen oder zu schließen.',
+  'Can I play with the keyboard?': 'Kann ich mit der Tastatur spielen?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Ja, ein ganzes Level ohne Maus. Pfeiltasten oder WASD bewegen dich zwischen den Feldern, die Leertaste schaltet ein Feld durch Punkt, Stier und leer, und Umschalt mit Leertaste setzt oder entfernt einen Stier direkt. Hältst du die Leertaste beim Bewegen gedrückt, ziehst du Punkte über eine ganze Reihe, genau wie beim Ziehen mit der Maus. Drücke ? während des Spiels für die ganze Liste.',
+  'Leave this board?': 'Dieses Brett verlassen?',
+  'Your marks on this board will not be kept.':
+    'Deine Markierungen auf diesem Brett gehen verloren.',
+  Leave: 'Verlassen',
+  'See the keys for playing without a mouse.': 'Die Tasten zum Spielen ohne Maus ansehen.',
+  View: 'Ansehen',
 } as const
 
 export default de

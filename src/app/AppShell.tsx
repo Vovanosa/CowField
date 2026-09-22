@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
@@ -7,11 +8,17 @@ import { SiteFooter } from '../components/SiteFooter'
 import { initializeAudio, syncAudioSettings } from '../game/audio/audioManager'
 import { applyThemeMode } from '../game/storage/playerSettingsStorage'
 import { usePlayerSettings } from '../game/usePlayerSettings'
+import { startInputModalityTracking } from './inputModality'
+import { useEscapeBack } from './useEscapeBack'
 import { useAuth } from './useAuth'
 
 export function AppShell() {
   const location = useLocation()
+  const { t } = useTranslation()
   const settings = usePlayerSettings()
+  // Matched on the path rather than the route, the way `/game/` is written everywhere else in the
+  // app; this component sits above the router's own knowledge of which route matched.
+  const isGamePage = location.pathname.includes('/game/')
   const { session } = useAuth()
   const contentRef = useRef<HTMLElement | null>(null)
   const controlsRef = useRef<HTMLDivElement | null>(null)
@@ -51,6 +58,16 @@ export function AppShell() {
     initializeAudio()
   }, [])
 
+  // Started once, for the whole app: the board reads it to decide whether to take focus on arrival,
+  // and CSS reads it off `<html>` to decide whether to draw the cursor ring.
+  useEffect(() => {
+    startInputModalityTracking()
+  }, [])
+
+  // `Esc` goes back a step everywhere but a board, which owns the key itself so it can ask before
+  // abandoning a half-solved puzzle.
+  useEscapeBack(!isGamePage)
+
   useEffect(() => {
     applyThemeMode(settings.darkModeEnabled)
   }, [settings.darkModeEnabled])
@@ -63,6 +80,33 @@ export function AppShell() {
     <div className="app-shell">
       <div className="app-frame">
         <main className="app-content" ref={contentRef}>
+          {/*
+            The way in for a keyboard player who arrived by mouse.
+
+            The board is the seventh tab stop on a game page — profile, theme, language, back,
+            restart, share, *then* the grid — and nothing on screen suggests that Tab is the road.
+            Someone who *navigated* here with the keyboard lands on the board already
+            (`GameBoard` asks `inputModality`), and someone who clicks a cell hands it the keyboard
+            from that cell; this covers the third case, which is arriving by mouse and then wanting
+            to play by keyboard.
+
+            It lives here rather than on the page because tab order is DOM order, and the control row
+            above is rendered by this component — a skip link inside the route would come after it
+            and skip nothing much.
+          */}
+          {isGamePage ? (
+            <button
+              type="button"
+              className="skip-to-board"
+              onClick={() => {
+                document
+                  .querySelector<HTMLElement>('[data-board-cell][tabindex="0"]')
+                  ?.focus()
+              }}
+            >
+              {t('Skip to the board')}
+            </button>
+          ) : null}
           {/*
             One control row for the whole shell. The profile menu used to be rendered only on `/`
             and positioned in the opposite corner, which left no way to log out — or even see who

@@ -177,6 +177,87 @@ export function SandboxBoard() {
     }
   }, [])
 
+  /**
+   * The three beats of a drag, shared by the pointer and the keyboard.
+   *
+   * The demo board is the first board a visitor touches, so it plays the way the real one does:
+   * `Space` is the held button and the arrows are the movement. Splitting these out is what lets
+   * one gesture arrive through two kinds of event without a second copy of the rules.
+   */
+  const beginDrag = useCallback((cellIndex: number) => {
+    const startMark = cellMarksRef.current[cellIndex]
+
+    dragStateRef.current = {
+      isPointerDown: true,
+      startIndex: cellIndex,
+      /*
+        An empty cell starts a dot-laying drag and a dot starts an erasing one, so the gesture
+        that fills a run is the same one that clears it. A **bull starts no drag at all**:
+        dragging off a bull would either wipe it or smear bulls, and both are worse than doing
+        nothing.
+      */
+      dragMode: startMark === 'empty' ? 'add-dot' : startMark === 'dot' ? 'clear-dot' : null,
+      dragged: false,
+      visited: new Set<number>(),
+    }
+  }, [])
+
+  const enterDragCell = useCallback(
+    (cellIndex: number) => {
+      const dragState = dragStateRef.current
+
+      if (!dragState.isPointerDown || dragState.startIndex === null) {
+        return
+      }
+
+      // Moving makes this a drag even when there is nothing to paint — a gesture that started on a
+      // bull paints nothing, and without this, letting go cycled the bull you started on.
+      const wasStillATap = !dragState.dragged
+      dragState.dragged = true
+
+      if (dragState.dragMode === null) {
+        return
+      }
+
+      /*
+        The cell the gesture began on is painted here, on the first cell it reaches — not on
+        `pointerdown`. Until the pointer moves, the press is still a click, and a click cycles
+        rather than paints.
+      */
+      if (wasStillATap) {
+        dragState.visited.add(dragState.startIndex)
+        paintCell(dragState.startIndex, dragState.dragMode)
+      }
+
+      if (dragState.visited.has(cellIndex)) {
+        return
+      }
+
+      dragState.visited.add(cellIndex)
+      paintCell(cellIndex, dragState.dragMode)
+    },
+    [paintCell],
+  )
+
+  /** Release. A press that never left its cell is a click, and only now is that knowable. */
+  const endDrag = useCallback(
+    (cellIndex: number | null) => {
+      const dragState = dragStateRef.current
+      const wasTap =
+        dragState.isPointerDown &&
+        !dragState.dragged &&
+        dragState.startIndex !== null &&
+        (cellIndex === null || dragState.startIndex === cellIndex)
+
+      if (wasTap && dragState.startIndex !== null) {
+        cycleCell(dragState.startIndex)
+      }
+
+      dragStateRef.current = createDragState()
+    },
+    [cycleCell],
+  )
+
   return (
     <figure className={styles.sandbox}>
       <GameBoard
@@ -187,59 +268,28 @@ export function SandboxBoard() {
         onCellPointerDown={(event, cellIndex) => {
           // Stops the press turning into a text selection that follows the drag across the board.
           event.preventDefault()
-
-          const startMark = cellMarksRef.current[cellIndex]
-
-          dragStateRef.current = {
-            isPointerDown: true,
-            startIndex: cellIndex,
-            /*
-              An empty cell starts a dot-laying drag and a dot starts an erasing one, so the
-              gesture that fills a run is the same one that clears it. A **bull starts no drag at
-              all**: dragging off a bull would either wipe it or smear bulls, and both are worse
-              than doing nothing.
-            */
-            dragMode: startMark === 'empty' ? 'add-dot' : startMark === 'dot' ? 'clear-dot' : null,
-            dragged: false,
-            visited: new Set<number>(),
-          }
+          beginDrag(cellIndex)
         }}
-        onCellPointerEnter={(_event, cellIndex) => {
-          const dragState = dragStateRef.current
-
-          if (!dragState.isPointerDown || dragState.dragMode === null || dragState.startIndex === null) {
-            return
-          }
-
-          /*
-            The cell the gesture began on is painted here, on the first cell it reaches — not on
-            `pointerdown`. Until the pointer moves, the press is still a click, and a click cycles
-            rather than paints.
-          */
-          if (!dragState.dragged) {
-            dragState.dragged = true
-            dragState.visited.add(dragState.startIndex)
-            paintCell(dragState.startIndex, dragState.dragMode)
-          }
-
-          if (dragState.visited.has(cellIndex)) {
-            return
-          }
-
-          dragState.visited.add(cellIndex)
-          paintCell(cellIndex, dragState.dragMode)
-        }}
-        onCellPointerUp={(_event, cellIndex) => {
-          const dragState = dragStateRef.current
-
-          // A press that never left its cell is a click, and only now is that knowable.
-          if (dragState.isPointerDown && !dragState.dragged && dragState.startIndex === cellIndex) {
-            cycleCell(cellIndex)
-          }
-
+        onCellPointerEnter={(_event, cellIndex) => enterDragCell(cellIndex)}
+        onCellPointerUp={(_event, cellIndex) => endDrag(cellIndex)}
+        onCellKeyDragStart={beginDrag}
+        onCellKeyDragEnter={(cellIndex) => enterDragCell(cellIndex)}
+        /*
+          The demo keeps the plain tap and ignores the `Shift` modifier: a bull toggle has to
+          remember what each bull covered, and a board that exists to show the idea does not need
+          the bookkeeping. Everything else — moving, painting, clearing — is the real behaviour.
+        */
+        onCellKeyDragEnd={() => endDrag(null)}
+        onCellKeyDragCancel={() => {
           dragStateRef.current = createDragState()
         }}
-        onCellActivate={(cellIndex) => cycleCell(cellIndex)}
+        onClearCell={(cellIndex) => {
+          if (cellMarksRef.current[cellIndex] === 'empty') {
+            return
+          }
+
+          writeMarks(cellMarksRef.current.map((mark, index) => (index === cellIndex ? 'empty' : mark)))
+        }}
       />
       <figcaption className={styles.caption}>
         {t('Try it yourself.')}

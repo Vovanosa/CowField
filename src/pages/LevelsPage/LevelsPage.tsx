@@ -9,6 +9,7 @@ import { EmptyState } from '../../components/EmptyState'
 import { Button, PageHeader } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { getDifficultyOverview } from '../../game/storage/resources'
+import { handleListArrowNavigation } from '../../app/listArrowNavigation'
 import { DIFFICULTIES } from '../../game/storage/levelStorage'
 import type { Difficulty } from '../../game/types'
 import styles from './LevelsPage.module.css'
@@ -170,7 +171,14 @@ export function LevelsPage() {
           }
         />
       ) : (
-        <section className={styles.levelsGrid} aria-label={t('Available levels')}>
+        <section
+          className={styles.levelsGrid}
+          aria-label={t('Available levels')}
+          /* Arrows step between the five difficulties, whichever way the chips are laid out. */
+          onKeyDown={(event) =>
+            handleListArrowNavigation(event, { selector: '[data-difficulty-link]' })
+          }
+        >
           {DIFFICULTIES.map((difficulty) => {
             const summary = progressByDifficulty[difficulty]
 
@@ -179,6 +187,7 @@ export function LevelsPage() {
                 key={difficulty}
                 className={difficultyChipClassNames[difficulty]}
                 to={`/levels/${difficulty}`}
+                data-difficulty-link=""
                 aria-busy={isLoading}
               >
                 {/*

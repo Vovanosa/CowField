@@ -61,6 +61,12 @@ export function AboutPage() {
         'Yes. The small boards fit a phone screen comfortably. For 10x10 and 15x15 turn the phone sideways, or use a tablet, since 225 cells need the room.',
       ),
     },
+    {
+      question: t('Can I play with the keyboard?'),
+      answer: t(
+        'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.',
+      ),
+    },
   ]
 
   return (

@@ -628,6 +628,34 @@ const en = {
     "Couldn't load your statistics. Check your connection and try again.",
   "Couldn't load this level. Check your connection and try again.":
     "Couldn't load this level. Check your connection and try again.",
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Skip to the board',
+  'Move between cells': 'Move between cells',
+  'Move between cells, same as the arrows': 'Move between cells, same as the arrows',
+  'Jump to the edge of the board': 'Jump to the edge of the board',
+  'Dot, then bull, then empty': 'Dot, then bull, then empty',
+  'Place or remove a bull': 'Place or remove a bull',
+  'Hold Space and move to draw dots': 'Hold Space and move to draw dots',
+  'Clear the cell': 'Clear the cell',
+  'Restart the level': 'Restart the level',
+  'Leave the board': 'Leave the board',
+  'Open or close this list': 'Open or close this list',
+  'Keyboard shortcuts': 'Keyboard shortcuts',
+  'Press ? while playing to open or close this list.':
+    'Press ? while playing to open or close this list.',
+  'Can I play with the keyboard?': 'Can I play with the keyboard?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.',
+  'Leave this board?': 'Leave this board?',
+  'Your marks on this board will not be kept.': 'Your marks on this board will not be kept.',
+  Leave: 'Leave',
+  'See the keys for playing without a mouse.': 'See the keys for playing without a mouse.',
+  View: 'View',
 } as const
 
 export default en

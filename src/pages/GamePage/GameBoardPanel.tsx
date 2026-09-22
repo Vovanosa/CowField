@@ -29,7 +29,11 @@ type GameBoardPanelProps = {
   onCellPointerDown: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellPointerEnter: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
   onCellPointerUp: (event: ReactPointerEvent<HTMLButtonElement>, cellIndex: number) => void
-  onCellActivate: (cellIndex: number, timestampMs: number) => void
+  onCellKeyDragStart: (cellIndex: number) => void
+  onCellKeyDragEnter: (cellIndex: number, timestampMs: number) => void
+  onCellKeyDragEnd: (timestampMs: number, withShift: boolean) => void
+  onCellKeyDragCancel: () => void
+  onClearCell: (cellIndex: number, timestampMs: number) => void
   onShared: (message: string) => void
   t: (key: string, options?: Record<string, unknown>) => string
 }
@@ -53,7 +57,11 @@ export function GameBoardPanel({
   onCellPointerDown,
   onCellPointerEnter,
   onCellPointerUp,
-  onCellActivate,
+  onCellKeyDragStart,
+  onCellKeyDragEnter,
+  onCellKeyDragEnd,
+  onCellKeyDragCancel,
+  onClearCell,
   onShared,
   t,
 }: GameBoardPanelProps) {
@@ -155,7 +163,11 @@ export function GameBoardPanel({
             onCellPointerDown={onCellPointerDown}
             onCellPointerEnter={onCellPointerEnter}
             onCellPointerUp={onCellPointerUp}
-            onCellActivate={onCellActivate}
+            onCellKeyDragStart={onCellKeyDragStart}
+            onCellKeyDragEnter={onCellKeyDragEnter}
+            onCellKeyDragEnd={onCellKeyDragEnd}
+            onCellKeyDragCancel={onCellKeyDragCancel}
+            onClearCell={onClearCell}
           />
         </div>
       </Panel>

@@ -1,4 +1,4 @@
-import { Globe2, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
+import { Globe2, Keyboard, MoonStar, Music4, Sparkles, TimerOff, Volume2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -6,8 +6,12 @@ import { orderedLanguageOptions } from '../../app/languageOptions'
 import { useLanguage, useSwitchLanguage } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useAuth } from '../../app/useAuth'
+import {
+  KeyboardShortcutsDialog,
+  useShortcutSheetKey,
+} from '../../components/KeyboardShortcutsDialog'
 import { SettingsItem } from '../../components/SettingsItem'
-import { PageHeader, Panel } from '../../components/ui'
+import { Button, PageHeader, Panel } from '../../components/ui'
 import { playSoundEffect } from '../../game/audio/audioManager'
 import { savePlayerSettings } from '../../game/storage/playerSettingsStorage'
 import type { PlayerSettings } from '../../game/types'
@@ -63,6 +67,14 @@ export function SettingsPage() {
   const { t } = useTranslation()
   useDocumentMeta({ title: brandedTitle(t('Settings')), robots: 'noindex' })
   const [hasStorageFailed, setHasStorageFailed] = useState(false)
+  const [isShortcutsDialogOpen, setIsShortcutsDialogOpen] = useState(false)
+
+  // `?` works here too. The row is how someone finds the feature; the key working on the row's own
+  // dialog is how they find out the key exists.
+  useShortcutSheetKey({
+    isOpen: isShortcutsDialogOpen,
+    onToggle: () => setIsShortcutsDialogOpen((isOpen) => !isOpen),
+  })
 
   /**
    * Every change goes through here so the one failure case is handled in one place: the setting
@@ -207,7 +219,7 @@ export function SettingsPage() {
               }
             />
           </div>
-          {settingsConfig.map((setting, index) => {
+          {settingsConfig.map((setting) => {
             const isEnabled =
               isGuest && setting.key === 'takeYourTimeEnabled' ? true : settings[setting.key]
             const isDisabled = isGuest && setting.key === 'takeYourTimeEnabled'
@@ -229,12 +241,12 @@ export function SettingsPage() {
                     : undefined
                 }
                 /*
-                  Every row but the last draws the rule under itself. The last entry of
-                  `settingsConfig` is the one row here that is never conditional, so this holds at
-                  both widths without the page needing to know where the breakpoint is — see the
-                  note in `SettingsItem.module.css`.
+                  Every row draws the rule under itself now, because the Keyboard shortcuts row
+                  below is always last and always present. It was `index < length - 1` while the
+                  final toggle was the last thing on the page — see the note in
+                  `SettingsItem.module.css`.
                 */
-                showDivider={index < settingsConfig.length - 1}
+                showDivider
               />
             )
 
@@ -247,8 +259,27 @@ export function SettingsPage() {
               item
             )
           })}
+          {/*
+            Not a setting — a way in. There is nothing here to configure, because the shortcuts only
+            fire on a focused board and so cannot get in anyone's way; what they need is to be
+            findable by someone who would never guess `?`.
+          */}
+          <SettingsItem
+            icon={Keyboard}
+            title={t('Keyboard shortcuts')}
+            description={t('See the keys for playing without a mouse.')}
+            control={
+              <Button size="sm" onClick={() => setIsShortcutsDialogOpen(true)}>
+                {t('View')}
+              </Button>
+            }
+          />
         </div>
       </Panel>
+
+      {isShortcutsDialogOpen ? (
+        <KeyboardShortcutsDialog onClose={() => setIsShortcutsDialogOpen(false)} />
+      ) : null}
     </div>
   )
 }

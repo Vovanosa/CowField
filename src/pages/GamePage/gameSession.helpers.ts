@@ -15,7 +15,7 @@ export { isDifficulty }
 export type DragMode = 'add-dot' | 'clear-dot' | null
 
 export type GameDragState = {
-  isMouseDown: boolean
+  isPressed: boolean
   startIndex: number | null
   startMark: CellMark | null
   dragMode: DragMode
@@ -217,7 +217,7 @@ export function createEmptyBoard(level: LevelDefinition) {
 
 export function createGameDragState(): GameDragState {
   return {
-    isMouseDown: false,
+    isPressed: false,
     startIndex: null,
     startMark: null,
     dragMode: null,

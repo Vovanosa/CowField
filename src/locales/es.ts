@@ -585,6 +585,34 @@ const es = {
     'No se han podido cargar tus estadísticas. Revisa tu conexión e inténtalo de nuevo.',
   "Couldn't load this level. Check your connection and try again.":
     'No se ha podido cargar este nivel. Revisa tu conexión e inténtalo de nuevo.',
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Ir al tablero',
+  'Move between cells': 'Moverse entre casillas',
+  'Move between cells, same as the arrows': 'Moverse entre casillas, igual que con las flechas',
+  'Jump to the edge of the board': 'Saltar al borde del tablero',
+  'Dot, then bull, then empty': 'Punto, luego toro, luego vacía',
+  'Place or remove a bull': 'Poner o quitar un toro',
+  'Hold Space and move to draw dots': 'Mantén Espacio y muévete para trazar puntos',
+  'Clear the cell': 'Vaciar la casilla',
+  'Restart the level': 'Reiniciar el nivel',
+  'Leave the board': 'Salir del tablero',
+  'Open or close this list': 'Abrir o cerrar esta lista',
+  'Keyboard shortcuts': 'Atajos de teclado',
+  'Press ? while playing to open or close this list.':
+    'Pulsa ? mientras juegas para abrir o cerrar esta lista.',
+  'Can I play with the keyboard?': '¿Puedo jugar con el teclado?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Sí, un nivel entero sin tocar el ratón. Las flechas o WASD te mueven entre casillas, Espacio recorre punto, toro y vacía, y Mayús con Espacio pone o quita un toro directamente. Si mantienes Espacio mientras te mueves, trazas puntos por toda una fila, igual que arrastrando. Pulsa ? mientras juegas para ver la lista completa.',
+  'Leave this board?': '¿Salir de este tablero?',
+  'Your marks on this board will not be kept.': 'Las marcas de este tablero no se guardarán.',
+  Leave: 'Salir',
+  'See the keys for playing without a mouse.': 'Consulta las teclas para jugar sin ratón.',
+  View: 'Ver',
 } as const
 
 export default es

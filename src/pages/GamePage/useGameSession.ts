@@ -91,6 +91,11 @@ export function useGameSession({
   const pendingBullPlacementsRef = useRef(0)
   const hasFlushedBullPlacementsRef = useRef(false)
   const dragStateRef = useRef(createGameDragState())
+  /**
+   * What each bull placed with `Shift` + `Space` was covering, so taking it away puts that back.
+   * Keyed by cell index, pruned in `applyCellMarks` for any cell that is no longer a bull.
+   */
+  const bullCoveredMarkRef = useRef(new Map<number, CellMark>())
 
   useEffect(() => {
     cellMarksRef.current = cellMarks
@@ -121,6 +126,7 @@ export function useGameSession({
     completionHandledRef.current = false
     pendingBullPlacementsRef.current = 0
     hasFlushedBullPlacementsRef.current = false
+    bullCoveredMarkRef.current.clear()
     resetGameDragState(dragStateRef)
 
     async function loadLevel() {
@@ -300,6 +306,19 @@ export function useGameSession({
     ? Math.max(solutionState.requiredBullCount - solutionState.bullIndexes.length, 0)
     : 0
 
+  /** Nothing placed yet, or everything taken back off. */
+  function isBoardEmpty(marks: readonly CellMark[]) {
+    return marks.every((mark) => mark === 'empty')
+  }
+
+  /** Back to 00:00, not running. The state a fresh board is in. */
+  function stopClock() {
+    runStartedAtRef.current = null
+    elapsedSecondsRef.current = 0
+    setRunStartedAt(null)
+    setElapsedSeconds(0)
+  }
+
   function handleLevelSolved(currentLevel: LevelDefinition, completionTimeSeconds: number) {
     completionHandledRef.current = true
     playSoundEffect('levelComplete')
@@ -400,8 +419,25 @@ export function useGameSession({
       setRunStartedAt(nextStartedAt)
     }
 
+    // **An empty board is a run that has not started.** The clock starts on the first mark, so
+    // taking the last one off has to put it back to zero — otherwise clearing the board and
+    // beginning again reports a time that includes however long the abandoned attempt took. This is
+    // the mirror of the line above, and the only way to reach `Restart`'s state without restarting.
+    if (isBoardEmpty(resolvedMarks)) {
+      stopClock()
+    }
+
     cellMarksRef.current = resolvedMarks
     setCellMarks(resolvedMarks)
+
+    // Every route a mark can change passes through here — a tap, a drag, an undo, a restart — so
+    // this is the one place that can keep the bull-toggle's memory honest. A cell that is no longer
+    // a bull has nothing left to uncover.
+    for (const cellIndex of bullCoveredMarkRef.current.keys()) {
+      if (resolvedMarks[cellIndex] !== 'bull') {
+        bullCoveredMarkRef.current.delete(cellIndex)
+      }
+    }
 
     const nextSolution = getSolutionState(currentLevel, resolvedMarks)
 
@@ -513,30 +549,26 @@ export function useGameSession({
   }
 
   /**
-   * The keyboard path into a cell.
+   * A drag, in three beats: press, enter a cell, release.
    *
-   * Calls the *same* `handleCellClick` a tap resolves to, rather than reimplementing the cycle —
-   * so Enter on a cell and a tap on a cell cannot drift apart. The drag machinery is untouched:
-   * there is no keyboard equivalent of drag-paint, and pressing Enter on each cell reaches the same
-   * board.
+   * **The keyboard and the pointer share these rather than each having their own.** `Space` is the
+   * held button and the arrows are the movement, so a keyboard drag is the same gesture arriving
+   * through different events — and two implementations of one gesture is how they drift apart. The
+   * pointer handlers below and the keyboard handlers under them are both thin wrappers over these
+   * three, differing only in where the timestamp comes from and what a tap means.
    */
-  function handleCellActivate(cellIndex: number, timestampMs: number) {
-    handleCellClick(cellIndex, timestampMs)
-  }
-
-  function handleCellPointerDown(
-    event: ReactPointerEvent<HTMLButtonElement>,
-    cellIndex: number,
-  ) {
+  function beginDrag(cellIndex: number) {
     if (isBoardLocked) {
       return
     }
 
-    event.preventDefault()
-    const startMark = cellMarks[cellIndex]
+    // The ref, not `cellMarks`: a keyboard drag can start in the same tick as the action before it
+    // (release, then press again while a re-render is still pending), and the state variable is a
+    // render behind at that moment. The ref is written synchronously by `applyCellMarks`.
+    const startMark = cellMarksRef.current[cellIndex]
 
     dragStateRef.current = {
-      isMouseDown: true,
+      isPressed: true,
       startIndex: cellIndex,
       startMark,
       dragMode:
@@ -551,23 +583,38 @@ export function useGameSession({
     }
   }
 
-  function handleCellPointerEnter(
-    event: ReactPointerEvent<HTMLButtonElement>,
-    cellIndex: number,
-  ) {
+  function enterDragCell(cellIndex: number, interactionTimestampMs: number) {
     if (isBoardLocked) {
       return
     }
 
     const dragState = dragStateRef.current
 
-    if (!dragState.isMouseDown || dragState.dragMode === null || dragState.startIndex === null) {
+    if (!dragState.isPressed || dragState.startIndex === null) {
       return
     }
 
-    if (!dragState.dragged) {
-      dragState.dragged = true
-      applyDragMode(dragState.startIndex, dragState.dragMode, getInteractionTimestamp(event.timeStamp))
+    /*
+      **The cursor moved, so this is a drag — whether or not there is anything to paint.**
+
+      `dragged` used to be set only on the painting path, below the `dragMode === null` guard. A drag
+      that starts on a bull paints nothing by design, so it never got set, and releasing then looked
+      like a tap: hold Space on a bull, arrow away, let go, and the bull you were standing on cycled
+      to empty. Measured on the demo board 2026-09-22.
+
+      The pointer was accidentally safe from it — `handleCellPointerUp` also requires the release to
+      land on the starting cell — but only accidentally, and not for a drag that wandered off and
+      came back.
+    */
+    const wasStillATap = !dragState.dragged
+    dragState.dragged = true
+
+    if (dragState.dragMode === null) {
+      return
+    }
+
+    if (wasStillATap) {
+      applyDragMode(dragState.startIndex, dragState.dragMode, interactionTimestampMs)
       dragState.visited.add(dragState.startIndex)
     }
 
@@ -576,7 +623,26 @@ export function useGameSession({
     }
 
     dragState.visited.add(cellIndex)
-    applyDragMode(cellIndex, dragState.dragMode, getInteractionTimestamp(event.timeStamp))
+    applyDragMode(cellIndex, dragState.dragMode, interactionTimestampMs)
+  }
+
+  function handleCellPointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    cellIndex: number,
+  ) {
+    if (isBoardLocked) {
+      return
+    }
+
+    event.preventDefault()
+    beginDrag(cellIndex)
+  }
+
+  function handleCellPointerEnter(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    cellIndex: number,
+  ) {
+    enterDragCell(cellIndex, getInteractionTimestamp(event.timeStamp))
   }
 
   function handleCellPointerUp(
@@ -590,11 +656,117 @@ export function useGameSession({
 
     const dragState = dragStateRef.current
 
-    if (dragState.isMouseDown && !dragState.dragged && dragState.startIndex === cellIndex) {
+    if (dragState.isPressed && !dragState.dragged && dragState.startIndex === cellIndex) {
       handleCellClick(cellIndex, getInteractionTimestamp(event.timeStamp))
     }
 
     resetGameDragState(dragStateRef)
+  }
+
+  /** `Space` down. Arms the same drag a `pointerdown` arms, and marks nothing yet. */
+  function handleCellKeyDragStart(cellIndex: number) {
+    beginDrag(cellIndex)
+  }
+
+  /** An arrow pressed while `Space` is held — one call per cell the cursor passes through. */
+  function handleCellKeyDragEnter(cellIndex: number, interactionTimestampMs: number) {
+    enterDragCell(cellIndex, interactionTimestampMs)
+  }
+
+  /**
+   * `Space` released.
+   *
+   * If the cursor never moved this was a tap, and **the modifier held at release decides which
+   * tap** — plain cycles the cell, `Shift` toggles a bull. If it did move it was a drag, already
+   * painted, and releasing only ends it.
+   */
+  function handleCellKeyDragEnd(interactionTimestampMs: number, withShift: boolean) {
+    if (isBoardLocked) {
+      resetGameDragState(dragStateRef)
+      return
+    }
+
+    const dragState = dragStateRef.current
+
+    if (dragState.isPressed && !dragState.dragged && dragState.startIndex !== null) {
+      if (withShift) {
+        handleToggleBull(dragState.startIndex, interactionTimestampMs)
+      } else {
+        handleCellClick(dragState.startIndex, interactionTimestampMs)
+      }
+    }
+
+    resetGameDragState(dragStateRef)
+  }
+
+  /** Focus left the board with `Space` still down — drop the gesture, commit nothing. */
+  function handleCellKeyDragCancel() {
+    resetGameDragState(dragStateRef)
+  }
+
+  /**
+   * `Shift` + `Space`: put a bull here, or take it away and put back whatever it covered.
+   *
+   * The cycle reaches a bull through a dot, which means clearing one costs two more presses and
+   * loses the dot on the way. Remembering the covered mark per cell is what makes this a *toggle*
+   * rather than a third way to walk the cycle. `applyCellMarks` prunes the memory for any cell that
+   * stops being a bull by any other route, so an undo or a `Backspace` cannot leave a stale one.
+   */
+  function handleToggleBull(cellIndex: number, interactionTimestampMs: number) {
+    if (!level || isBoardLocked) {
+      return
+    }
+
+    const currentMark = cellMarksRef.current[cellIndex]
+    const coveredMarks = bullCoveredMarkRef.current
+    const nextMark: CellMark =
+      currentMark === 'bull' ? (coveredMarks.get(cellIndex) ?? 'empty') : 'bull'
+
+    if (currentMark === 'bull') {
+      coveredMarks.delete(cellIndex)
+    } else {
+      coveredMarks.set(cellIndex, currentMark)
+    }
+
+    startMusic('gameLoop')
+    setActiveCellIndex(cellIndex)
+
+    if (nextMark === 'bull' && !isGuest) {
+      pendingBullPlacementsRef.current += 1
+    }
+
+    recordUndoSnapshot()
+    applyCellMarks(
+      level,
+      cellMarksRef.current.map((mark, index) => (index === cellIndex ? nextMark : mark)),
+      interactionTimestampMs,
+    )
+    playSoundEffect(
+      nextMark === 'bull' ? 'placeBull' : nextMark === 'dot' ? 'placeDot' : 'clearCell',
+    )
+  }
+
+  /**
+   * `Backspace`: empty this cell whatever is in it.
+   *
+   * The one action with no pointer equivalent, and it earns its place — the cycle's only way out of
+   * a bull is through `empty`, so "just clear this" otherwise costs one press from a dot and two
+   * from a bull, and the player has to know which they are looking at.
+   */
+  function handleClearCell(cellIndex: number, interactionTimestampMs: number) {
+    if (!level || isBoardLocked || cellMarksRef.current[cellIndex] === 'empty') {
+      return
+    }
+
+    startMusic('gameLoop')
+    setActiveCellIndex(cellIndex)
+    recordUndoSnapshot()
+    applyCellMarks(
+      level,
+      cellMarksRef.current.map((mark, index) => (index === cellIndex ? 'empty' : mark)),
+      interactionTimestampMs,
+    )
+    playSoundEffect('clearCell')
   }
 
   function handleRestartBoard() {
@@ -606,12 +778,12 @@ export function useGameSession({
 
     clearMoveHistory()
     setCanUndo(false)
+    bullCoveredMarkRef.current.clear()
     cellMarksRef.current = emptyBoard
-    runStartedAtRef.current = null
-    elapsedSecondsRef.current = 0
     setCellMarks(emptyBoard)
-    setElapsedSeconds(0)
-    setRunStartedAt(null)
+    // The same four assignments this used to spell out. Restart and "the last mark came off" are
+    // the same clock state, and they should not be able to drift apart.
+    stopClock()
     setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)
@@ -637,16 +809,36 @@ export function useGameSession({
     completionHandledRef.current = false
     cellMarksRef.current = restoredMarks
     setCellMarks(restoredMarks)
-    // Restore the clock too, not just the board — ignoring the snapshot left the timer frozen
-    // after undoing a completion, because runStartedAt stayed null. Only restore the anchor when
-    // there isn't one: undo returns the board, not the time already spent, and a snapshot taken
-    // before the tab was hidden holds an anchor from before the pause shifted it forward.
-    const restoredStartedAt = runStartedAtRef.current ?? previousMove.runStartedAt
 
-    elapsedSecondsRef.current = previousMove.elapsedSeconds
-    runStartedAtRef.current = restoredStartedAt
-    setElapsedSeconds(previousMove.elapsedSeconds)
-    setRunStartedAt(restoredStartedAt)
+    if (isBoardEmpty(restoredMarks)) {
+      // Undone all the way back to an empty board, which is the same state a restart leaves.
+      stopClock()
+    } else {
+      /*
+        Restore the *anchor*, and let the clock derive the reading from it.
+
+        Ignoring the snapshot entirely left the timer frozen after undoing a completion, because
+        `handleLevelSolved` clears the anchor — hence the `??`. But the displayed seconds used to be
+        restored from the snapshot as well, and that is what made undo flicker: the reading jumped
+        back to the time of the previous move and the ticking interval, which recomputes from the
+        anchor every 250ms, immediately pulled it forward again.
+
+        **Undo returns the board, not the time already spent.** Computing the reading from the
+        restored anchor here rather than waiting for the next tick is what makes that true on screen
+        as well as in the model — same number the interval is about to write, so nothing moves.
+      */
+      const restoredStartedAt = runStartedAtRef.current ?? previousMove.runStartedAt
+      const restoredElapsed =
+        restoredStartedAt === null
+          ? previousMove.elapsedSeconds
+          : Math.floor((Date.now() - restoredStartedAt) / 1000)
+
+      elapsedSecondsRef.current = restoredElapsed
+      runStartedAtRef.current = restoredStartedAt
+      setElapsedSeconds(restoredElapsed)
+      setRunStartedAt(restoredStartedAt)
+    }
+
     setActiveCellIndex(null)
     setIsBoardLocked(false)
     setCompletionModal(null)
@@ -673,10 +865,14 @@ export function useGameSession({
     activeCellIndex,
     invalidBullIndexes: solutionState?.invalidBullIndexes ?? new Set<number>(),
     remainingBulls,
-    handleCellActivate,
     handleCellPointerDown,
     handleCellPointerEnter,
     handleCellPointerUp,
+    handleCellKeyDragStart,
+    handleCellKeyDragEnter,
+    handleCellKeyDragEnd,
+    handleCellKeyDragCancel,
+    handleClearCell,
     handleRestartBoard,
     handleUndoMove,
     handleCloseCompletionModal,

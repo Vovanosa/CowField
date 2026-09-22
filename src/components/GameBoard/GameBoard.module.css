@@ -97,6 +97,25 @@
   z-index: 3;
 }
 
+/*
+  The same ring, for focus this component moved itself.
+
+  `:focus-visible` is a heuristic, and the two cases that matter most here are exactly the ones it
+  will not promise: the roving `tabIndex` calls `.focus()` on every arrow press, and the board takes
+  focus itself when a player arrives by keyboard. Chrome usually keeps the ring through a scripted
+  move that follows a keypress, but "usually" is not something a player can navigate by, and with no
+  ring the cursor is invisible.
+
+  Keyed off the modality `inputModality.ts` publishes, so a mouse player never sees it: clicking a
+  cell focuses that cell deliberately, and drawing a cursor around it would be answering a question
+  they did not ask.
+*/
+:root[data-input-modality='keyboard'] .boardCell:focus {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: -3px;
+  z-index: 3;
+}
+
 .boardCell:disabled {
   cursor: default;
 }

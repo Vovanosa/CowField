@@ -42,7 +42,13 @@ function isCreateCard(props: LevelCardProps): props is CreateLevelCardProps {
 export function LevelCard(props: LevelCardProps) {
   if (isCreateCard(props)) {
     return (
-      <Panel as={Link} to={props.createTo} className={`${styles.card} ${styles.createCard} ${styles.clickable}`}>
+      <Panel
+        as={Link}
+        to={props.createTo}
+        /* Arrow navigation on the grid steps between these, so the create card is one of the stops. */
+        data-level-link=""
+        className={`${styles.card} ${styles.createCard} ${styles.clickable}`}
+      >
         <Plus size={42} strokeWidth={2.2} aria-label={props.createLabel} />
       </Panel>
     )
@@ -57,7 +63,7 @@ export function LevelCard(props: LevelCardProps) {
       className={`${styles.card} ${styles.clickable}${isSolved ? ` ${styles.solved}` : ''}`}
     >
       {openTo && openLabel ? (
-        <Link className={styles.linkOverlay} to={openTo} aria-label={openLabel} />
+        <Link className={styles.linkOverlay} to={openTo} aria-label={openLabel} data-level-link="" />
       ) : null}
 
       {/*

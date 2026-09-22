@@ -6,7 +6,12 @@ import { useParams } from 'react-router-dom'
 import { useNavigate } from '../../app/navigation'
 import { brandedTitle, useDocumentMeta } from '../../app/useDocumentMeta'
 import { useRole } from '../../app/role'
+import { Dialog } from '../../components/Dialog'
 import { EmptyState } from '../../components/EmptyState'
+import {
+  KeyboardShortcutsDialog,
+  useShortcutSheetKey,
+} from '../../components/KeyboardShortcutsDialog'
 import { Button, Panel, StatusMessage, Toast } from '../../components/ui'
 import { getDifficultyLabel } from '../../game/getDifficultyLabel'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
@@ -16,6 +21,7 @@ import { GameCompletionDialog } from './GameCompletionDialog'
 import { GameRouteHeader } from './GameRouteHeader'
 import { isDifficulty } from './gameSession.helpers'
 import { useGameSession } from './useGameSession'
+import { useGameShortcuts } from './useGameShortcuts'
 import styles from './GamePage.module.css'
 
 /** Long enough to read four words, short enough not to sit over the board. */
@@ -32,6 +38,8 @@ function GamePageScreen() {
   // One line, shown after a clipboard copy. `navigator.share` needs none — the native sheet is its
   // own confirmation — so this only ever appears on the fallback path.
   const [shareMessage, setShareMessage] = useState<string | null>(null)
+  const [isShortcutsDialogOpen, setIsShortcutsDialogOpen] = useState(false)
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false)
 
   // Clears itself. Keyed on the message rather than on a ref, so sharing twice in a row restarts
   // the timer instead of the first copy dismissing the second.
@@ -59,7 +67,11 @@ function GamePageScreen() {
     activeCellIndex,
     invalidBullIndexes,
     remainingBulls,
-    handleCellActivate,
+    handleCellKeyDragStart,
+    handleCellKeyDragEnter,
+    handleCellKeyDragEnd,
+    handleCellKeyDragCancel,
+    handleClearCell,
     handleCellPointerDown,
     handleCellPointerEnter,
     handleCellPointerUp,
@@ -95,6 +107,38 @@ function GamePageScreen() {
     preview usable.
   */
   useDocumentMeta({ title: brandedTitle(routeLevelLabel), robots: 'noindex' })
+
+  /**
+   * `Esc` leaves the board — but not silently, and not out from under a half-solved puzzle.
+   *
+   * `Esc` is the easiest key on the board to hit by accident, and a 15×15 abandoned by a stray
+   * keypress is how someone does not come back. A board with nothing on it has nothing to lose, so
+   * that case leaves at once rather than asking a question with one sensible answer.
+   *
+   * Declared here, above the early returns, because `useGameShortcuts` is a hook — and a hook after
+   * an early return is a hook that sometimes does not happen. `handleBackToLevels` is a function
+   * declaration further down and is hoisted, so calling it from here is safe.
+   */
+  function handleLeaveBoard() {
+    if (cellMarks.some((mark) => mark !== 'empty')) {
+      setIsLeaveConfirmOpen(true)
+      return
+    }
+
+    handleBackToLevels()
+  }
+
+  useGameShortcuts({
+    isHelpOpen: isShortcutsDialogOpen,
+    onUndo: handleUndoMove,
+    onRestart: handleRestartBoard,
+    onLeave: handleLeaveBoard,
+  })
+
+  useShortcutSheetKey({
+    isOpen: isShortcutsDialogOpen,
+    onToggle: () => setIsShortcutsDialogOpen((isOpen) => !isOpen),
+  })
 
   if (!isDifficulty(difficulty) || !levelNumber) {
     return (
@@ -246,7 +290,11 @@ function GamePageScreen() {
           onCellPointerDown={handleCellPointerDown}
           onCellPointerEnter={handleCellPointerEnter}
           onCellPointerUp={handleCellPointerUp}
-          onCellActivate={handleCellActivate}
+          onCellKeyDragStart={handleCellKeyDragStart}
+          onCellKeyDragEnter={handleCellKeyDragEnter}
+          onCellKeyDragEnd={handleCellKeyDragEnd}
+          onCellKeyDragCancel={handleCellKeyDragCancel}
+          onClearCell={handleClearCell}
           onShared={setShareMessage}
           t={t}
         />
@@ -269,6 +317,40 @@ function GamePageScreen() {
           onNextLevel={handleNextLevel}
           onRetrySave={handleRetrySaveCompletion}
           t={t}
+        />
+      ) : null}
+
+      {isShortcutsDialogOpen ? (
+        <KeyboardShortcutsDialog onClose={() => setIsShortcutsDialogOpen(false)} />
+      ) : null}
+
+      {isLeaveConfirmOpen ? (
+        <Dialog
+          role="alertdialog"
+          title={t('Leave this board?')}
+          description={t('Your marks on this board will not be kept.')}
+          labelledById="leave-board-title"
+          describedById="leave-board-description"
+          onClose={() => setIsLeaveConfirmOpen(false)}
+          actions={
+            <>
+              <Button onClick={() => setIsLeaveConfirmOpen(false)}>{t('Cancel')}</Button>
+              {/*
+                `danger`, not `primary`, and that is what keeps focus on Cancel: `Dialog` puts initial
+                focus on a `primary` action when it finds one, and leaving a half-solved board is
+                exactly the thing a stray Enter must not do.
+              */}
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setIsLeaveConfirmOpen(false)
+                  handleBackToLevels()
+                }}
+              >
+                {t('Leave')}
+              </Button>
+            </>
+          }
         />
       ) : null}
     </div>

@@ -635,6 +635,35 @@ const fr = {
     'Vos statistiques n’ont pas pu être chargées. Vérifiez votre connexion et réessayez.',
   "Couldn't load this level. Check your connection and try again.":
     'Ce niveau n’a pas pu être chargé. Vérifiez votre connexion et réessayez.',
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Aller à la grille',
+  'Move between cells': 'Se déplacer entre les cases',
+  'Move between cells, same as the arrows': 'Se déplacer entre les cases, comme avec les flèches',
+  'Jump to the edge of the board': 'Aller jusqu’au bord de la grille',
+  'Dot, then bull, then empty': 'Point, puis taureau, puis vide',
+  'Place or remove a bull': 'Placer ou retirer un taureau',
+  'Hold Space and move to draw dots': 'Maintenez Espace et déplacez-vous pour tracer des points',
+  'Clear the cell': 'Vider la case',
+  'Restart the level': 'Recommencer le niveau',
+  'Leave the board': 'Quitter la grille',
+  'Open or close this list': 'Ouvrir ou fermer cette liste',
+  'Keyboard shortcuts': 'Raccourcis clavier',
+  'Press ? while playing to open or close this list.':
+    'Appuyez sur ? pendant une partie pour ouvrir ou fermer cette liste.',
+  'Can I play with the keyboard?': 'Puis-je jouer au clavier ?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Oui, un niveau entier sans toucher la souris. Les flèches ou WASD déplacent le curseur entre les cases, Espace fait défiler point, taureau et vide, et Maj avec Espace place ou retire un taureau directement. En maintenant Espace pendant le déplacement, vous tracez des points sur toute une série de cases, comme en faisant glisser la souris. Appuyez sur ? pendant une partie pour la liste complète.',
+  'Leave this board?': 'Quitter cette grille ?',
+  'Your marks on this board will not be kept.':
+    'Vos marques sur cette grille ne seront pas conservées.',
+  Leave: 'Quitter',
+  'See the keys for playing without a mouse.': 'Voir les touches pour jouer sans souris.',
+  View: 'Voir',
 } as const
 
 export default fr

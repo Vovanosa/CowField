@@ -1,12 +1,15 @@
 import {
+  useEffect,
   useRef,
   useState,
   type CSSProperties,
+  type FocusEvent as ReactFocusEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { getInputModality } from '../../app/inputModality'
 import { CowIcon } from '../icons'
 import type { LevelDefinition } from '../../game/types'
 import type { CellMark } from '../../game/types'
@@ -18,7 +21,7 @@ import {
 
 /** What a cow fills on `light`, the size every board used to use. */
 const PLAY_COW_BASE_PERCENT = 56
-import { moveFocusIndex, releaseImplicitPointerCapture } from './GameBoard.keyboard'
+import { isSpaceKey, releaseImplicitPointerCapture, resolveFocusMove } from './GameBoard.keyboard'
 import { useCrampedBoardNotice } from './useCrampedBoardNotice'
 import styles from './GameBoard.module.css'
 
@@ -42,10 +45,17 @@ type GameBoardProps = {
     cellIndex: number,
   ) => void
   /**
-   * A cell was activated by keyboard. Deliberately the **same** operation a tap performs — the
-   * board has one rule for what a cell does, and a second input method must not invent a second.
+   * The keyboard's three beats, which are the pointer's three beats: `Space` down arms a drag,
+   * an arrow under a held `Space` enters a cell, releasing `Space` commits a tap or ends the drag.
+   * They land on the same session handlers the pointer does, so the two cannot drift apart.
    */
-  onCellActivate: (cellIndex: number, timestampMs: number) => void
+  onCellKeyDragStart: (cellIndex: number) => void
+  onCellKeyDragEnter: (cellIndex: number, timestampMs: number) => void
+  onCellKeyDragEnd: (timestampMs: number, withShift: boolean) => void
+  /** Focus left the board with `Space` still down: drop the gesture without committing a tap. */
+  onCellKeyDragCancel: () => void
+  /** `Backspace` — empty this cell whatever is in it. The one action the pointer has no gesture for. */
+  onClearCell: (cellIndex: number, timestampMs: number) => void
 }
 
 export function GameBoard({
@@ -58,7 +68,11 @@ export function GameBoard({
   onCellPointerDown,
   onCellPointerEnter,
   onCellPointerUp,
-  onCellActivate,
+  onCellKeyDragStart,
+  onCellKeyDragEnter,
+  onCellKeyDragEnd,
+  onCellKeyDragCancel,
+  onClearCell,
 }: GameBoardProps) {
   const { t } = useTranslation()
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -75,34 +89,120 @@ export function GameBoard({
    */
   const [focusedCellIndex, setFocusedCellIndex] = useState(0)
 
+  /**
+   * Whether `Space` is currently down.
+   *
+   * The whole drag-paint gesture hangs off this one flag, and it is a ref rather than state because
+   * a re-render between `keydown` and the arrow that follows would be a re-render per painted cell.
+   */
+  const isSpaceHeldRef = useRef(false)
+
   function focusCell(nextIndex: number) {
     setFocusedCellIndex(nextIndex)
-    cellRefs.current[nextIndex]?.focus()
+    cellRefs.current[nextIndex]?.focus({ preventScroll: true })
   }
 
+  /**
+   * Land on the board when the player arrived by keyboard.
+   *
+   * Mount is the right moment because `AppShell` keys the route stage by pathname, so every level —
+   * including the one *Next Level* goes to — mounts a fresh board. Doing this unconditionally would
+   * take the arrow keys away from a mouse player who is only scrolling, which is why it asks.
+   */
+  useEffect(() => {
+    if (getInputModality() !== 'keyboard' || isBoardLocked) {
+      return
+    }
+
+    cellRefs.current[0]?.focus({ preventScroll: true })
+    // Mount only: a level change remounts this component, and re-running on any other state change
+    // would yank focus back to cell 0 mid-game.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function handleCellKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, cellIndex: number) {
-    // Enter and Space are handled here rather than through `onClick`, because a pointer interaction
-    // can also produce a click and the two would double-fire — placing a mark and then immediately
-    // cycling it again. Preventing the default stops the synthetic click a button would emit.
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+    // `Ctrl`/`Meta` combinations belong to the page-level shortcuts (undo, restart) and to the
+    // browser. Returning early leaves the event to bubble to them untouched.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return
+    }
+
+    // Space is the held button. `preventDefault` on every press — repeats included — is what stops
+    // the document paging down under the board, and it also suppresses the synthetic `click` a
+    // `<button>` would fire on release, which would otherwise double-mark the cell.
+    if (isSpaceKey(event.key)) {
+      event.preventDefault()
+
+      if (event.repeat || isSpaceHeldRef.current || isBoardLocked) {
+        return
+      }
+
+      isSpaceHeldRef.current = true
+      onCellKeyDragStart(cellIndex)
+      return
+    }
+
+    // Enter deliberately does nothing on a cell: it means *approve* everywhere else in the app, and
+    // a board where it also marks is a board where the completion dialog's Enter is ambiguous.
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      return
+    }
+
+    if (event.key === 'Backspace') {
       event.preventDefault()
 
       if (!isBoardLocked) {
-        onCellActivate(cellIndex, performance.timeOrigin + event.timeStamp)
+        onClearCell(cellIndex, performance.timeOrigin + event.timeStamp)
       }
 
       return
     }
 
-    const nextIndex = moveFocusIndex(event.key, cellIndex, level.gridSize)
+    const move = resolveFocusMove(event, cellIndex, level.gridSize)
 
-    if (nextIndex === null) {
+    if (!move) {
       return
     }
 
     // Otherwise the page scrolls under the board on every arrow press.
     event.preventDefault()
-    focusCell(nextIndex)
+
+    // Held Space turns the move into a drag: every cell on the way is painted, not just the one the
+    // cursor lands on — which is what makes `Shift` + arrow paint a line rather than jump one.
+    if (isSpaceHeldRef.current && !isBoardLocked) {
+      for (const pathIndex of move.path) {
+        onCellKeyDragEnter(pathIndex, performance.timeOrigin + event.timeStamp)
+      }
+    }
+
+    focusCell(move.nextIndex)
+  }
+
+  function handleCellKeyUp(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (!isSpaceKey(event.key) || !isSpaceHeldRef.current) {
+      return
+    }
+
+    isSpaceHeldRef.current = false
+    event.preventDefault()
+
+    if (!isBoardLocked) {
+      onCellKeyDragEnd(performance.timeOrigin + event.timeStamp, event.shiftKey)
+    }
+  }
+
+  /**
+   * Tab away mid-drag and the `keyup` never arrives, leaving `Space` held forever as far as this
+   * component is concerned. Leaving the grid ends the gesture the way lifting the mouse would.
+   */
+  function handleGridBlur(event: ReactFocusEvent<HTMLDivElement>) {
+    if (!isSpaceHeldRef.current || event.currentTarget.contains(event.relatedTarget)) {
+      return
+    }
+
+    isSpaceHeldRef.current = false
+    onCellKeyDragCancel()
   }
 
   return (
@@ -140,6 +240,7 @@ export function GameBoard({
 
       <div
         className={styles.boardPreviewGrid}
+        onBlur={handleGridBlur}
         style={{
           gridTemplateColumns: `repeat(${level.gridSize}, minmax(0, 1fr))`,
           '--play-cow-size': `${getCowMarkerPercent(level.gridSize, PLAY_COW_BASE_PERCENT)}%`,
@@ -196,11 +297,21 @@ export function GameBoard({
               style={getBoardCellStyle(level, index, isInvalid, isActive)}
               aria-label={label}
               tabIndex={index === focusedCellIndex ? 0 : -1}
+              data-board-cell=""
               onFocus={() => setFocusedCellIndex(index)}
               onKeyDown={(event) => handleCellKeyDown(event, index)}
+              onKeyUp={handleCellKeyUp}
               onPointerDown={(event) => {
                 releaseImplicitPointerCapture(event)
                 onCellPointerDown(event, index)
+
+                // Hand the board to the keyboard at the cell that was clicked. `handleCellPointerDown`
+                // calls `preventDefault`, which is what suppresses the focus a click would normally
+                // give a button — so without this a player who navigates by mouse and plays by
+                // keyboard has to tab in from the top of the page every time.
+                // `preventScroll` because a cell near the edge of a large board would otherwise jump
+                // the page under the pointer mid-drag.
+                event.currentTarget.focus({ preventScroll: true })
               }}
               onPointerEnter={(event) => onCellPointerEnter(event, index)}
               onPointerUp={(event) => onCellPointerUp(event, index)}

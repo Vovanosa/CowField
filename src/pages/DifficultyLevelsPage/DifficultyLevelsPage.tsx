@@ -19,6 +19,7 @@ import { getDifficultyLevelsPageData } from '../../game/storage/resources'
 import { usePlayerSettings } from '../../game/usePlayerSettings'
 import type { BestTimesByLevel } from '../../game/types'
 import { difficultyPageContent } from './difficultyPageContent'
+import { useLevelGridKeyboard } from './useLevelGridKeyboard'
 import styles from './DifficultyLevelsPage.module.css'
 import { useGridColumnCount } from './useGridColumnCount'
 
@@ -158,6 +159,16 @@ function DifficultyLevelsPageScreen() {
     columnCount <= 4 ? 3 : 5,
   )
 
+  // Above the unknown-difficulty return, because a hook after an early return is a hook that
+  // sometimes does not happen — the same reason `useDocumentMeta` is called where it is.
+  const handleGridKeyDown = useLevelGridKeyboard({
+    gridElement,
+    columnCount,
+    currentPage: currentVisiblePage,
+    totalPages,
+    onPageChange: setCurrentPage,
+  })
+
   if (!isDifficulty(difficulty)) {
     return (
       <div className={[styles.page, 'page-shell'].join(' ')}>
@@ -242,7 +253,11 @@ function DifficultyLevelsPageScreen() {
           }
         />
       ) : (
-        <section className={styles.levelsGrid} ref={setGridElement}>
+        <section
+          className={styles.levelsGrid}
+          ref={setGridElement}
+          onKeyDown={handleGridKeyDown}
+        >
           {isLoading
             ? Array.from({ length: normalizedPageSize }, (_, index) => (
                 <Panel key={`level-skeleton-${index}`} className={styles.levelCardSkeleton}>

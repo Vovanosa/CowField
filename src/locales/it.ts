@@ -570,6 +570,35 @@ const it = {
     'Non è stato possibile caricare le tue statistiche. Controlla la connessione e riprova.',
   "Couldn't load this level. Check your connection and try again.":
     'Non è stato possibile caricare questo livello. Controlla la connessione e riprova.',
+
+  /*
+    Keyboard play. The key legends themselves (Space, Shift, Ctrl, Esc, Backspace, WASD) are
+    deliberately not translated anywhere: they are what is printed on the key in front of the
+    player, and a translated legend describes a keyboard nobody owns.
+  */
+  'Skip to the board': 'Vai alla griglia',
+  'Move between cells': 'Spostarsi tra le caselle',
+  'Move between cells, same as the arrows': 'Spostarsi tra le caselle, come con le frecce',
+  'Jump to the edge of the board': 'Saltare al bordo della griglia',
+  'Dot, then bull, then empty': 'Punto, poi toro, poi vuota',
+  'Place or remove a bull': 'Mettere o togliere un toro',
+  'Hold Space and move to draw dots': 'Tieni premuto Spazio e muoviti per tracciare punti',
+  'Clear the cell': 'Svuotare la casella',
+  'Restart the level': 'Ricominciare il livello',
+  'Leave the board': 'Uscire dalla griglia',
+  'Open or close this list': 'Aprire o chiudere questo elenco',
+  'Keyboard shortcuts': 'Scorciatoie da tastiera',
+  'Press ? while playing to open or close this list.':
+    'Premi ? mentre giochi per aprire o chiudere questo elenco.',
+  'Can I play with the keyboard?': 'Posso giocare con la tastiera?',
+  'Yes, a whole level without touching the mouse. Arrow keys or WASD move between cells, Space cycles a cell through dot, bull and empty, and Shift with Space places or removes a bull directly. Holding Space while you move draws dots across a run of cells, the same as dragging. Press ? while playing for the full list.':
+    'Sì, un livello intero senza toccare il mouse. Le frecce o WASD spostano tra le caselle, Spazio passa da punto a toro a vuota, e Maiusc con Spazio mette o toglie un toro direttamente. Tenendo premuto Spazio mentre ti sposti tracci punti su una fila intera, come trascinando. Premi ? mentre giochi per l’elenco completo.',
+  'Leave this board?': 'Uscire da questa griglia?',
+  'Your marks on this board will not be kept.':
+    'I segni su questa griglia non verranno conservati.',
+  Leave: 'Esci',
+  'See the keys for playing without a mouse.': 'Guarda i tasti per giocare senza mouse.',
+  View: 'Mostra',
 } as const
 
 export default it

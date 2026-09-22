@@ -142,10 +142,27 @@ export function Dialog({
       ).filter((element) => element.offsetParent !== null || element === document.activeElement)
     }
 
-    // The first action, not the panel: a dialog that opens with focus on its confirm button reads
-    // its own title first and leaves the player one key from the thing they came to do.
+    /*
+      **Focus the action the player came to do, unless doing it is destructive.**
+
+      This used to be "the first focusable, always", reasoned about confirm dialogs — where landing
+      on the confirm button is precisely the hazard. It generalised to every dialog, and since each
+      one renders its negative action first, finishing a level put focus on **Back**: the reward for
+      solving a board was one Enter away from leaving it.
+
+      The distinction the app already encodes is the button variant. A positive action is
+      `primary`, a destructive one is `danger` — so a dialog that has a `primary` gets focus on it,
+      and a dialog whose only action is destructive falls back to the first focusable, which is its
+      Cancel. The two level-deletion dialogs are therefore untouched by this, and stay right for the
+      same reason they were right before: they have no `primary` to find.
+
+      Restricted to what `getFocusable()` returned so a disabled `primary` — *Next Level* on the
+      last level of a difficulty — is skipped rather than silently swallowing the focus.
+    */
     const panel = backdrop.querySelector<HTMLElement>('[role="dialog"], [role="alertdialog"]')
-    const initial = getFocusable()[0] ?? panel
+    const focusable = getFocusable()
+    const primary = focusable.find((element) => element.dataset.variant === 'primary')
+    const initial = primary ?? focusable[0] ?? panel
     initial?.focus()
 
     function handleKeyDown(event: KeyboardEvent) {
